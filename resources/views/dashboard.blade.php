@@ -24,7 +24,7 @@
                 🔧 <h3 class="font-bold text-lg">Track Repair</h3>
             </a>
 
-            <a href="#" class="bg-white p-6 rounded-xl shadow hover:shadow-lg">
+            <a href="/preorders" class="bg-white p-6 rounded-xl shadow hover:shadow-lg">
                 🧾 <h3 class="font-bold text-lg">Process Pre-order</h3>
             </a>
 
