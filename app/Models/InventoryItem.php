@@ -17,7 +17,9 @@ class InventoryItem extends Model
         'model',
         'quantity',
         'notes',
-        'price'
+        'price',
+        'low_stock_threshold',
+        'low_stock_notified'
     ];
 
     public function sales()

@@ -1,61 +1,144 @@
 <x-app-layout>
-<div class="p-6">
-    <h1>Sales History</h1>
+    <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+        
+        <div class="max-w-7xl mx-auto">
+            <!-- Header Section -->
+            <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Sales Reports</h1>
+                    <p class="mt-2 text-sm text-gray-500">Track and analyze your store's sales performance</p>
+                </div>
+            </div>
 
-    <form method="GET" class="mb-3">
-    <label for="from">from:</label>
-    <input type="date" name="from">
-    <label for="to">to:</label>
-    <input type="date" name="to">
-    <button type="submit">Filter</button>
-    <a href="?filter=today">Today</a>
-</form>
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Total Revenue Card -->
+                <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg shadow-green-500/30 p-6 text-white relative overflow-hidden">
+                    <div class="absolute -right-6 -top-6 bg-white/10 w-24 h-24 rounded-full blur-2xl"></div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div>
+                            <p class="text-green-50 font-medium text-sm uppercase tracking-wider mb-1">Total Revenue</p>
+                            <h3 class="text-4xl font-bold">₱{{ number_format($totalSales, 2) }}</h3>
+                        </div>
+                        <div class="bg-white/20 p-3 rounded-xl">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                    </div>
+                </div>
 
-<div>
-    <h3>Total Sales: ₱ {{ number_format($totalSales, 2) }}</h3>
-    <h4>Total Transactions: {{ $totalTransactions }}</h4>
-</div>
-   <table class="w-full border border-gray-300 bg-white shadow rounded">
-    <thead class="bg-gray-200">
-        <tr>
-            <th class="p-3 text-left">Item</th>
-            <th class="p-3 text-center">Quantity</th>
-            <th class="p-3 text-center">Total Price</th>
-            <th class="p-3 text-center">Date</th>
-            <th class="p-3 text-center">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($sales as $sale)
-<tr class="border-t bg-white hover:bg-gray-100">
-            <td class="p-3">{{ $sale->item->part_name }}</td>
-            <td class="p-3 text-center">{{ $sale->quantity }}</td>
-            <td class="p-3 text-center">₱ {{ number_format($sale->total_price, 2) }}</td>
-            <td class="p-3 text-center">{{ $sale->created_at }}</td>
+                <!-- Total Transactions Card -->
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/30 p-6 text-white relative overflow-hidden">
+                    <div class="absolute -right-6 -top-6 bg-white/10 w-24 h-24 rounded-full blur-2xl"></div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-50 font-medium text-sm uppercase tracking-wider mb-1">Total Transactions</p>
+                            <h3 class="text-4xl font-bold">{{ number_format($totalTransactions) }}</h3>
+                        </div>
+                        <div class="bg-white/20 p-3 rounded-xl">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <td class="p-3 text-center">
-    <div class="flex justify-center gap-2">
+            <!-- Filters Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    
+                    <!-- Quick Filters -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm font-semibold text-gray-700 mr-2">Quick Filters:</span>
+                        <a href="{{ url()->current() }}?filter=today" class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request('filter') == 'today' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">Today</a>
+                        <a href="{{ url()->current() }}?filter=week" class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request('filter') == 'week' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">This Week</a>
+                        <a href="{{ url()->current() }}?filter=month" class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request('filter') == 'month' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">This Month</a>
+                        <a href="{{ url()->current() }}" class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ !request('filter') && !request('from') ? 'bg-gray-800 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">All Time</a>
+                    </div>
 
-    <a href="/sales/{{ $sale->id }}/receipt"
-        class="inline-block !bg-green-500 !text-white px-3 py-1 rounded hover:!bg-green-600">
-        Receipt
-    </a>
+                    <!-- Custom Date Range -->
+                    <form method="GET" class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <div class="flex flex-col">
+                                <label for="from" class="text-xs font-semibold text-gray-500 mb-1">From Date</label>
+                                <input type="date" name="from" value="{{ request('from') }}" class="border border-gray-300 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                            </div>
+                            <span class="text-gray-400 mt-5">-</span>
+                            <div class="flex flex-col">
+                                <label for="to" class="text-xs font-semibold text-gray-500 mb-1">To Date</label>
+                                <input type="date" name="to" value="{{ request('to') }}" class="border border-gray-300 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                            </div>
+                        </div>
+                        <button type="submit" class="mt-4 sm:mt-0 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition-colors flex items-center gap-2 h-[38px]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            Filter Custom
+                        </button>
+                    </form>
 
-    <form action="/sales/{{ $sale->id }}" method="POST">
-    @csrf
-    @method('DELETE')
-    <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-        Delete
-    </button>
-</form>
+                </div>
+            </div>
 
-</td>
-        </tr>
-        @endforeach
-    </tbody>
-</table>
-</div>
+            <!-- Data Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-100 text-xs tracking-wider uppercase text-gray-500">
+                                <th class="p-5 font-semibold">Item Sold</th>
+                                <th class="p-5 font-semibold text-center">Quantity</th>
+                                <th class="p-5 font-semibold text-right">Total Price</th>
+                                <th class="p-5 font-semibold text-center">Date & Time</th>
+                                <th class="p-5 font-semibold text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50 text-sm">
+                            @forelse($sales as $sale)
+                                <tr class="hover:bg-gray-50/50 transition-colors">
+                                    <td class="p-5 font-semibold text-gray-900">
+                                        {{ $sale->item->part_name ?? 'Unknown Item' }}
+                                        <div class="text-xs text-gray-400 font-normal mt-0.5">{{ $sale->item->brand ?? '' }} {{ $sale->item->model ?? '' }}</div>
+                                    </td>
+                                    <td class="p-5 text-center font-medium">
+                                        <span class="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full text-xs">{{ $sale->quantity }}</span>
+                                    </td>
+                                    <td class="p-5 text-right font-bold text-gray-900">
+                                        ₱{{ number_format($sale->total_price, 2) }}
+                                    </td>
+                                    <td class="p-5 text-center text-gray-500">
+                                        {{ $sale->created_at->format('M d, Y') }}
+                                        <div class="text-xs text-gray-400 mt-0.5">{{ $sale->created_at->format('h:i A') }}</div>
+                                    </td>
+                                    <td class="p-5 text-center">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <a href="/sales/{{ $sale->id }}/receipt" class="inline-flex items-center gap-1 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                Receipt
+                                            </a>
+                                            <form action="/sales/{{ $sale->id }}" method="POST" onsubmit="return confirm('Are you sure you want to archive this sale? Stock will be restored.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="inline-flex items-center gap-1 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                                                    Archive
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="p-10 text-center text-gray-500">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            <p class="font-medium text-gray-600">No sales found for this period</p>
+                                            <p class="text-sm mt-1">Try adjusting your filters or date range.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-</div>
-
+        </div>
+    </div>
 </x-app-layout>

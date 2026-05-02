@@ -1,96 +1,132 @@
 <x-app-layout>
-<div class="p-6">
+    <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+        
+        <div class="max-w-7xl mx-auto">
+            <!-- Header Section -->
+            <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+                        <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                        Manage Inventory
+                    </h1>
+                    <p class="mt-2 text-sm text-gray-500">Add, edit, or remove parts from your catalog.</p>
+                </div>
 
-    <h1 class="text-2xl font-bold mb-4">Inventory Items</h1>
-
-    <!-- SEARCH -->
-    <form method="GET" action="/inventory" class="mb-4 flex gap-2">
-        <input type="text" name="search"
-            class="border p-2 rounded w-64"
-            placeholder="Search..."
-            value="{{ $search }}">
-
-        <button class="bg-blue-500 text-white px-4 py-2 rounded">Search</button>
-        <a href="/inventory" class="bg-gray-500 text-white px-4 py-2 rounded">Reset</a>
-    </form>
-
-    <!-- ADD ITEM -->
-    <div class="bg-white shadow rounded p-4 mb-6">
-        <h2 class="font-semibold mb-3">Add Item</h2>
-
-        <form method="POST" action="/inventory">
-            @csrf
-
-            <div class="grid grid-cols-4 gap-3">
-                <input name="category" placeholder="Category" class="border p-2 rounded">
-                <input name="part_name" placeholder="Part Name" class="border p-2 rounded">
-                <input name="brand" placeholder="Brand" class="border p-2 rounded">
-                <input name="model" placeholder="Model" class="border p-2 rounded">
-
-                <input name="quantity" type="number" placeholder="Quantity" class="border p-2 rounded">
-                <input name="notes" placeholder="Notes" class="border p-2 rounded">
-                <input name="price" type="number" placeholder="Price" class="border p-2 rounded">
+                <!-- SEARCH -->
+                <form method="GET" action="/inventory" class="flex gap-2">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" name="search"
+                            class="pl-10 pr-4 py-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 shadow-sm w-64"
+                            placeholder="Search parts..."
+                            value="{{ $search }}">
+                    </div>
+                    <button class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition-colors">Search</button>
+                    @if($search)
+                        <a href="/inventory" class="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-colors">Clear</a>
+                    @endif
+                </form>
             </div>
 
-            <button class="bg-green-600 text-white px-4 py-2 rounded mt-3">
-                Add Item
-            </button>
-        </form>
-    </div>
+            <!-- ADD ITEM -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Add New Item
+                </h2>
 
-    <!-- TABLE -->
-    <div class="bg-white shadow rounded overflow-hidden">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="p-3">#</th>
-                    <th class="p-3">Category</th>
-                    <th class="p-3">Part</th>
-                    <th class="p-3">Brand</th>
-                    <th class="p-3">Model</th>
-                    <th class="p-3">Qty</th>
-                    <th class="p-3">Notes</th>
-                    <th class="p-3">Price</th>
-                    <th class="p-3">Action</th>
-                </tr>
-            </thead>
+                <form method="POST" action="/inventory">
+                    @csrf
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <input name="category" placeholder="Category (e.g. Engine)" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="part_name" placeholder="Part Name" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="brand" placeholder="Brand" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="model" placeholder="Motorcycle Model" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        
+                        <input name="quantity" type="number" placeholder="Quantity" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="price" type="number" step="0.01" placeholder="Price (₱)" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="notes" placeholder="Notes (Optional)" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 lg:col-span-2">
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button class="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 transition-colors active:scale-[0.98]">
+                            Save Item to Catalog
+                        </button>
+                    </div>
+                </form>
+            </div>
 
-            <tbody>
+            <!-- GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($items as $item)
-                <tr class="border-t">
-                    <td class="p-3">{{ $loop->iteration }}</td>
-                    <td class="p-3">{{ $item->category }}</td>
-                    <td class="p-3">{{ $item->part_name }}</td>
-                    <td class="p-3">{{ $item->brand }}</td>
-                    <td class="p-3">{{ $item->model }}</td>
-                    <td class="p-3">{{ $item->quantity }}</td>
-                    <td class="p-3">{{ $item->notes }}</td>
-                    <td class="p-3">₱{{ number_format($item->price, 2) }}</td>
-                    <td class="p-3 flex gap-2">
-                        <a href="/inventory/{{ $item->id }}/edit"
-                           class="bg-yellow-500 text-white px-2 py-1 rounded text-xs">
-                           Edit
-                        </a>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow relative p-5 flex flex-col justify-between">
+                    
+                    <!-- Top section: Title, Brand, Category -->
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight">{{ $item->part_name }}</h3>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 shrink-0 ml-2">
+                                {{ $item->category }}
+                            </span>
+                        </div>
+                        
+                        <p class="text-sm text-gray-500 mb-2">
+                            {{ $item->brand }} • {{ $item->model }}
+                        </p>
+                        
+                        @if($item->notes)
+                            <p class="text-xs text-gray-400 italic mb-4 line-clamp-2">"{{ $item->notes }}"</p>
+                        @endif
+                    </div>
+                    
+                    <!-- Bottom section: Price, Stock, Actions -->
+                    <div class="mt-auto">
+                        <div class="flex justify-between items-end mb-4">
+                            <div>
+                                <p class="text-xs text-gray-400 mb-0.5">Price</p>
+                                <p class="font-extrabold text-gray-900 text-xl">₱{{ number_format($item->price, 2) }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-400 mb-0.5">Stock</p>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold 
+                                    {{ $item->quantity <= 0 ? 'bg-red-100 text-red-800' : ($item->quantity <= ($item->low_stock_threshold ?? 5) ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800') }}">
+                                    {{ $item->quantity }}
+                                </span>
+                            </div>
+                        </div>
 
-                        <form method="POST" action="/inventory/{{ $item->id }}">
-                            @csrf
-                            @method('DELETE')
-                            <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">
-                                Delete
-                            </button>
-                        </form>
-                    </td>
-                </tr>
+                        <div class="flex gap-2 pt-4 border-t border-gray-100">
+                            <a href="/inventory/{{ $item->id }}/edit" class="flex-1 text-center bg-gray-50 hover:bg-indigo-50 text-gray-600 hover:text-indigo-600 font-semibold py-2 rounded-xl transition-colors text-sm">
+                                Edit
+                            </a>
+                            <form method="POST" action="/inventory/{{ $item->id }}" class="flex-1" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                @csrf
+                                @method('DELETE')
+                                <button class="w-full text-center bg-gray-50 hover:bg-red-50 text-gray-600 hover:text-red-600 font-semibold py-2 rounded-xl transition-colors text-sm">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
                 @empty
-                <tr>
-                    <td colspan="9" class="p-4 text-center text-red-500">
-                        No items found
-                    </td>
-                </tr>
+                <div class="col-span-full bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center text-gray-500">
+                    <div class="flex flex-col items-center justify-center">
+                        <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                        <p class="font-medium text-gray-600">No inventory items found.</p>
+                        <p class="text-sm mt-1">Try a different search or add a new item above.</p>
+                    </div>
+                </div>
                 @endforelse
-            </tbody>
-        </table>
-    </div>
+            </div>
 
-</div>
+            <!-- PAGINATION -->
+            <div class="mt-8">
+                {{ $items->links() }}
+            </div>
+
+        </div>
+    </div>
 </x-app-layout>

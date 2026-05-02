@@ -13,9 +13,7 @@ class InventoryController extends Controller
 
 public function index(Request $request)
 {
-    if (Auth::user()->role !== 'owner') {
-        abort(403);
-    }
+
 
     $search = $request->search;
 
@@ -25,16 +23,14 @@ public function index(Request $request)
               ->orWhere('brand', 'like', "%$search%")
               ->orWhere('category', 'like', "%$search%");
         });
-    })->get();
+    })->paginate(12)->withQueryString();
 
     return view('inventory', compact('items', 'search'));
 }
 public function store(Request $request)
 {
 
-  if (Auth::user()->role !== 'owner') {
-        abort(403);
-    }
+
 
     $request->validate([
     'category' => 'required',
@@ -45,12 +41,12 @@ public function store(Request $request)
     'price' => 'required|numeric',
 ]);
     InventoryItem::create([
-        'category' => $request->category,
-        'part_name' => $request->part_name,
-        'brand' => $request->brand,
-        'model' => $request->model,
+        'category' => ucwords($request->category),
+        'part_name' => ucwords($request->part_name),
+        'brand' => ucwords($request->brand),
+        'model' => ucwords($request->model),
         'quantity' => $request->quantity,
-        'notes' => $request->notes,
+        'notes' => $request->notes ? ucfirst($request->notes) : null,
         'price' => $request->price,
     ]);
 
@@ -61,12 +57,12 @@ public function update(Request $request, $id)
     $item = InventoryItem::findOrFail($id);
 
     $item->update([
-        'category' => $request->category,
-        'part_name' => $request->part_name,
-        'brand' => $request->brand,
-        'model' => $request->model,
+        'category' => ucwords($request->category),
+        'part_name' => ucwords($request->part_name),
+        'brand' => ucwords($request->brand),
+        'model' => ucwords($request->model),
         'quantity' => $request->quantity,
-        'notes' => $request->notes,
+        'notes' => $request->notes ? ucfirst($request->notes) : null,
         'price' => $request->price,
     ]);
 
@@ -83,6 +79,14 @@ public function edit($id)
 {
     $item = InventoryItem::findOrFail($id);
     return view('edit', compact('item'));
+}
+
+public function lowStock()
+{
+
+    // Fetch items where quantity is less than or equal to low_stock_threshold
+    $lowStockItems = InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->get();
+    return view('low_stock', compact('lowStockItems'));
 }
 
 }

@@ -1,127 +1,152 @@
 <x-app-layout>
-    <div class="p-6">
+    <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+        
+        <div class="max-w-7xl mx-auto">
+            <!-- Header Section -->
+            <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+                        <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Track Repairs
+                    </h1>
+                    <p class="mt-2 text-sm text-gray-500">Manage service jobs, update repair statuses, and collect payments.</p>
+                </div>
 
-        <h2 class="text-xl font-bold mb-4">Track Repairs</h2>
+                <!-- FILTERS -->
+                <form method="GET" class="flex flex-wrap gap-3">
+                    <div class="relative">
+                        <select name="status" onchange="this.form.submit()" class="appearance-none pl-4 pr-10 py-2.5 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 shadow-sm text-sm font-medium text-gray-700 bg-white">
+                            <option value="">All Statuses</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>In Progress</option>
+                            <option value="done" {{ request('status') == 'done' ? 'selected' : '' }}>Completed</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
 
-        <form method="POST" action="/repairs" class="mb-6 flex flex-wrap gap-3 items-end">
-            @csrf
+            <!-- ADD REPAIR FORM -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    New Repair Job
+                </h2>
 
-            <div> <label class="text-sm">Customer</label> <input name="customer_name" placeholder="Customer Name"
-                    class="border p-2 rounded w-48"> </div>
-            <div> <label class="text-sm">Bike</label> <input name="bike_model" placeholder="Bike Model"
-                    class="border p-2 rounded w-40"> </div>
-            <div> <label class="text-sm">Issue</label> <input name="issue" placeholder="Issue"
-                    class="border p-2 rounded w-52"> </div>
-            <div> <label class="text-sm">Cost</label> <input name="cost" type="number" step="0.01"
-                    class="border p-2 rounded w-32"> </div> <button
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"> Add </button>
-        </form>
+                <form method="POST" action="/repairs">
+                    @csrf
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <input name="customer_name" placeholder="Customer Name" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="bike_model" placeholder="Bike Model" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="issue" placeholder="Reported Issue" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 lg:col-span-2" required>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 font-medium">₱</span>
+                            </div>
+                            <input name="cost" type="number" step="0.01" placeholder="Est. Cost" class="pl-8 border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 w-full" required>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button class="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 transition-colors active:scale-[0.98]">
+                            Add Repair Job
+                        </button>
+                    </div>
+                </form>
+            </div>
 
-        <form method="GET" class="mb-4 flex gap-2">
-            <select name="status" onchange="this.form.submit()"
-                class="w-48 border border-gray-300 bg-white text-gray-800 px-3 py-2 rounded">
-                <option value="">All</option>
-                <option value="pending">Pending</option>
-                <option value="ongoing">Ongoing</option>
-                <option value="done">Done</option>
-            </select>
-
-            <div class="relative inline-block">
-                <select class="w-48 border border-gray-300 bg-white text-gray-800 px-3 py-2 rounded">
-                    <option>Payment</option>
-                    <option>Paid</option>
-                    <option>Unpaid</option>
-                </select>
-
-                <!-- SVG arrow -->
-                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-600">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
+            <!-- TABLE -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-100 text-xs tracking-wider uppercase text-gray-500">
+                                <th class="p-4 font-semibold">Job Details</th>
+                                <th class="p-4 font-semibold">Issue</th>
+                                <th class="p-4 font-semibold text-center">Status</th>
+                                <th class="p-4 font-semibold">Cost</th>
+                                <th class="p-4 font-semibold text-center">Payment</th>
+                                <th class="p-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50 text-sm">
+                            @forelse($repairs as $repair)
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="p-4 align-top">
+                                    <div class="font-bold text-gray-900">{{ $repair->customer_name }}</div>
+                                    <div class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                        {{ $repair->bike_model }}
+                                    </div>
+                                </td>
+                                <td class="p-4 align-top text-gray-600">
+                                    {{ $repair->issue }}
+                                </td>
+                                <td class="p-4 align-top text-center">
+                                    <form method="POST" action="/repairs/{{ $repair->id }}">
+                                        @csrf
+                                        @method('PUT')
+                                        <select name="status" onchange="this.form.submit()" 
+                                                class="text-xs font-bold pl-3 pr-8 py-1 rounded-full border-0 focus:ring-0 cursor-pointer text-center appearance-none
+                                                {{ $repair->status == 'pending' ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : '' }}
+                                                {{ $repair->status == 'ongoing' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' : '' }}
+                                                {{ $repair->status == 'done' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : '' }}">
+                                            <option value="pending" {{ $repair->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                            <option value="ongoing" {{ $repair->status == 'ongoing' ? 'selected' : '' }}>In Progress</option>
+                                            <option value="done" {{ $repair->status == 'done' ? 'selected' : '' }}>Completed</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td class="p-4 align-top font-bold text-gray-900">
+                                    ₱{{ number_format($repair->cost ?? 0, 2) }}
+                                </td>
+                                <td class="p-4 align-top text-center">
+                                    @if(!$repair->is_paid)
+                                        <form method="POST" action="/repairs/{{ $repair->id }}/pay" onsubmit="return confirm('Confirm payment received?');">
+                                            @csrf
+                                            @method('PUT')
+                                            <button class="inline-flex items-center gap-1 bg-white border border-gray-200 text-gray-600 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-1 rounded-full text-xs font-bold transition-colors">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                Collect
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 text-emerald-600 text-xs font-extrabold bg-emerald-50 px-3 py-1 rounded-full">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            PAID
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="p-4 align-top text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="/repairs/{{ $repair->id }}/receipt" title="Print Receipt" class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                        </a>
+                                        <form method="POST" action="/repairs/{{ $repair->id }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this repair record?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button title="Delete Record" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="p-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+                                        <p class="font-medium text-gray-600">No repairs found.</p>
+                                        <p class="text-sm mt-1">Add a new repair job or adjust your filters.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <button class="bg-blue-700 text-blue px-4 py-2 rounded hover:bg-gray-800">
-                Filter
-            </button>
-        </form>
-
-        <div class="bg-white shadow rounded-lg overflow-hidden">
-            <table class="w-full text-sm text-left">
-                <tr class="bg-gray-100 text-gray-700">
-                    <th class="p-3">Customer</th>
-                    <th class="p-3">Bike</th>
-                    <th class="p-3">Issue</th>
-                    <th class="p-3">Status</th>
-                    <th class="p-3">Cost</th>
-                    <th class="p-3">Action</th>
-                </tr> @foreach($repairs as $repair) <tr class="border-t hover:bg-gray-50">
-                            <td class="p-3">{{ $repair->customer_name }}</td>
-                            <td class="p-3">{{ $repair->bike_model }}</td>
-                            <td class="p-3">{{ $repair->issue }}</td>
-                            <td class="p-3">
-                                <form method="POST" action="/repairs/{{ $repair->id }}">
-                                    @csrf
-                                    @method('PUT')
-
-                                   <select name="status" onchange="this.form.submit()"
-    class="px-3 py-1 rounded text-white text-xs border-0
-    {{ $repair->status == 'pending' ? 'bg-yellow-500' : '' }}
-    {{ $repair->status == 'ongoing' ? 'bg-blue-500' : '' }}
-    {{ $repair->status == 'done' ? 'bg-green-600' : '' }}">
-
-    <option value="pending" {{ $repair->status == 'pending' ? 'selected' : '' }} class="text-black bg-white">
-        Pending
-    </option>
-
-    <option value="ongoing" {{ $repair->status == 'ongoing' ? 'selected' : '' }} class="text-black bg-white">
-        Ongoing
-    </option>
-
-    <option value="done" {{ $repair->status == 'done' ? 'selected' : '' }} class="text-black bg-white">
-        Done
-    </option>
-
-</select>
-
-                                </form>
-                            </td>
-                            <td class="p-3">₱{{ number_format($repair->cost ?? 0, 2) }}</td>
-                            <td class="p-3 flex gap-2">
-
-                                @if(!$repair->is_paid)
-                                    <form method="POST" action="/repairs/{{ $repair->id }}/pay">
-                                        @csrf
-                                        @method('PUT')
-                                        <button class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600">
-                                            Pay
-                                        </button>
-                                    </form>
-                                @else
-                                    <span class="text-green-600 text-xs font-bold">Paid</span>
-                                @endif
-
-                                <a href="/repairs/{{ $repair->id }}/receipt"
-                                    class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
-                                    Receipt
-                                </a>
-
-                                <form method="POST" action="/repairs/{{ $repair->id }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">
-                                        Delete
-                                    </button>
-                                </form>
-
-
-                            </td>
-
-                </tr> @endforeach
-
-            </table>
         </div>
-
-
     </div>
 </x-app-layout>

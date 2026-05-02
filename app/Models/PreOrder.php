@@ -13,5 +13,7 @@ class PreOrder extends Model
     'quantity',
     'down_payment',
     'status',
+    'price',
+    'total',
 ];
 }

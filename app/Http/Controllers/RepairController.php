@@ -28,6 +28,12 @@ public function index(Request $request)
 
 public function store(Request $request)
 {
+    $request->merge([
+        'customer_name' => ucwords($request->customer_name),
+        'bike_model' => $request->bike_model ? ucwords($request->bike_model) : null,
+        'issue' => $request->issue ? ucfirst($request->issue) : null,
+    ]);
+
     Repair::create($request->all());
     return back()->with('success', 'Repair added!');
 }

@@ -1,20 +1,32 @@
 <x-app-layout>
 <div class="p-6 max-w-7xl mx-auto">
 
-    <!-- 🔍 SEARCH BAR -->
-    <form method="GET" action="/browse" class="mb-6 flex gap-2">
-        <input 
-            type="text" 
-            name="search" 
-            value="{{ request('search') }}"
-            placeholder="Search parts..." 
-            class="w-full border p-3 rounded-lg shadow-sm focus:ring focus:ring-blue-200"
-        >
+    <!-- HEADER / SEARCH BAR -->
+    <div class="mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <form method="GET" action="/browse" class="w-full md:flex-1 flex gap-2">
+            <input 
+                type="text" 
+                name="search" 
+                value="{{ request('search') }}"
+                placeholder="Search parts..." 
+                class="w-full border p-3 rounded-lg shadow-sm focus:ring focus:ring-blue-200"
+            >
 
-        <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-            Search
-        </button>
-    </form>
+            <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 shadow">
+                Search
+            </button>
+        </form>
+
+        <a href="/cart" class="w-full md:w-auto flex items-center justify-center gap-2 bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-6 py-2.5 rounded-lg shadow font-bold transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            View Cart
+            @if(session()->has('cart') && count(session('cart')) > 0)
+                <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-1">
+                    {{ count(session('cart')) }}
+                </span>
+            @endif
+        </a>
+    </div>
 
     <div class="grid grid-cols-4 gap-6">
 
@@ -55,7 +67,8 @@
         </form>
 
         <!-- 🛒 PRODUCTS -->
-        <div class="col-span-3 grid grid-cols-3 gap-6">
+        <div class="col-span-3">
+            <div class="grid grid-cols-3 gap-6">
 
             @forelse($items as $item)
                 <div class="bg-white rounded-xl shadow hover:shadow-lg transition p-4">
@@ -80,9 +93,8 @@
                         ₱{{ number_format($item->price, 2) }}
                     </p>
 
-                    <form method="POST" action="/cart/add" class="mt-3">
+                    <form method="POST" action="/cart/add/{{ $item->id }}" class="mt-3">
                         @csrf
-                        <input type="hidden" name="id" value="{{ $item->id }}">
                         @if($item->quantity == 0)
     <a href="/preorder/{{ $item->id }}" class="btn btn-warning w-full">
         Pre-order
@@ -97,9 +109,30 @@
                 <p>No items found.</p>
             @endforelse
 
+            </div>
+
+            <div class="mt-8">
+                {{ $items->links() }}
+            </div>
+
         </div>
 
     </div>
 
 </div>
+
+    @if(session('success'))
+    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-2"
+         class="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-xl shadow-xl flex items-center gap-3 z-50">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span class="font-semibold">{{ session('success') }}</span>
+    </div>
+    @endif
+
 </x-app-layout>
