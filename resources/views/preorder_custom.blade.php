@@ -3,7 +3,7 @@
 
     <h2 class="text-xl font-bold mb-4">Custom Pre-order</h2>
 
-    <form method="POST" action="/preorder-custom">
+    <form method="POST" action="/preorder/store">
         @csrf
 
         <div class="mb-3">

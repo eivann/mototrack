@@ -17,49 +17,68 @@ class SaleController extends Controller
 public function storeSale(Request $request)
 {
     $request->validate([
-        'cart_data' => 'required',
+        'cart_data' => 'required|json',
         'amount_tendered' => 'required|numeric|min:0',
     ]);
 
     $cartItems = json_decode($request->cart_data, true);
     
-    if (empty($cartItems)) {
+    if (empty($cartItems) || !is_array($cartItems)) {
         return back()->with('error', 'Cart is empty!');
     }
 
-    $transactionReference = 'TRX-' . strtoupper(uniqid());
-    $totalAmount = 0;
-
-    // First pass: validate all stock
+    // Validate each cart item structure
     foreach ($cartItems as $cartItem) {
-        $item = InventoryItem::find($cartItem['id']);
-        if (!$item || $cartItem['quantity'] > $item->quantity) {
-            return back()->with('error', 'Not enough stock for ' . ($item ? $item->part_name : 'Unknown item'));
+        if (!isset($cartItem['id'], $cartItem['quantity'])
+            || !is_numeric($cartItem['id'])
+            || !is_numeric($cartItem['quantity'])
+            || $cartItem['quantity'] < 1) {
+            return back()->with('error', 'Invalid cart data.');
         }
-        $totalAmount += ($item->price * $cartItem['quantity']);
     }
 
-    $change = $request->amount_tendered - $totalAmount;
+    $transactionReference = 'TRX-' . strtoupper(uniqid());
 
-    // Second pass: process sales
-    foreach ($cartItems as $cartItem) {
-        $item = InventoryItem::find($cartItem['id']);
-        $total = $item->price * $cartItem['quantity'];
+    try {
+        $totalAmount = \Illuminate\Support\Facades\DB::transaction(function () use ($cartItems, $transactionReference, $request) {
+            $totalAmount = 0;
 
-        Sale::create([
-            'inventory_item_id' => $item->id,
-            'quantity' => $cartItem['quantity'],
-            'price' => $item->price, 
-            'total_price' => $total,
-            'transaction_reference' => $transactionReference,
-            'amount_tendered' => $request->amount_tendered,
-            'change' => $change
-        ]);
+            // Validate all stock with locks
+            foreach ($cartItems as $cartItem) {
+                $item = InventoryItem::lockForUpdate()->find($cartItem['id']);
+                if (!$item || $cartItem['quantity'] > $item->quantity) {
+                    throw new \Exception('Not enough stock for ' . ($item ? $item->part_name : 'Unknown item'));
+                }
+                $totalAmount += ($item->price * $cartItem['quantity']);
+            }
 
-        $item->decrement('quantity', $cartItem['quantity']);
+            $change = $request->amount_tendered - $totalAmount;
 
-        // Check for low stock and send alert if necessary
-        \App\Services\SmsService::checkLowStockAlert($item);
+            // Process sales
+            foreach ($cartItems as $cartItem) {
+                $item = InventoryItem::find($cartItem['id']);
+                $total = $item->price * $cartItem['quantity'];
+
+                Sale::create([
+                    'inventory_item_id' => $item->id,
+                    'quantity' => $cartItem['quantity'],
+                    'price' => $item->price, 
+                    'total_price' => $total,
+                    'transaction_reference' => $transactionReference,
+                    'amount_tendered' => $request->amount_tendered,
+                    'change' => $change
+                ]);
+
+                $item->decrement('quantity', $cartItem['quantity']);
+
+                // Check for low stock and send alert if necessary
+                \App\Services\SmsService::checkLowStockAlert($item);
+            }
+
+            return $totalAmount;
+        });
+    } catch (\Exception $e) {
+        return back()->with('error', $e->getMessage());
     }
 
     return redirect("/sales/{$transactionReference}/receipt")->with('success', 'Transaction completed successfully!');

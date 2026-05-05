@@ -62,9 +62,16 @@ class CustomerController extends Controller
 {
     $item = \App\Models\InventoryItem::findOrFail($id);
 
+    if ($item->quantity <= 0) {
+        return redirect()->back()->with('error', 'Item is currently out of stock.');
+    }
+
     $cart = session()->get('cart', []);
 
     if (isset($cart[$id])) {
+        if ($cart[$id]['quantity'] + 1 > $item->quantity) {
+            return redirect()->back()->with('error', 'Cannot add more. Stock limit reached.');
+        }
         $cart[$id]['quantity']++;
     } else {
         $cart[$id] = [
@@ -113,6 +120,12 @@ class CustomerController extends Controller
         $cart = session()->get('cart');
 
         if (isset($cart[$id])) {
+            $inventory = InventoryItem::find($id);
+            
+            if ($inventory && $request->quantity > $inventory->quantity) {
+                return back()->with('error', 'Cannot exceed available stock for ' . $inventory->part_name);
+            }
+
             $cart[$id]['quantity'] = $request->quantity;
             session()->put('cart', $cart);
         }
@@ -129,39 +142,68 @@ class CustomerController extends Controller
         }
 
         $transactionReference = 'TRX-' . strtoupper(uniqid());
-        
-        // Calculate grand total first to compute change correctly
-        $grandTotal = 0;
-        foreach ($cart as $id => $item) {
-            $grandTotal += $item['price'] * $item['quantity'];
-        }
+        $paymentMethod = $request->input('payment_method', 'cash');
 
-        $amountTendered = $request->input('amount_tendered');
-        $change = $amountTendered !== null ? ($amountTendered - $grandTotal) : null;
+        try {
+            $grandTotal = \Illuminate\Support\Facades\DB::transaction(function () use ($cart, $transactionReference, $request, $paymentMethod) {
+                $grandTotal = 0;
 
-        foreach ($cart as $id => $item) {
-            $inventory = InventoryItem::find($id);
+                foreach ($cart as $id => $item) {
+                    // Lock the row to prevent race conditions
+                    $inventory = InventoryItem::lockForUpdate()->find($id);
 
-            if (!$inventory || $inventory->quantity < $item['quantity']) {
-                return back()->with('error', 'Stock issue detected!');
-            }
+                    if (!$inventory || $inventory->quantity < $item['quantity']) {
+                        throw new \Exception('Stock issue detected for: ' . ($inventory ? $inventory->part_name : 'Unknown item'));
+                    }
 
-            $total = $item['price'] * $item['quantity'];
+                    // Use the DATABASE price, not the session price
+                    $total = $inventory->price * $item['quantity'];
+                    $grandTotal += $total;
 
-            Sale::create([
-                'inventory_item_id' => $id,
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'total_price' => $total,
-                'transaction_reference' => $transactionReference,
-                'amount_tendered' => $amountTendered,
-                'change' => $change,
-            ]);
+                    Sale::create([
+                        'inventory_item_id' => $id,
+                        'quantity' => $item['quantity'],
+                        'price' => $inventory->price,
+                        'total_price' => $total,
+                        'transaction_reference' => $transactionReference,
+                        'amount_tendered' => $paymentMethod === 'gcash' ? $grandTotal : $request->input('amount_tendered'),
+                        'change' => $paymentMethod === 'gcash' ? 0 : (($request->input('amount_tendered') ?? 0) - $grandTotal),
+                    ]);
 
-            $inventory->decrement('quantity', $item['quantity']);
+                    $inventory->decrement('quantity', $item['quantity']);
+                }
+
+                return $grandTotal;
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
 
         session()->forget('cart');
+        session()->put('last_trx', $transactionReference);
+
+        $amountTendered = $paymentMethod === 'gcash' ? $grandTotal : $request->input('amount_tendered');
+
+        if ($paymentMethod === 'gcash') {
+            try {
+                \Xendit\Configuration::setXenditKey(config('services.xendit.secret_key'));
+                $apiInstance = new \Xendit\Invoice\InvoiceApi();
+                $create_invoice_request = new \Xendit\Invoice\CreateInvoiceRequest([
+                    'external_id' => $transactionReference,
+                    'description' => 'MotoTrack Order ' . $transactionReference,
+                    'amount' => $grandTotal,
+                    'invoice_duration' => 86400,
+                    'currency' => 'PHP',
+                    'payment_methods' => ['GCASH'],
+                    'success_redirect_url' => url('/receiptcart?trx=' . $transactionReference),
+                    'failure_redirect_url' => url('/cart'),
+                ]);
+                $result = $apiInstance->createInvoice($create_invoice_request);
+                return redirect($result['invoice_url']);
+            } catch (\Exception $e) {
+                return redirect('/receiptcart')->with('error', 'Order saved but GCash failed: ' . $e->getMessage());
+            }
+        }
 
         return redirect('/receiptcart')->with('success', 'Order placed successfully!');
     }
@@ -191,7 +233,7 @@ class CustomerController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect('/customer-dashboard')->with('success', 'Pre-order submitted!');
+        return redirect('/customer-dashboard')->with('success', 'Pre-order submitted successfully!');
     }
 
     public function preorderParts()
@@ -206,36 +248,20 @@ class CustomerController extends Controller
         return view('preorder_custom');
     }
 
-    public function storeCustomPreorder(Request $request)
-    {
-        $request->validate([
-            'part_name' => 'required|string|max:255',
-            'model' => 'nullable|string|max:255',
-            'quantity' => 'required|integer|min:1',
-            'down_payment' => 'required|numeric|min:0',
-        ]);
-
-        PreOrder::create([
-            'customer_name' => ucwords(auth()->user()->name),
-            'part_name' => ucwords($request->part_name),
-            'model' => $request->model ? ucwords($request->model) : null,
-            'quantity' => $request->quantity,
-            'down_payment' => $request->down_payment,
-            'status' => 'pending',
-        ]);
-
-        return redirect('/customer-dashboard')->with('success', 'Custom pre-order submitted!');
-    }
-
     public function increase($id)
     {
         $cart = session()->get('cart');
 
         if (isset($cart[$id])) {
-            $cart[$id]['quantity']++;
-        }
+            $inventory = InventoryItem::find($id);
+            
+            if ($inventory && $cart[$id]['quantity'] + 1 > $inventory->quantity) {
+                return back()->with('error', 'Cannot exceed available stock for ' . $inventory->part_name);
+            }
 
-        session()->put('cart', $cart);
+            $cart[$id]['quantity']++;
+            session()->put('cart', $cart);
+        }
 
         return back();
     }
@@ -258,14 +284,21 @@ class CustomerController extends Controller
     }
 
 
-    public function receipt()
+    public function receipt(Request $request)
     {
-        $orders = PreOrder::where('customer_name', auth()->user()->name)
-            ->latest()
-            ->take(10)
-            ->get();
+        $trx = $request->query('trx') ?? session('last_trx');
 
-        return view('receiptcart', compact('orders'));
+        if (!$trx) {
+            return redirect('/customer-dashboard')->with('error', 'No recent receipt found.');
+        }
+
+        $orders = Sale::with('item')->where('transaction_reference', $trx)->get();
+
+        if ($orders->isEmpty()) {
+            return redirect('/customer-dashboard')->with('error', 'Receipt not found.');
+        }
+
+        return view('receiptcart', compact('orders', 'trx'));
     }
 
     public function searchParts(Request $request)

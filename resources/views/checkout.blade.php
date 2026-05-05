@@ -65,8 +65,16 @@
             @csrf
             
             <div class="flex items-center gap-3">
+                <label class="font-semibold text-gray-700">Payment Method:</label>
+                <select name="payment_method" class="border rounded-lg p-2 w-48 shadow-sm focus:ring focus:ring-green-200" required>
+                    <option value="cash">Pay In Store (Cash)</option>
+                    <option value="gcash">Pay Now with GCash</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-3">
                 <label class="font-semibold text-gray-700">Down Payment (₱):</label>
-                <input type="number" name="amount_tendered" step="0.01" min="0" class="border rounded-lg p-2 w-48 shadow-sm focus:ring focus:ring-green-200" placeholder="Optional...">
+                <input type="number" name="amount_tendered" step="0.01" min="0" class="border rounded-lg p-2 w-48 shadow-sm focus:ring focus:ring-green-200" placeholder="Optional (Cash only)">
             </div>
 
             <button class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow">

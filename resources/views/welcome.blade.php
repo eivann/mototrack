@@ -1,490 +1,304 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MotoTrack</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-<script src="https://unpkg.com/lucide@latest"></script>
-
+<title>MotoTrack — Edmar Motorcycle Parts & Accessories</title>
+<meta name="description" content="Your trusted motorcycle parts shop in Pandi, Bulacan since 2009. Browse parts, check compatibility, and pre-order online.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<style>
-body {
-    font-family: 'Inter', sans-serif;
-    background: radial-gradient(circle at top, #eef2ff, #f8fafc);
-}
-
-.section {
-    padding: 100px 40px;
-}
-
-.container {
-    max-width: 1200px;
-    margin: auto;
-}
-
-.card {
-    background: white;
-    border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-}
-.card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.08);
-}
-
-.btn {
-    border-radius: 14px;
-    padding: 12px 22px;
-    font-weight: 500;
-    transition: 0.25s;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg,#2563eb,#4f46e5);
-    color: white;
-}
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(37,99,235,0.3);
-}
-
-.glass {
-    backdrop-filter: blur(14px);
-    background: rgba(255,255,255,0.7);
-}
-.btn-outline {
-    border: 1px solid #4f46e5;
-    color: #4f46e5;
-    background: transparent;
-}
-.btn-outline:hover {
-    background: #4f46e5;
-    color: white;
-}
-</style>
-
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="stylesheet" href="{{ asset('css/landing.css') }}">
 </head>
-
 <body>
 
-<!-- NAVBAR -->
-
-<nav class="glass border-b flex justify-between items-center px-10 py-5 sticky top-0 z-50">
-
-<div class="flex items-center gap-3">
-<div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white w-10 h-10 flex items-center justify-center rounded-xl font-bold">M</div>
-<div>
-<h1 class="font-semibold">MOTOTRACK</h1>
-<p class="text-xs text-gray-500">Edmar Motorcycle Parts</p>
-</div>
-</div>
-
-<div class="hidden md:flex gap-8 text-sm text-gray-600">
-<a href="#">Home</a>
-<a href="#about">About</a>
-<a href="#compat">Compatibility</a>
-<a href="#preorder">Pre-Order</a>
-<a href="#contact">Contact</a>
-</div>
-
-<div class="flex gap-3">
-@guest
-    <a href="{{ route('login') }}" class="btn btn-primary">Sign In</a>
-    <a href="{{ route('register') }}" class="btn btn-outline">Sign Up</a>
-@endguest
-
-@auth
-    <a href="/customer-dashboard" class="btn btn-primary">Dashboard</a>
-@endauth
-</div>
+{{-- NAVBAR --}}
+<nav class="land-nav" id="navbar">
+    <div class="nav-brand">
+        <div class="nav-logo">M</div>
+        <div><h1>MOTOTRACK</h1><p>Edmar Motorcycle Parts</p></div>
+    </div>
+    <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#features">Services</a></li>
+        <li><a href="#compat">Compatibility</a></li>
+        <li><a href="#preorder">Pre-Order</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" title="Toggle Light/Dark Mode">
+            <i data-lucide="sun" id="themeIcon"></i>
+        </button>
+        @guest
+            <a href="{{ route('login') }}" class="btn btn-ghost">Sign In</a>
+            <a href="{{ route('register') }}" class="btn btn-glow">Get Started</a>
+        @endguest
+        @auth
+            <a href="/customer-dashboard" class="btn btn-glow">Dashboard</a>
+        @endauth
+    </div>
 </nav>
 
-<!-- HERO -->
-
-<section class="section container grid md:grid-cols-2 gap-16 items-center">
-
-<div>
-<span class="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm">
-Serving Pandi since 2009
-</span>
-
-<h1 class="text-5xl font-extrabold mt-6 leading-tight">
-Your <span class="text-blue-600">Trusted Partner</span><br>
-for Motorcycle Parts
-</h1>
-
-<p class="text-gray-600 mt-4">
-Find parts, check compatibility instantly, and get expert services.
-</p>
-
-<div class="flex gap-4 mt-6">
-<a href="browse" class="btn btn-primary">Browse Products</a>
-<a href="#compat" class="btn border border-blue-600 text-blue-600">Check Compatibility</a>
-</div>
-
-</div>
-
-<div class="relative">
-<div class="bg-white/50 backdrop-blur-xl h-[400px] rounded-3xl flex items-center justify-center">
-<i data-lucide="package" class="w-16 h-16 text-blue-400"></i>
-</div>
-
-<div class="absolute bottom-5 left-5 bg-white p-4 rounded-xl shadow flex gap-3">
-<div class="bg-green-100 w-8 h-8 flex items-center justify-center rounded-full">✔</div>
-<div>
-<p class="text-sm text-gray-500">Open Daily</p>
-<p class="font-semibold">6AM - 6PM</p>
-</div>
-</div>
-</div>
-
-</section>
-
-<!-- ABOUT -->
-
-<section id="about" class="section container grid md:grid-cols-2 gap-16 items-center">
-
-<div class="bg-gradient-to-br from-blue-600 to-indigo-600 h-[350px] rounded-3xl flex items-center justify-center text-white text-5xl">
-🧰
-</div>
-
-<div>
-<h2 class="text-4xl font-bold">
-Your Trusted Motorcycle Partner Since 2009
-</h2>
-
-<p class="text-gray-600 mt-4">
-Serving Bulacan with trusted parts and expert service.
-</p>
-
-<div class="grid grid-cols-2 gap-6 mt-6 text-sm">
-<div class="flex gap-2"><i data-lucide="check-circle"></i>Quality Parts</div>
-<div class="flex gap-2"><i data-lucide="users"></i>Expert Team</div>
-<div class="flex gap-2"><i data-lucide="zap"></i>Fast Service</div>
-<div class="flex gap-2"><i data-lucide="dollar-sign"></i>Fair Pricing</div>
-</div>
-
-</div>
-
-</section>
-
-<!-- FEATURES -->
-
-<section class="section container text-center">
-
-<h2 class="text-4xl font-bold">Everything You Need</h2>
-
-<div class="grid md:grid-cols-4 gap-6 mt-12">
-
-<div class="card p-6">
-<i data-lucide="box" class="text-blue-600 mb-3"></i>
-<p>Parts</p>
-</div>
-
-<div class="card p-6">
-<i data-lucide="search" class="text-blue-600 mb-3"></i>
-<p>Compatibility</p>
-</div>
-
-<div class="card p-6">
-<i data-lucide="wrench" class="text-blue-600 mb-3"></i>
-<p>Repairs</p>
-</div>
-
-<div class="card p-6">
-<i data-lucide="clipboard-check" class="text-blue-600 mb-3"></i>
-<p>Pre-order</p>
-</div>
-
-</div>
-
-</section>
-
-<!-- COMPATIBILITY -->
-
-<section id="compat" class="section container">
-
-<h2 class="text-4xl font-bold text-center">Find the Right Part</h2>
-
-<div class="card p-8 mt-10 max-w-xl mx-auto">
-
-<form method="GET" action="/compatibility">
-
-<input name="make" class="border p-3 w-full mb-3 rounded-lg" placeholder="Motorcycle Make">
-<input name="model" class="border p-3 w-full mb-3 rounded-lg" placeholder="Model">
-<input name="part" class="border p-3 w-full mb-3 rounded-lg" placeholder="Part">
-
-<button type="submit" class="btn btn-primary w-full">Check Compatibility</button>
-
-</form>
-
-</div>
-
-</section>
-
-<!-- PREORDER -->
-
-<!-- PREORDER -->
-
-<section id="preorder" class="section container grid md:grid-cols-2 gap-12 items-start">
-
-<!-- LEFT: FORM -->
-
-<div class="card p-8">
-<h3 class="text-xl font-semibold mb-6">Pre-Order Form</h3>
-
-<input class="border p-3 w-full mb-4 rounded-lg" placeholder="Customer Name">
-<input class="border p-3 w-full mb-4 rounded-lg" placeholder="Contact Number">
-
-<div class="grid grid-cols-2 gap-4 mb-4">
-<select class="border p-3 rounded-lg">
-<option>Select Make</option>
-</select>
-
-<select class="border p-3 rounded-lg">
-<option>Select Model</option>
-</select>
-</div>
-
-<form method="GET" action="/preorder-parts">
-
-<input class="border p-3 w-full mb-4 rounded-lg" placeholder="Part Name">
-<input class="border p-3 w-full mb-4 rounded-lg" placeholder="Quantity">
-
-<input class="border p-3 w-full mb-4 rounded-lg" placeholder="Down Payment (₱)">
-
-<textarea class="border p-3 w-full mb-6 rounded-lg" placeholder="Notes (optional)"></textarea>
-
-<div class="flex gap-3">
-<button class="btn btn-primary w-full">Submit Pre-Order</button>
-<button class="btn border w-24">Reset</button>
-</div>
-</form>
-</div>
-
-<!-- RIGHT SIDE -->
-
-<div class="space-y-6">
-
-<!-- HOW IT WORKS -->
-
-<div class="card p-6">
-<h3 class="text-lg font-semibold mb-6">How It Works</h3>
-
-<div class="space-y-5 text-sm">
-
-<div class="flex gap-4">
-<div class="bg-blue-600 text-white w-10 h-10 flex items-center justify-center rounded-full">
-<i data-lucide="box"></i>
-</div>
-<div>
-<p class="font-medium">1. Submit Pre-Order</p>
-<p class="text-gray-500">Fill out the form with your part details</p>
-</div>
-</div>
-
-<div class="flex gap-4">
-<div class="bg-blue-600 text-white w-10 h-10 flex items-center justify-center rounded-full">
-<i data-lucide="credit-card"></i>
-</div>
-<div>
-<p class="font-medium">2. Pay 50% Down Payment</p>
-<p class="text-gray-500">We’ll send GCash details via SMS</p>
-</div>
-</div>
-
-<div class="flex gap-4">
-<div class="bg-blue-600 text-white w-10 h-10 flex items-center justify-center rounded-full">
-<i data-lucide="clock"></i>
-</div>
-<div>
-<p class="font-medium">3. We Process Your Order</p>
-<p class="text-gray-500">Your part will be ordered and reserved</p>
-</div>
-</div>
-
-<div class="flex gap-4">
-<div class="bg-blue-600 text-white w-10 h-10 flex items-center justify-center rounded-full">
-<i data-lucide="smartphone"></i>
-</div>
-<div>
-<p class="font-medium">4. Pick Up & Pay Balance</p>
-<p class="text-gray-500">Pay remaining 50% on pickup</p>
-</div>
-</div>
-
-</div>
-</div>
-
-<!-- PAYMENT INFO -->
-
-<div class="p-6 rounded-2xl text-white shadow-xl"
-style="background: linear-gradient(135deg,#4f46e5,#9333ea,#ec4899);">
-
-<h3 class="text-lg font-semibold mb-5">Payment & Pickup Information</h3>
-
-<ul class="space-y-3 text-sm">
-
-<li class="flex gap-2 items-start">
-✔ <span><b>Pre-Order:</b> 50% down payment required via GCash</span>
-</li>
-
-<li class="flex gap-2 items-start">
-✔ <span><b>Available Products:</b> 100% payment required for checkout</span>
-</li>
-
-<li class="flex gap-2 items-start">
-✔ <span><b>Payment Method:</b> GCash only (details sent via SMS)</span>
-</li>
-
-<li class="flex gap-2 items-start">
-✔ <span><b>Delivery:</b> Pick up only at our shop in Pandi, Bulacan</span>
-</li>
-
-<li class="flex gap-2 items-start">
-✔ <span><b>Shop Hours:</b> Open daily from 6:00 AM to 6:00 PM</span>
-</li>
-
-</ul>
-
-<div class="mt-6 bg-white/20 p-4 rounded-xl text-xs">
-<strong>Note:</strong> After submitting your pre-order, we will contact you within 24 hours to confirm availability and provide GCash payment instructions.
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-
-<!-- CONTACT -->
-
-<section id="contact" class="section container grid md:grid-cols-2 gap-10">
-
-<div class="space-y-4">
-
-<div class="card p-5 flex gap-3 items-center">
-<i data-lucide="map-pin" class="text-blue-600"></i>
-<div>
-<p class="font-semibold">Location</p>
-<p class="text-sm text-gray-500">Pandi, Bulacan</p>
-</div>
-</div>
-
-<div class="card p-5 flex gap-3 items-center">
-<i data-lucide="phone" class="text-blue-600"></i>
-<div>
-<p class="font-semibold">Phone</p>
-<p class="text-sm text-gray-500">+63 XXX XXXX XXX</p>
-</div>
-</div>
-
-<div class="card p-5 flex gap-3 items-center">
-<i data-lucide="mail" class="text-blue-600"></i>
-<div>
-<p class="font-semibold">Email</p>
-<p class="text-sm text-gray-500">contact@email.com</p>
-</div>
-</div>
-
-</div>
-
-<div class="card flex items-center justify-center h-[300px]">
-@if(env('GOOGLE_MAPS_API_KEY'))
-    <iframe
-        width="100%"
-        height="100%"
-        style="border:0; border-radius: 24px;"
-        loading="lazy"
-        allowfullscreen
-        referrerpolicy="no-referrer-when-downgrade"
-        src="https://www.google.com/maps/embed/v1/place?key={{ env('GOOGLE_MAPS_API_KEY') }}&q=Edmar+Motorcycle+Parts,+Pandi,+Bulacan,+Philippines">
-    </iframe>
-@else
-    <div class="flex flex-col items-center justify-center text-center p-6 text-gray-500">
-        <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-        <p>Map will appear here once the API key is added.</p>
+{{-- HERO --}}
+<section class="hero" id="home">
+    <div class="hero-inner">
+        <div>
+            <div class="hero-badge"><span class="dot"></span> Serving Pandi, Bulacan since 2009</div>
+            <h1>Your <span>Trusted Partner</span> for Motorcycle Parts</h1>
+            <p class="hero-desc">Find genuine parts, check compatibility instantly, and get expert repair services — all in one place.</p>
+            <div class="hero-btns">
+                <a href="/browse" class="btn btn-glow"><i data-lucide="shopping-bag" style="width:18px;height:18px"></i> Browse Products</a>
+                <a href="#compat" class="btn btn-ghost"><i data-lucide="search" style="width:18px;height:18px"></i> Check Compatibility</a>
+            </div>
+        </div>
+        <div class="hero-img">
+            <img src="{{ asset('images/hero.png') }}" alt="Motorcycle Parts Shop">
+            <div class="hero-float">
+                <div class="icon">✔</div>
+                <div><p>Open Daily</p><strong>6:00 AM — 6:00 PM</strong></div>
+            </div>
+        </div>
     </div>
-@endif
-</div>
-
 </section>
 
-<!-- FOOTER -->
-<footer class="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 text-white pt-16 pb-8">
+{{-- STATS --}}
+<section class="stats fade-up">
+    <div class="stats-inner">
+        <div class="stat-card"><div class="stat-num">15+</div><div class="stat-label">Years of Service</div></div>
+        <div class="stat-card"><div class="stat-num">5,000+</div><div class="stat-label">Parts Available</div></div>
+        <div class="stat-card"><div class="stat-num">10K+</div><div class="stat-label">Happy Customers</div></div>
+        <div class="stat-card"><div class="stat-num">100%</div><div class="stat-label">Genuine Parts</div></div>
+    </div>
+</section>
 
-<div class="container mx-auto px-6 grid md:grid-cols-3 gap-10 text-left">
+{{-- FEATURES --}}
+<section class="section" id="features">
+    <div class="section-inner fade-up">
+        <div style="text-align:center">
+            <div class="section-tag"><i data-lucide="zap" style="width:14px;height:14px"></i> Our Services</div>
+            <h2 class="section-title">Everything You Need</h2>
+            <p class="section-desc" style="margin:0 auto">From parts to repairs, we've got your motorcycle covered with professional service and quality products.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feat-card">
+                <div class="feat-icon fi-blue"><i data-lucide="box" style="width:24px;height:24px"></i></div>
+                <h3>Quality Parts</h3>
+                <p>Wide selection of genuine motorcycle parts and accessories for all major brands.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon fi-purple"><i data-lucide="search" style="width:24px;height:24px"></i></div>
+                <h3>Smart Compatibility</h3>
+                <p>Instantly check which parts fit your motorcycle model with our smart search tool.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon fi-green"><i data-lucide="wrench" style="width:24px;height:24px"></i></div>
+                <h3>Expert Repairs</h3>
+                <p>Professional repair services by experienced mechanics with fast turnaround.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon fi-amber"><i data-lucide="clipboard-check" style="width:24px;height:24px"></i></div>
+                <h3>Pre-Order System</h3>
+                <p>Can't find what you need? Pre-order any part with just 50% down payment.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-<!-- BRAND -->
-<div>
-    <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 flex items-center justify-center bg-white/20 rounded-lg font-bold">
-            M
+{{-- ABOUT --}}
+<section class="section" id="about">
+    <div class="section-inner fade-up">
+        <div class="about-grid">
+            <div class="about-img">
+                <img src="{{ asset('images/about.png') }}" alt="Expert Mechanics">
+            </div>
+            <div>
+                <div class="section-tag"><i data-lucide="info" style="width:14px;height:14px"></i> About Us</div>
+                <h2 class="section-title">Trusted by Riders Across Bulacan</h2>
+                <p class="section-desc">Since 2009, Edmar Motorcycle Parts has been the go-to shop for riders in Pandi and beyond. We combine quality products with expert service to keep you on the road.</p>
+                <div class="about-checks">
+                    <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> Genuine OEM Parts</div>
+                    <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> Expert Mechanics</div>
+                    <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> Fast Turnaround</div>
+                    <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> Fair Pricing</div>
+                    <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> GCash Payments</div>
+                    <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> 15+ Years Experience</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- COMPATIBILITY --}}
+<section class="section" id="compat">
+    <div class="section-inner fade-up" style="text-align:center">
+        <div class="section-tag"><i data-lucide="search" style="width:14px;height:14px"></i> Compatibility Checker</div>
+        <h2 class="section-title">Find the Right Part</h2>
+        <p class="section-desc" style="margin:0 auto">Enter your motorcycle details and we'll show you compatible parts instantly.</p>
+        <div class="compat-card" style="text-align:left">
+            <form method="GET" action="/compatibility">
+                <input name="make" placeholder="Motorcycle Make (e.g. Honda, Yamaha)">
+                <input name="model" placeholder="Model (e.g. Click 125i, Mio)">
+                <input name="part" placeholder="Part you're looking for">
+                <button type="submit" class="btn btn-glow"><i data-lucide="search" style="width:18px;height:18px"></i> Check Compatibility</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+{{-- PREORDER --}}
+<section class="section" id="preorder">
+    <div class="section-inner fade-up">
+        <div style="text-align:center;margin-bottom:8px">
+            <div class="section-tag"><i data-lucide="package" style="width:14px;height:14px"></i> Pre-Order</div>
+            <h2 class="section-title">Can't Find Your Part?</h2>
+            <p class="section-desc" style="margin:0 auto">We'll source it for you. Just place a pre-order with 50% down payment and we'll handle the rest.</p>
+        </div>
+        <div class="preorder-grid">
+            <div class="po-steps">
+                <div class="po-step"><div class="po-step-num">1</div><div><h4>Submit Pre-Order</h4><p>Fill out the form with the part details you need</p></div></div>
+                <div class="po-step"><div class="po-step-num">2</div><div><h4>Pay 50% Down Payment</h4><p>We'll send GCash payment details via SMS</p></div></div>
+                <div class="po-step"><div class="po-step-num">3</div><div><h4>We Process Your Order</h4><p>Your part will be ordered and reserved for you</p></div></div>
+                <div class="po-step"><div class="po-step-num">4</div><div><h4>Pick Up & Pay Balance</h4><p>Pay the remaining 50% when you pick up at our shop</p></div></div>
+            </div>
+            <div class="po-info">
+                <h3>Payment & Pickup Info</h3>
+                <ul style="list-style:none;padding:0">
+                    <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Pre-Order:</b> 50% down payment required via GCash</span></li>
+                    <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Available Products:</b> 100% payment required for checkout</span></li>
+                    <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Payment:</b> Cash or GCash accepted</span></li>
+                    <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Delivery:</b> Pick up only at our shop in Pandi, Bulacan</span></li>
+                    <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Shop Hours:</b> Open daily from 6:00 AM to 6:00 PM</span></li>
+                </ul>
+                <div style="margin-top:24px">
+                    @guest
+                        <a href="{{ route('register') }}" class="btn btn-glow" style="width:100%;justify-content:center">Create Account to Pre-Order</a>
+                    @endguest
+                    @auth
+                        <a href="/preorder-custom" class="btn btn-glow" style="width:100%;justify-content:center">Submit a Pre-Order</a>
+                    @endauth
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- CONTACT --}}
+<section class="section" id="contact">
+    <div class="section-inner fade-up">
+        <div style="text-align:center;margin-bottom:8px">
+            <div class="section-tag"><i data-lucide="mail" style="width:14px;height:14px"></i> Get In Touch</div>
+            <h2 class="section-title">Visit Our Shop</h2>
+            <p class="section-desc" style="margin:0 auto">We'd love to help you find the right parts. Visit us or get in touch!</p>
+        </div>
+        <div class="contact-grid">
+            <div class="contact-cards">
+                <div class="contact-card"><div class="ci"><i data-lucide="map-pin" style="width:20px;height:20px"></i></div><div><h4>Location</h4><p>Pandi, Bulacan, Philippines</p></div></div>
+                <div class="contact-card"><div class="ci"><i data-lucide="phone" style="width:20px;height:20px"></i></div><div><h4>Phone</h4><p>+63 XXX XXX XXXX</p></div></div>
+                <div class="contact-card"><div class="ci"><i data-lucide="mail" style="width:20px;height:20px"></i></div><div><h4>Email</h4><p>contact@edmarmoto.ph</p></div></div>
+                <div class="contact-card"><div class="ci"><i data-lucide="clock" style="width:20px;height:20px"></i></div><div><h4>Shop Hours</h4><p>Open Daily: 6:00 AM — 6:00 PM</p></div></div>
+            </div>
+            <div class="map-wrap">
+                @if(config('services.google_maps.key', env('GOOGLE_MAPS_API_KEY')))
+                    <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
+                        src="https://www.google.com/maps/embed/v1/place?key={{ config('services.google_maps.key', env('GOOGLE_MAPS_API_KEY')) }}&q=Edmar+Motorcycle+Parts,+Pandi,+Bulacan,+Philippines"></iframe>
+                @else
+                    <div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,0.3)">
+                        <p>Map will appear once API key is configured.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- FOOTER --}}
+<footer class="land-footer">
+    <div class="footer-inner">
+        <div>
+            <div class="nav-brand"><div class="nav-logo">M</div><div><h1>MOTOTRACK</h1><p>Edmar Motorcycle Parts</p></div></div>
+            <p class="footer-brand">Your trusted partner for quality motorcycle parts and expert repair services in Pandi, Bulacan since 2009.</p>
         </div>
         <div>
-            <h2 class="font-semibold">MOTOTRACK</h2>
-            <p class="text-sm opacity-80">Edmar Motorcycle Parts</p>
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#features">Services</a></li>
+                <li><a href="#compat">Compatibility</a></li>
+                <li><a href="#preorder">Pre-Order</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Contact</h4>
+            <ul>
+                <li><span>Pandi, Bulacan</span></li>
+                <li><span>+63 XXX XXX XXXX</span></li>
+                <li><span>contact@edmarmoto.ph</span></li>
+                <li><span>Daily: 6AM — 6PM</span></li>
+            </ul>
         </div>
     </div>
-
-    <p class="text-sm opacity-80 leading-relaxed">
-        Your trusted partner for quality motorcycle parts and expert repair services in Pandi, Bulacan since 2009.
-    </p>
-
-    <p class="mt-4 text-sm opacity-80">
-        Open Every Day: 6:00 AM - 6:00 PM
-    </p>
-</div>
-
-<!-- QUICK LINKS -->
-<div>
-    <h3 class="font-semibold mb-4">Quick Links</h3>
-    <ul class="space-y-2 text-sm opacity-90">
-        <li><a href="#" class="hover:underline">Home</a></li>
-        <li><a href="#about" class="hover:underline">About</a></li>
-        <li><a href="#compat" class="hover:underline">Compatibility</a></li>
-        <li><a href="#preorder" class="hover:underline">Pre-Order</a></li>
-    </ul>
-</div>
-
-<!-- CONTACT -->
-<div>
-    <h3 class="font-semibold mb-4">Contact Us</h3>
-    <ul class="space-y-2 text-sm opacity-90">
-        <li>Pandi, Bulacan</li>
-        <li>+63 XXX XXX XXXX</li>
-        <li>contact@edmarmoto.ph</li>
-    </ul>
-</div>
-
-
-</div>
-
-<!-- BOTTOM BAR -->
-
-<div class="border-t border-white/20 mt-10 pt-6 px-6 flex flex-col md:flex-row justify-between items-center text-sm opacity-80">
-
-
-<p>© 2026 Edmar Motorcycle Parts & Accessories. All rights reserved.</p>
-
-<p class="mt-2 md:mt-0">Powered by MOTOTRACK</p>
-
-
-</div>
-
+    <div class="footer-bottom">
+        <p>&copy; 2026 Edmar Motorcycle Parts & Accessories. All rights reserved.</p>
+        <p>Powered by MOTOTRACK</p>
+    </div>
 </footer>
-
-
 
 <script>
 lucide.createIcons();
+
+// Theme Toggle Logic
+const body = document.body;
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+
+// Check for saved theme
+if (localStorage.getItem('theme') === 'light') {
+    body.classList.add('light-mode');
+    updateThemeIcon('sun');
+} else {
+    updateThemeIcon('moon');
+}
+
+themeToggle.addEventListener('click', () => {
+    body.classList.toggle('light-mode');
+    const isLight = body.classList.contains('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateThemeIcon(isLight ? 'sun' : 'moon');
+});
+
+function updateThemeIcon(type) {
+    if (type === 'sun') {
+        themeIcon.setAttribute('data-lucide', 'sun');
+    } else {
+        themeIcon.setAttribute('data-lucide', 'moon');
+    }
+    lucide.createIcons();
+}
+
+// Navbar scroll effect
+const nav = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Scroll animations
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        const href = a.getAttribute('href');
+        if (href === '#') return;
+        
+        e.preventDefault();
+        const t = document.querySelector(href);
+        if (t) t.scrollIntoView({ behavior: 'smooth' });
+    });
+});
 </script>
 
 </body>

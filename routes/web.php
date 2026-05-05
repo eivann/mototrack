@@ -40,14 +40,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/update/{id}', [CustomerController::class, 'updateCart']);
     Route::get('/receiptcart', [CustomerController::class, 'receipt']);
     Route::get('/browse', [CustomerController::class, 'browse']);
-    Route::get('/search-parts', [CustomerController::class, 'searchParts']);
+    Route::get('/search-parts', [CustomerController::class, 'searchParts'])->middleware('throttle:60,1');
 
     // Pre-orders
     Route::get('/preorder/{id}', [CustomerController::class, 'preOrderForm']);
-    Route::post('/preorder', [CustomerController::class, 'storePreOrder']);
     Route::get('/preorder-parts', [CustomerController::class, 'preorderParts']);
     Route::get('/preorder-custom', [CustomerController::class, 'customPreorderForm']);
-    Route::post('/preorder-custom', [CustomerController::class, 'storeCustomPreorder']);
+    Route::post('/preorder/store', [CustomerController::class, 'storePreOrder']);
 });
 
 Route::middleware(['auth', 'owner'])->group(function () {
@@ -56,10 +55,9 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::get('/low-stock', [InventoryController::class, 'lowStock'])->name('low-stock.index');
 
     // Sales POS
-    Route::get('/sales/create', [SaleController::class, 'recordSaleForm']);
+    Route::get('/sales', [SaleController::class, 'recordSaleForm'])->name('sales.index');
     Route::post('/sales/store', [SaleController::class, 'storeSale']);
     Route::get('/sales/history', [SaleController::class, 'history']);
-    Route::get('/sales', [SaleController::class, 'recordSaleForm'])->name('sales.index');
     Route::delete('/sales/{id}', [SaleController::class, 'destroy']);
     Route::get('/sales/report/receipt', [SaleController::class, 'reportReceipt']);
     Route::get('/sales/{id}/receipt', [SaleController::class, 'receipt']);

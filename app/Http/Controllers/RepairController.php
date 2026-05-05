@@ -28,20 +28,32 @@ public function index(Request $request)
 
 public function store(Request $request)
 {
-    $request->merge([
-        'customer_name' => ucwords($request->customer_name),
-        'bike_model' => $request->bike_model ? ucwords($request->bike_model) : null,
-        'issue' => $request->issue ? ucfirst($request->issue) : null,
+    $request->validate([
+        'customer_name' => 'required|string|max:255',
+        'bike_model'    => 'nullable|string|max:255',
+        'issue'         => 'nullable|string|max:1000',
+        'cost'          => 'required|numeric|min:0',
     ]);
 
-    Repair::create($request->all());
+    Repair::create([
+        'customer_name' => ucwords($request->customer_name),
+        'bike_model'    => $request->bike_model ? ucwords($request->bike_model) : null,
+        'issue'         => $request->issue ? ucfirst($request->issue) : null,
+        'cost'          => $request->cost,
+        'status'        => 'pending',
+        'is_paid'       => false,
+    ]);
+
     return back()->with('success', 'Repair added!');
 }
 
 public function update(Request $request, $id)
 {
-    $repair = Repair::findOrFail($id);
+    $request->validate([
+        'status' => 'required|string|in:pending,in_progress,completed',
+    ]);
 
+    $repair = Repair::findOrFail($id);
     $repair->status = $request->status;
     $repair->save();
 

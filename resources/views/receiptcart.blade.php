@@ -1,6 +1,14 @@
 <x-app-layout>
     <div class="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 font-sans flex justify-center">
         
+        <!-- Error Alert -->
+        @if(session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 shadow w-full max-w-md" role="alert">
+                <p class="font-bold">Error</p>
+                <p>{{ session('error') }}</p>
+            </div>
+        @endif
+
         <!-- Receipt Container -->
         <div class="bg-white w-full max-w-md shadow-2xl rounded-sm overflow-hidden" id="printableArea">
             
@@ -12,7 +20,7 @@
                 <h1 class="text-2xl font-extrabold text-gray-900 tracking-wider">MOTOTRACK</h1>
                 <p class="text-sm text-gray-500 font-medium">Edmar Motorcycle Parts</p>
                 <p class="text-xs text-gray-400 mt-1">Pandi, Bulacan, Philippines</p>
-                <p class="text-xs text-gray-400 mt-1">Receipt #: <span class="font-bold text-gray-800">PRE-{{ $orders->first()->id ?? rand(1000,9999) }}</span></p>
+                <p class="text-xs text-gray-400 mt-1">Receipt #: <span class="font-bold text-gray-800">{{ $trx ?? 'TRX-' . rand(1000,9999) }}</span></p>
                 <p class="text-xs text-gray-400">Date: {{ now()->format('M d, Y h:i A') }}</p>
             </div>
 
@@ -36,8 +44,10 @@
                             <tr>
                                 <td class="py-3 font-medium align-top">{{ $item->quantity }}x</td>
                                 <td class="py-3 px-2 align-top">
-                                    <div class="font-bold">{{ $item->part_name }}</div>
-                                    @if($item->model)
+                                    <div class="font-bold">{{ $item->item->part_name ?? $item->part_name }}</div>
+                                    @if(isset($item->item) && $item->item->model)
+                                    <div class="text-xs text-gray-500">{{ $item->item->model }}</div>
+                                    @elseif($item->model)
                                     <div class="text-xs text-gray-500">{{ $item->model }}</div>
                                     @endif
                                     <div class="text-xs text-gray-400">@ ₱{{ number_format($item->price, 2) }} each</div>

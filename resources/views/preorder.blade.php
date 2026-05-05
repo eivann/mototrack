@@ -27,8 +27,10 @@
 @endif
 
         <!-- FORM -->
-        <form method="POST" action="/preorder-form/{{ $item->id }}">
+        <form method="POST" action="/preorder/store">
             @csrf
+            <input type="hidden" name="part_name" value="{{ $item->part_name }}">
+            <input type="hidden" name="model" value="{{ $item->model }}">
 
             <!-- Quantity -->
             <div class="mb-4">

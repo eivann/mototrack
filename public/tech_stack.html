@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MotoTrack — Technology Stack</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1e293b;padding:48px 56px;line-height:1.6;font-size:13px}
+h1{font-size:28px;font-weight:800;margin-bottom:4px}
+.subtitle{color:#64748b;font-size:13px;margin-bottom:6px}
+.date{color:#94a3b8;font-size:11px;margin-bottom:32px}
+h2{font-size:16px;font-weight:700;color:#1e40af;margin:28px 0 12px;padding-bottom:6px;border-bottom:2px solid #dbeafe}
+h3{font-size:14px;font-weight:600;margin:20px 0 8px;color:#334155}
+table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12.5px}
+th{background:#f1f5f9;text-align:left;padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#475569;border-bottom:2px solid #e2e8f0}
+td{padding:7px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+tr:hover td{background:#f8fafc}
+td:first-child{font-weight:600;color:#0f172a;white-space:nowrap}
+.badge{display:inline-block;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+pre{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;font-size:11.5px;overflow-x:auto;line-height:1.5;font-family:'Courier New',monospace}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin-top:8px}
+.feature{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;padding:4px 0}
+.feature-num{background:#1e40af;color:#fff;width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.feature b{display:block;font-size:12.5px}
+.feature span{color:#64748b;font-size:11.5px}
+.header-bar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid #1e40af}
+.logo{width:48px;height:48px;background:linear-gradient(135deg,#1e40af,#7c3aed);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;margin-bottom:8px}
+@media print{body{padding:36px 40px}h2{break-after:avoid}table{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+<div>
+<div class="logo">M</div>
+<h1>MotoTrack — Technology Stack</h1>
+<div class="subtitle">Edmar Motorcycle Parts & Accessories — Automated Motorcycle Shop Management System</div>
+<div class="date">Capstone Project Documentation &bull; Last Updated: May 5, 2026</div>
+</div>
+</div>
+
+<h2>Backend</h2>
+<table>
+<tr><th>Technology</th><th>Version</th><th>Purpose</th></tr>
+<tr><td>PHP</td><td>8.3</td><td>Server-side programming language</td></tr>
+<tr><td>Laravel</td><td>13.0</td><td>MVC web application framework</td></tr>
+<tr><td>Laravel Breeze</td><td>2.4</td><td>Authentication scaffolding (login, register, password reset)</td></tr>
+<tr><td>MySQL</td><td>—</td><td>Relational database (via Laragon)</td></tr>
+<tr><td>Eloquent ORM</td><td>built-in</td><td>Database queries, models, and relationships</td></tr>
+<tr><td>Xendit PHP SDK</td><td>7.0</td><td>GCash payment gateway integration</td></tr>
+<tr><td>Semaphore API</td><td>HTTP</td><td>SMS notifications for low stock alerts</td></tr>
+</table>
+
+<h2>Frontend</h2>
+<table>
+<tr><th>Technology</th><th>Version</th><th>Purpose</th></tr>
+<tr><td>Blade</td><td>built-in</td><td>Laravel templating engine (20+ views)</td></tr>
+<tr><td>Tailwind CSS</td><td>3.x</td><td>Utility-first CSS framework (dashboard & internal pages)</td></tr>
+<tr><td>Alpine.js</td><td>3.4</td><td>Lightweight JavaScript framework for interactivity</td></tr>
+<tr><td>Lucide Icons</td><td>CDN</td><td>Modern icon library</td></tr>
+<tr><td>Inter / Figtree</td><td>Google Fonts</td><td>Typography</td></tr>
+<tr><td>Vanilla CSS</td><td>—</td><td>Custom landing page styles</td></tr>
+</table>
+
+<h2>Build & Development Tools</h2>
+<table>
+<tr><th>Technology</th><th>Version</th><th>Purpose</th></tr>
+<tr><td>Vite</td><td>8.0</td><td>Frontend asset bundler</td></tr>
+<tr><td>Laravel Vite Plugin</td><td>3.0</td><td>Laravel integration for Vite</td></tr>
+<tr><td>PostCSS</td><td>8.4</td><td>CSS post-processing</td></tr>
+<tr><td>Autoprefixer</td><td>10.4</td><td>Automatic CSS vendor prefixes</td></tr>
+<tr><td>Laragon</td><td>—</td><td>Local development environment (Apache + MySQL + PHP)</td></tr>
+</table>
+
+<h2>Testing</h2>
+<table>
+<tr><th>Technology</th><th>Version</th><th>Purpose</th></tr>
+<tr><td>Pest</td><td>4.5</td><td>PHP testing framework</td></tr>
+<tr><td>Mockery</td><td>1.6</td><td>Mock object framework for unit tests</td></tr>
+<tr><td>Faker</td><td>1.23</td><td>Generate fake/seed data for testing</td></tr>
+</table>
+
+<h2>Hosting & Deployment</h2>
+<table>
+<tr><th>Technology</th><th>Purpose</th></tr>
+<tr><td>Namecheap</td><td>Shared hosting (production)</td></tr>
+<tr><td>GitHub</td><td>Version control & deployment workflow</td></tr>
+</table>
+
+<h2>Third-Party APIs & Services</h2>
+<table>
+<tr><th>Service</th><th>Purpose</th><th>Config Location</th></tr>
+<tr><td>Xendit</td><td>GCash payment gateway</td><td><code>config/services.php</code></td></tr>
+<tr><td>Semaphore</td><td>SMS low-stock alerts</td><td><code>config/services.php</code></td></tr>
+<tr><td>Google Maps Embed API</td><td>Shop location map on landing page</td><td><code>config/services.php</code></td></tr>
+</table>
+
+<h2>Database Schema</h2>
+<table>
+<tr><th>Table</th><th>Key Fields</th><th>Purpose</th></tr>
+<tr><td>users</td><td>name, email, password, role</td><td>User accounts (owner / customer)</td></tr>
+<tr><td>inventory_items</td><td>category, part_name, brand, model, quantity, price</td><td>Product catalog</td></tr>
+<tr><td>sales</td><td>inventory_item_id, quantity, price, total_price, transaction_reference</td><td>Transaction records (soft-delete enabled)</td></tr>
+<tr><td>repairs</td><td>customer_name, bike_model, issue, status, cost, is_paid</td><td>Repair job tracking</td></tr>
+<tr><td>pre_orders</td><td>customer_name, part_name, model, quantity, down_payment, status</td><td>Customer pre-orders</td></tr>
+<tr><td>sessions</td><td>—</td><td>Database-driven session storage</td></tr>
+<tr><td>cache</td><td>—</td><td>Database-driven cache</td></tr>
+<tr><td>jobs</td><td>—</td><td>Queue jobs</td></tr>
+</table>
+
+<h2>Project Structure</h2>
+<pre>mototrack/
+├── app/
+│   ├── Http/Controllers/       # 6 controllers + Auth/
+│   ├── Models/                 # 5 models (User, InventoryItem, Sale, Repair, PreOrder)
+│   ├── Services/               # SmsService (Semaphore SMS integration)
+│   └── Http/Middleware/        # OwnerMiddleware (role-based access)
+├── resources/views/            # 20+ Blade templates
+│   ├── layouts/                # app.blade.php, navigation.blade.php
+│   ├── auth/                   # Login, Register, Password reset
+│   └── components/             # Reusable Blade components
+├── routes/
+│   ├── web.php                 # All web routes (67 total)
+│   └── auth.php                # Authentication routes (Breeze)
+├── config/                     # App, services, session, database config
+├── database/migrations/        # 15 migration files
+├── public/
+│   ├── css/landing.css         # Landing page styles
+│   └── images/                 # Hero & about images
+└── .env                        # Environment variables & API keys</pre>
+
+<h2>Key Features</h2>
+<div class="features">
+<div class="feature"><div class="feature-num">1</div><div><b>Inventory Management</b><span>CRUD for motorcycle parts with low-stock SMS alerts</span></div></div>
+<div class="feature"><div class="feature-num">2</div><div><b>Smart POS Checkout</b><span>Cart-based point-of-sale with transaction grouping</span></div></div>
+<div class="feature"><div class="feature-num">3</div><div><b>GCash Payments</b><span>Online payment via Xendit integration</span></div></div>
+<div class="feature"><div class="feature-num">4</div><div><b>Compatibility Checker</b><span>Search parts by motorcycle make/model</span></div></div>
+<div class="feature"><div class="feature-num">5</div><div><b>Pre-Order System</b><span>Customer pre-orders with 50% down payment</span></div></div>
+<div class="feature"><div class="feature-num">6</div><div><b>Repair Tracking</b><span>Log, update status, and mark repairs as paid</span></div></div>
+<div class="feature"><div class="feature-num">7</div><div><b>Sales History</b><span>Filter by date, view receipts, archive transactions</span></div></div>
+<div class="feature"><div class="feature-num">8</div><div><b>Role-Based Access</b><span>Owner dashboard vs. Customer dashboard</span></div></div>
+<div class="feature"><div class="feature-num">9</div><div><b>SMS Alerts</b><span>Automatic low-stock notifications via Semaphore</span></div></div>
+</div>
+
+</body>
+</html>

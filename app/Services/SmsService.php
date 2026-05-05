@@ -12,8 +12,8 @@ class SmsService
      */
     public static function send($message)
     {
-        $apiKey = env('SEMAPHORE_API_KEY');
-        $number = env('SMS_NOTIFY_NUMBER');
+        $apiKey = config('services.semaphore.api_key');
+        $number = config('services.semaphore.notify_number');
 
         // If keys are missing, fallback to MOCK MODE
         if (!$apiKey || !$number) {

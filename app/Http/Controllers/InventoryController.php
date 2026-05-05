@@ -54,16 +54,26 @@ public function store(Request $request)
 }
 public function update(Request $request, $id)
 {
+    $request->validate([
+        'category'  => 'required|string|max:255',
+        'part_name' => 'required|string|max:255',
+        'brand'     => 'required|string|max:255',
+        'model'     => 'required|string|max:255',
+        'quantity'  => 'required|integer|min:0',
+        'price'     => 'required|numeric|min:0',
+        'notes'     => 'nullable|string|max:1000',
+    ]);
+
     $item = InventoryItem::findOrFail($id);
 
     $item->update([
-        'category' => ucwords($request->category),
+        'category'  => ucwords($request->category),
         'part_name' => ucwords($request->part_name),
-        'brand' => ucwords($request->brand),
-        'model' => ucwords($request->model),
-        'quantity' => $request->quantity,
-        'notes' => $request->notes ? ucfirst($request->notes) : null,
-        'price' => $request->price,
+        'brand'     => ucwords($request->brand),
+        'model'     => ucwords($request->model),
+        'quantity'  => $request->quantity,
+        'notes'     => $request->notes ? ucfirst($request->notes) : null,
+        'price'     => $request->price,
     ]);
 
     return redirect('/inventory');
