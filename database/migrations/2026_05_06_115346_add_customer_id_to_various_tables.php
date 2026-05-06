@@ -14,18 +14,28 @@ return new class extends Migration
         Schema::table('sales', function (Blueprint $table) {
             if (!Schema::hasColumn('sales', 'customer_id')) {
                 $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
+            } else {
+                // Fix type if it exists manually to avoid Error 150
+                $table->unsignedBigInteger('customer_id')->nullable()->change();
+                $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
             }
         });
 
         Schema::table('repairs', function (Blueprint $table) {
             if (!Schema::hasColumn('repairs', 'customer_id')) {
                 $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
+            } else {
+                $table->unsignedBigInteger('customer_id')->nullable()->change();
+                $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
             }
         });
 
         Schema::table('pre_orders', function (Blueprint $table) {
             if (!Schema::hasColumn('pre_orders', 'customer_id')) {
                 $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
+            } else {
+                $table->unsignedBigInteger('customer_id')->nullable()->change();
+                $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
             }
         });
     }
