@@ -33,6 +33,18 @@
                     New Repair Job
                 </h2>
 
+                <!-- Error Display -->
+                @if ($errors->any())
+                    <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded-r-xl">
+                        <p class="font-bold mb-1">Please fix the following errors:</p>
+                        <ul class="list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form method="POST" action="/repairs">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
@@ -55,7 +67,7 @@
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button class="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 transition-colors active:scale-[0.98]">
+                        <button type="submit" class="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 transition-colors active:scale-[0.98]">
                             Add Repair Job
                         </button>
                     </div>

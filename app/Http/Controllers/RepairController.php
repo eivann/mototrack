@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Repair;
+use Illuminate\Support\Str;
 
 
 class RepairController extends Controller
@@ -30,30 +31,36 @@ class RepairController extends Controller
 public function store(Request $request)
 {
     $request->validate([
-        'customer_name' => 'required|string|max:255',
-        'bike_model'    => 'nullable|string|max:255',
-        'issue'         => 'nullable|string|max:1000',
+        'customer_id'   => 'nullable|exists:customers,id',
+        'customer_name' => 'required_without:customer_id|nullable|string|max:255',
+        'bike_model'    => 'required|string|max:255',
+        'issue'         => 'required|string|max:1000',
         'cost'          => 'required|numeric|min:0',
     ]);
 
+    $customerName = $request->customer_name;
+    if ($request->customer_id) {
+        $customerName = \App\Models\Customer::find($request->customer_id)->name;
+    }
+
     Repair::create([
         'customer_id'   => $request->customer_id,
-        'customer_name' => $request->customer_id ? \App\Models\Customer::find($request->customer_id)->name : ucwords($request->customer_name),
-        'bike_model'    => $request->bike_model ? ucwords($request->bike_model) : null,
-        'issue'         => $request->issue ? ucfirst($request->issue) : null,
+        'customer_name' => ucwords($customerName),
+        'bike_model'    => ucwords($request->bike_model),
+        'issue'         => ucfirst($request->issue),
         'cost'          => $request->cost,
         'status'        => 'pending',
         'is_paid'       => false,
     ]);
 
-    return back()->with('success', 'Repair added!');
+    return back()->with('success', 'Repair job created successfully!');
 }
 
-public function update(Request $request, $id)
-{
-    $request->validate([
-        'status' => 'required|string|in:pending,in_progress,completed',
-    ]);
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|string|in:pending,ongoing,done',
+        ]);
 
     $repair = Repair::findOrFail($id);
     $repair->status = $request->status;
@@ -68,14 +75,23 @@ public function destroy($id)
     return back();
     
 }
-public function markPaid($id)
-{
-    $repair = Repair::findOrFail($id);
-    $repair->is_paid = true;
-    $repair->save();
+    public function markPaid($id)
+    {
+        $repair = Repair::findOrFail($id);
+        $repair->is_paid = true;
+        $repair->save();
 
-    return back();
-}
+        // Record this as a sale for the reports
+        \App\Models\Sale::create([
+            'inventory_item_id' => null, // Service/Labor
+            'quantity' => 1,
+            'total_price' => $repair->cost,
+            'customer_id' => $repair->customer_id,
+            'transaction_reference' => 'REPAIR-' . strtoupper(Str::random(8)),
+        ]);
+
+        return back()->with('success', 'Payment recorded and added to sales history!');
+    }
 
 public function receipt($id)
 {
