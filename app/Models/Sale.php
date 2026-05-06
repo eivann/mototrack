@@ -14,8 +14,14 @@ public function item()
     return $this->belongsTo(InventoryItem::class, 'inventory_item_id');
 }
 
+public function customer()
+{
+    return $this->belongsTo(Customer::class);
+}
+
 protected $fillable = [
     'inventory_item_id',
+    'customer_id',
     'quantity',
     'price',
     'total_price',

@@ -26,6 +26,16 @@
             <input type="number" name="down_payment" class="w-full border p-2">
         </div>
 
+        <!-- Google reCAPTCHA -->
+        <div class="mb-4 flex flex-col items-center">
+            <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+        </div>
+
+        <!-- Honeypot (Invisible Trap) -->
+        <div class="hidden">
+            <input type="text" name="my_extra_field" value="">
+        </div>
+
         <button class="bg-green-500 text-white px-4 py-2 rounded">
             Submit Request
         </button>

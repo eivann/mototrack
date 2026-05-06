@@ -23,7 +23,53 @@ class InventoryItem extends Model
     ];
 
     public function sales()
-{
-    return $this->hasMany(Sale::class);
-}
+    {
+        return $this->hasMany(Sale::class);
+    }
+
+    public function motorcycles()
+    {
+        return $this->belongsToMany(Motorcycle::class, 'part_compatibility')
+                    ->withPivot('notes')
+                    ->withTimestamps();
+    }
+
+    protected $casts = [
+        'price' => 'decimal:2',
+        'quantity' => 'integer',
+        'low_stock_threshold' => 'integer',
+        'low_stock_notified' => 'boolean',
+    ];
+
+    /**
+     * Scope a query to search for inventory items.
+     */
+    public function scopeSearch($query, $searchTerm)
+    {
+        $searchTerm = trim($searchTerm);
+        if (empty($searchTerm)) {
+            return $query;
+        }
+
+        $stopwords = ['for', 'the', 'and', 'with', 'in', 'on', 'at', 'to', 'a', 'an', 'of', 'my'];
+        $all_terms = explode(' ', strtolower($searchTerm));
+        $terms = array_filter($all_terms, function($word) use ($stopwords) {
+            return !in_array(trim($word), $stopwords) && strlen(trim($word)) > 1;
+        });
+
+        if (empty($terms)) {
+            $terms = $all_terms;
+        }
+
+        return $query->where(function ($q) use ($terms) {
+            foreach ($terms as $term) {
+                $q->where(function ($inner) use ($term) {
+                    $inner->where('model', 'LIKE', "%$term%")
+                          ->orWhere('part_name', 'LIKE', "%$term%")
+                          ->orWhere('category', 'LIKE', "%$term%")
+                          ->orWhere('brand', 'LIKE', "%$term%");
+                });
+            }
+        });
+    }
 }

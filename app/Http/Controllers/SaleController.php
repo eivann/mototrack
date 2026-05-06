@@ -55,7 +55,7 @@ public function storeSale(Request $request)
             $change = $request->amount_tendered - $totalAmount;
 
             // Process sales
-            foreach ($cartItems as $cartItem) {
+            foreach ($cartItems as $index => $cartItem) {
                 $item = InventoryItem::find($cartItem['id']);
                 $total = $item->price * $cartItem['quantity'];
 
@@ -65,8 +65,8 @@ public function storeSale(Request $request)
                     'price' => $item->price, 
                     'total_price' => $total,
                     'transaction_reference' => $transactionReference,
-                    'amount_tendered' => $request->amount_tendered,
-                    'change' => $change
+                    'amount_tendered' => $index === 0 ? $request->amount_tendered : 0,
+                    'change' => $index === 0 ? $change : 0
                 ]);
 
                 $item->decrement('quantity', $cartItem['quantity']);
@@ -104,7 +104,9 @@ public function history(Request $request)
 
     $totalSales = $sales->sum('total_price');
 
-    $totalTransactions = $sales->count();
+    // Count unique orders by transaction_reference
+    $totalTransactions = $sales->whereNotNull('transaction_reference')->unique('transaction_reference')->count() 
+                        + $sales->whereNull('transaction_reference')->count();
 
     return view('history', compact(
         'sales',

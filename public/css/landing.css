@@ -83,7 +83,17 @@ body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(
     font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 24px;
     border: 1px solid rgba(59, 130, 246, 0.2);
 }
-.hero-badge .dot { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 10px var(--primary); }
+.hero-badge .dot { 
+    width: 6px; height: 6px; background: var(--primary); border-radius: 50%; 
+    box-shadow: 0 0 10px var(--primary); 
+    animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
 .hero h1 { font-size: 56px; font-weight: 800; line-height: 1.1; margin-bottom: 24px; }
 .hero h1 span { background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .hero-desc { font-size: 18px; color: var(--text-muted); margin-bottom: 40px; }

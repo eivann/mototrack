@@ -30,6 +30,26 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+            'my_extra_field' => 'prohibited',
+            'g-recaptcha-response' => ['required', function ($attribute, $value, $fail) {
+                $response = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                    'secret' => env('RECAPTCHA_SECRET_KEY'),
+                    'response' => $value,
+                    'remoteip' => request()->ip(),
+                ]);
+
+                if (!$response->json('success')) {
+                    $errors = implode(', ', $response->json('error-codes', []));
+                    $fail('reCAPTCHA failed: ' . $errors);
+                }
+            }],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',
         ];
     }
 

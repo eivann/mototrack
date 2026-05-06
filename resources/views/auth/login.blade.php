@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     
     <style>
         body {
@@ -133,9 +134,22 @@
                 </div>
 
                 <!-- Remember Me -->
-                <div class="mb-6 flex items-center">
+                <div class="mb-4 flex items-center">
                     <input id="remember_me" type="checkbox" name="remember" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
                     <label for="remember_me" class="ml-2 text-sm text-gray-600 font-medium cursor-pointer">Keep me signed in</label>
+                </div>
+
+                <!-- Google reCAPTCHA -->
+                <div class="mb-6 flex flex-col items-center">
+                    <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+                    @if ($errors->has('g-recaptcha-response'))
+                        <p class="mt-2 text-red-500 text-xs font-semibold">{{ $errors->first('g-recaptcha-response') }}</p>
+                    @endif
+                </div>
+
+                <!-- Honeypot (Invisible Trap) -->
+                <div class="hidden">
+                    <input type="text" name="my_extra_field" value="">
                 </div>
 
                 <!-- Submit Button -->

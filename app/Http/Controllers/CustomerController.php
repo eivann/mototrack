@@ -16,7 +16,7 @@ class CustomerController extends Controller
         $query = InventoryItem::query();
 
         if (request('search')) {
-            $query->where('part_name', 'like', '%' . request('search') . '%');
+            $query->search(request('search'));
         }
 
         if (request('category')) {
@@ -49,43 +49,47 @@ class CustomerController extends Controller
 
     public function checkCompatibility(Request $request)
     {
-
-        $query = $request->model;
-
-        $items = \App\Models\InventoryItem::where('model', 'LIKE', "%$query%")
-        ->orWhere('part_name', 'LIKE', "%$query%")
-        ->get();
-
+        $items = InventoryItem::search($request->model)->get();
         return response()->json($items);
     }
-   public function addToCart($id)
-{
-    $item = \App\Models\InventoryItem::findOrFail($id);
+    public function addToCart(Request $request, $id)
+    {
+        $item = \App\Models\InventoryItem::findOrFail($id);
 
-    if ($item->quantity <= 0) {
-        return redirect()->back()->with('error', 'Item is currently out of stock.');
-    }
-
-    $cart = session()->get('cart', []);
-
-    if (isset($cart[$id])) {
-        if ($cart[$id]['quantity'] + 1 > $item->quantity) {
-            return redirect()->back()->with('error', 'Cannot add more. Stock limit reached.');
+        if ($item->quantity <= 0) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Item is currently out of stock.'], 422);
+            }
+            return redirect()->back()->with('error', 'Item is currently out of stock.');
         }
-        $cart[$id]['quantity']++;
-    } else {
-        $cart[$id] = [
-            'part_name' => $item->part_name,
-            'model' => $item->model,
-            'price' => $item->price,
-            'quantity' => 1,
-        ];
+
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$id])) {
+            if ($cart[$id]['quantity'] + 1 > $item->quantity) {
+                if ($request->wantsJson()) {
+                    return response()->json(['error' => 'Cannot add more. Stock limit reached.'], 422);
+                }
+                return redirect()->back()->with('error', 'Cannot add more. Stock limit reached.');
+            }
+            $cart[$id]['quantity']++;
+        } else {
+            $cart[$id] = [
+                'part_name' => $item->part_name,
+                'model' => $item->model,
+                'price' => $item->price,
+                'quantity' => 1,
+            ];
+        }
+
+        session()->put('cart', $cart);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => 'Added to cart!', 'cart_count' => count($cart)]);
+        }
+
+        return redirect()->back()->with('success', 'Added to cart!');
     }
-
-    session()->put('cart', $cart);
-
-    return redirect()->back()->with('success', 'Added to cart!');
-}
 
     public function viewCart()
     {
@@ -143,10 +147,25 @@ class CustomerController extends Controller
 
         $transactionReference = 'TRX-' . strtoupper(uniqid());
         $paymentMethod = $request->input('payment_method', 'cash');
+        
+        // Find or create customer profile for logged-in user
+        $customerId = null;
+        if (auth()->check()) {
+            $customer = auth()->user()->customer;
+            if (!$customer) {
+                $customer = \App\Models\Customer::create([
+                    'user_id' => auth()->id(),
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                ]);
+            }
+            $customerId = $customer->id;
+        }
 
         try {
-            $grandTotal = \Illuminate\Support\Facades\DB::transaction(function () use ($cart, $transactionReference, $request, $paymentMethod) {
+            $grandTotal = \Illuminate\Support\Facades\DB::transaction(function () use ($cart, $transactionReference, $request, $paymentMethod, $customerId) {
                 $grandTotal = 0;
+                $isFirstItem = true;
 
                 foreach ($cart as $id => $item) {
                     // Lock the row to prevent race conditions
@@ -162,15 +181,17 @@ class CustomerController extends Controller
 
                     Sale::create([
                         'inventory_item_id' => $id,
+                        'customer_id' => $customerId, // Linked to Customer ID
                         'quantity' => $item['quantity'],
                         'price' => $inventory->price,
                         'total_price' => $total,
                         'transaction_reference' => $transactionReference,
-                        'amount_tendered' => $paymentMethod === 'gcash' ? $grandTotal : $request->input('amount_tendered'),
-                        'change' => $paymentMethod === 'gcash' ? 0 : (($request->input('amount_tendered') ?? 0) - $grandTotal),
+                        'amount_tendered' => $isFirstItem ? ($paymentMethod === 'gcash' ? $grandTotal : $request->input('amount_tendered')) : 0,
+                        'change' => $isFirstItem ? ($paymentMethod === 'gcash' ? 0 : (($request->input('amount_tendered') ?? 0) - $grandTotal)) : 0,
                     ]);
 
                     $inventory->decrement('quantity', $item['quantity']);
+                    $isFirstItem = false;
                 }
 
                 return $grandTotal;
@@ -210,7 +231,6 @@ class CustomerController extends Controller
 
     public function preOrderForm($id)
     {
-        $item = \App\Models\InventoryItem::findOrFail($id);
         $item = InventoryItem::findOrFail($id);
         return view('preorder', compact('item'));
     }
@@ -222,9 +242,38 @@ class CustomerController extends Controller
             'model' => 'nullable|string|max:255',
             'quantity' => 'required|integer|min:1',
             'down_payment' => 'required|numeric|min:0',
+            'my_extra_field' => 'prohibited',
+            'g-recaptcha-response' => ['required', function ($attribute, $value, $fail) {
+                $response = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                    'secret' => env('RECAPTCHA_SECRET_KEY'),
+                    'response' => $value,
+                    'remoteip' => request()->ip(),
+                ]);
+
+                if (!$response->json('success')) {
+                    $fail('The reCAPTCHA validation failed.');
+                }
+            }],
+        ], [
+            'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',
         ]);
 
+        // Find or create customer profile
+        $customerId = null;
+        if (auth()->check()) {
+            $customer = auth()->user()->customer;
+            if (!$customer) {
+                $customer = \App\Models\Customer::create([
+                    'user_id' => auth()->id(),
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                ]);
+            }
+            $customerId = $customer->id;
+        }
+
         PreOrder::create([
+            'customer_id' => $customerId, // Linked to Customer ID
             'customer_name' => ucwords(auth()->user()->name),
             'part_name' => ucwords($request->part_name),
             'model' => $request->model ? ucwords($request->model) : null,
@@ -303,33 +352,8 @@ class CustomerController extends Controller
 
     public function searchParts(Request $request)
     {
-        $query = trim($request->model);
-        if (empty($query)) {
-            return response()->json([]);
-        }
-
-        $stopwords = ['for', 'the', 'and', 'with', 'in', 'on', 'at', 'to', 'a', 'an', 'of', 'my'];
-        $all_terms = explode(' ', strtolower($query));
-        $terms = array_filter($all_terms, function($word) use ($stopwords) {
-            return !in_array(trim($word), $stopwords) && strlen(trim($word)) > 1;
-        });
-
-        if (empty($terms)) {
-            $terms = $all_terms;
-        }
-
-        $items = \App\Models\InventoryItem::query();
-
-        foreach ($terms as $term) {
-            $items->where(function ($q) use ($term) {
-                $q->where('model', 'LIKE', "%$term%")
-                  ->orWhere('part_name', 'LIKE', "%$term%")
-                  ->orWhere('category', 'LIKE', "%$term%")
-                  ->orWhere('brand', 'LIKE', "%$term%");
-            });
-        }
-
-        return response()->json($items->take(20)->get());
+        $items = InventoryItem::search($request->model)->take(20)->get();
+        return response()->json($items);
     }
 
 }

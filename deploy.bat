@@ -26,6 +26,6 @@ echo    Done! Your code is now safely on GitHub.
 echo ===================================================
 echo.
 echo Next step: Open your cPanel Terminal and run:
-echo    cd ~/mototrack_app ^&^& git pull ^&^& php artisan optimize:clear
+echo    cd ~/public_html ^&^& git pull ^&^& php artisan migrate --force ^&^& php artisan optimize:clear
 echo.
 pause

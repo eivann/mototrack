@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     
     <style>
         body {
@@ -143,6 +144,19 @@
                             class="input-field pr-12" placeholder="••••••••">
                     </div>
                     <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2 text-red-500 text-sm" />
+                </div>
+                
+                <!-- Google reCAPTCHA -->
+                <div class="mb-6 flex flex-col items-center">
+                    <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+                    @if ($errors->has('g-recaptcha-response'))
+                        <p class="mt-2 text-red-500 text-xs font-semibold">{{ $errors->first('g-recaptcha-response') }}</p>
+                    @endif
+                </div>
+
+                <!-- Honeypot (Invisible Trap) -->
+                <div class="hidden">
+                    <input type="text" name="my_extra_field" value="">
                 </div>
 
                 <!-- Submit Button -->

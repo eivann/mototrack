@@ -38,7 +38,7 @@
                 </div>
 
                 <!-- RESULTS GRID -->
-                <div id="resultsBox" class="mt-8 transition-all duration-300">
+                <div id="resultsBox" class="mt-8 transition-all duration-300 relative z-10">
                     <!-- Results injected here -->
                 </div>
             </div>
@@ -85,21 +85,43 @@
         }
 
         // Add to Cart Logic
-        function addToCart(id) {
+        async function addToCart(id) {
             const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
             const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
 
-            fetch(`/cart/add/${id}`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
+            try {
+                const response = await fetch(`/cart/add/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(data.success || 'Item added to cart successfully!');
+                    // Optional: update a cart counter if you have one
+                } else {
+                    showToast(data.error || 'Failed to add item', 'error');
                 }
-            }).then(res => {
-                if(res.ok) showToast('Item added to cart successfully!');
-                else showToast('Failed to add item', 'error');
-            }).catch(() => showToast('Network error', 'error'));
+            } catch (error) {
+                console.error('Cart Error:', error);
+                showToast('Network error or session expired', 'error');
+            }
         }
+
+        // Event Delegation for Add to Cart buttons
+        resultsBox.addEventListener('click', (e) => {
+            const btn = e.target.closest('.add-to-cart-btn');
+            if (btn) {
+                e.preventDefault();
+                const id = btn.dataset.id;
+                addToCart(id);
+            }
+        });
 
         // Highlight matching text
         function highlightText(text, query) {
@@ -154,7 +176,7 @@
                                     : `<span class="text-[11px] font-medium text-red-500">Out of Stock</span>`;
 
                                 const actionBtn = item.quantity > 0
-                                    ? `<button onclick="addToCart(${item.id})" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer">Add to Cart</button>`
+                                    ? `<button data-id="${item.id}" class="add-to-cart-btn mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer">Add to Cart</button>`
                                     : `<a href="/preorder/${item.id}" class="mt-3 block text-center w-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95">Pre-order</a>`;
 
                                 const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${item.brand}</p>` : '';

@@ -8,6 +8,7 @@ class PreOrder extends Model
 {
    protected $fillable = [
     'customer_name',
+    'customer_id',
     'part_name',
     'model',
     'quantity',
@@ -16,4 +17,9 @@ class PreOrder extends Model
     'price',
     'total',
 ];
+
+public function customer()
+{
+    return $this->belongsTo(Customer::class);
+}
 }

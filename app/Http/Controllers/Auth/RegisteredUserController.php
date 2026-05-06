@@ -34,16 +34,36 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'ends_with:@gmail.com', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'my_extra_field' => 'prohibited',
+            'g-recaptcha-response' => ['required', function ($attribute, $value, $fail) {
+                $response = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                    'secret' => env('RECAPTCHA_SECRET_KEY'),
+                    'response' => $value,
+                    'remoteip' => request()->ip(),
+                ]);
+
+                if (!$response->json('success')) {
+                    $fail('The reCAPTCHA validation failed.');
+                }
+            }],
         ], [
             'email.ends_with' => 'Only @gmail.com email addresses are allowed to register.',
+            'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',
         ]);
 
-        $user = new User();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = Hash::make($request->password);
-        $user->role = 'customer';
-        $user->save();
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'customer',
+        ]);
+
+        // Create the linked Customer profile
+        \App\Models\Customer::create([
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+        ]);
 
         event(new Registered($user));
 

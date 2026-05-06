@@ -13,7 +13,10 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    if (auth()->user()->role === 'owner') {
+        return view('dashboard');
+    }
+    return redirect()->route('customer.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -23,30 +26,48 @@ Route::middleware('auth')->group(function () {
 
     // Customer Dashboard
     Route::get('/customer-dashboard', function () {
-        $repairs = \App\Models\Repair::where('customer_name', auth()->user()->name)->latest()->get();
+        $user = auth()->user();
+        $customer = $user->customer;
+        
+        // Ensure customer record exists
+        if (!$customer) {
+            $customer = \App\Models\Customer::create([
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
+        }
+        
+        $repairs = \App\Models\Repair::where('customer_id', $customer->id)
+            ->orWhere('customer_name', $user->name) // Fallback for old records
+            ->latest()
+            ->get();
+            
         return view('customer_dashboard', compact('repairs'));
     })->name('customer.dashboard');
 
     // Checkout & Cart
-    Route::post('/checkout', [CustomerController::class, 'processCheckout']);
-    Route::post('/cart/remove/{id}', [CustomerController::class, 'removeFromCart']);
-    Route::get('/compatibility', [CustomerController::class, 'compatibilityForm']);
-    Route::post('/compatibility', [CustomerController::class, 'checkCompatibility']);
-    Route::post('/cart/add/{id}', [CustomerController::class, 'addToCart']);
-    Route::get('/cart', [CustomerController::class, 'viewCart']);
-    Route::get('/checkout', [CustomerController::class, 'checkout']);
-    Route::post('/cart/increase/{id}', [CustomerController::class, 'increase']);
-    Route::post('/cart/decrease/{id}', [CustomerController::class, 'decrease']);
-    Route::post('/cart/update/{id}', [CustomerController::class, 'updateCart']);
-    Route::get('/receiptcart', [CustomerController::class, 'receipt']);
-    Route::get('/browse', [CustomerController::class, 'browse']);
-    Route::get('/search-parts', [CustomerController::class, 'searchParts'])->middleware('throttle:60,1');
+    Route::get('/cart', [CustomerController::class, 'viewCart'])->name('cart.view');
+    Route::post('/cart/add/{id}', [CustomerController::class, 'addToCart'])->name('cart.add');
+    Route::post('/cart/remove/{id}', [CustomerController::class, 'removeFromCart'])->name('cart.remove');
+    Route::post('/cart/increase/{id}', [CustomerController::class, 'increase'])->name('cart.increase');
+    Route::post('/cart/decrease/{id}', [CustomerController::class, 'decrease'])->name('cart.decrease');
+    Route::post('/cart/update/{id}', [CustomerController::class, 'updateCart'])->name('cart.update');
+    
+    Route::get('/checkout', [CustomerController::class, 'checkout'])->name('checkout.view');
+    Route::post('/checkout', [CustomerController::class, 'processCheckout'])->name('checkout.process');
+    Route::get('/receiptcart', [CustomerController::class, 'receipt'])->name('checkout.receipt');
+
+    Route::get('/browse', [CustomerController::class, 'browse'])->name('browse');
+    Route::get('/search-parts', [CustomerController::class, 'searchParts'])->middleware('throttle:60,1')->name('search.parts');
+    Route::get('/compatibility', [CustomerController::class, 'compatibilityForm'])->name('compatibility.view');
+    Route::post('/compatibility', [CustomerController::class, 'checkCompatibility'])->name('compatibility.check');
 
     // Pre-orders
-    Route::get('/preorder/{id}', [CustomerController::class, 'preOrderForm']);
-    Route::get('/preorder-parts', [CustomerController::class, 'preorderParts']);
-    Route::get('/preorder-custom', [CustomerController::class, 'customPreorderForm']);
-    Route::post('/preorder/store', [CustomerController::class, 'storePreOrder']);
+    Route::get('/preorder-parts', [CustomerController::class, 'preorderParts'])->name('preorder.parts');
+    Route::get('/preorder-custom', [CustomerController::class, 'customPreorderForm'])->name('preorder.custom');
+    Route::get('/preorder/{id}', [CustomerController::class, 'preOrderForm'])->name('preorder.form');
+    Route::post('/preorder/store', [CustomerController::class, 'storePreOrder'])->name('preorder.store');
 });
 
 Route::middleware(['auth', 'owner'])->group(function () {
@@ -56,25 +77,25 @@ Route::middleware(['auth', 'owner'])->group(function () {
 
     // Sales POS
     Route::get('/sales', [SaleController::class, 'recordSaleForm'])->name('sales.index');
-    Route::post('/sales/store', [SaleController::class, 'storeSale']);
-    Route::get('/sales/history', [SaleController::class, 'history']);
-    Route::delete('/sales/{id}', [SaleController::class, 'destroy']);
-    Route::get('/sales/report/receipt', [SaleController::class, 'reportReceipt']);
-    Route::get('/sales/{id}/receipt', [SaleController::class, 'receipt']);
+    Route::post('/sales/store', [SaleController::class, 'storeSale'])->name('sales.store');
+    Route::get('/sales/history', [SaleController::class, 'history'])->name('sales.history');
+    Route::delete('/sales/{id}', [SaleController::class, 'destroy'])->name('sales.destroy');
+    Route::get('/sales/report/receipt', [SaleController::class, 'reportReceipt'])->name('sales.report_receipt');
+    Route::get('/sales/{id}/receipt', [SaleController::class, 'receipt'])->name('sales.receipt');
 
     // Repairs
-    Route::get('/repairs', [RepairController::class, 'index']);
-    Route::post('/repairs', [RepairController::class, 'store']);
-    Route::put('/repairs/{id}', [RepairController::class, 'update']);
-    Route::delete('/repairs/{id}', [RepairController::class, 'destroy']);
-    Route::put('/repairs/{id}/pay', [RepairController::class, 'markPaid']);
-    Route::get('/repairs/{id}/receipt', [RepairController::class, 'receipt']);
+    Route::get('/repairs', [RepairController::class, 'index'])->name('repairs.index');
+    Route::post('/repairs', [RepairController::class, 'store'])->name('repairs.store');
+    Route::put('/repairs/{id}', [RepairController::class, 'update'])->name('repairs.update');
+    Route::delete('/repairs/{id}', [RepairController::class, 'destroy'])->name('repairs.destroy');
+    Route::put('/repairs/{id}/pay', [RepairController::class, 'markPaid'])->name('repairs.pay');
+    Route::get('/repairs/{id}/receipt', [RepairController::class, 'receipt'])->name('repairs.receipt');
 
     // Pre-orders Management
-    Route::get('/preorders', [PreOrderController::class, 'index']);
-    Route::post('/preorders/{id}/complete', [PreOrderController::class, 'complete']);
-    Route::post('/preorders/{id}/cancel', [PreOrderController::class, 'cancel']);
-    Route::delete('/preorders/{id}', [PreOrderController::class, 'destroy']);
+    Route::get('/preorders', [PreOrderController::class, 'index'])->name('preorders.index');
+    Route::post('/preorders/{id}/complete', [PreOrderController::class, 'complete'])->name('preorders.complete');
+    Route::post('/preorders/{id}/cancel', [PreOrderController::class, 'cancel'])->name('preorders.cancel');
+    Route::delete('/preorders/{id}', [PreOrderController::class, 'destroy'])->name('preorders.destroy');
 });
 
 require __DIR__.'/auth.php';

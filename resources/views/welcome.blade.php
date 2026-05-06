@@ -61,16 +61,6 @@
     </div>
 </section>
 
-{{-- STATS --}}
-<section class="stats fade-up">
-    <div class="stats-inner">
-        <div class="stat-card"><div class="stat-num">15+</div><div class="stat-label">Years of Service</div></div>
-        <div class="stat-card"><div class="stat-num">5,000+</div><div class="stat-label">Parts Available</div></div>
-        <div class="stat-card"><div class="stat-num">10K+</div><div class="stat-label">Happy Customers</div></div>
-        <div class="stat-card"><div class="stat-num">100%</div><div class="stat-label">Genuine Parts</div></div>
-    </div>
-</section>
-
 {{-- FEATURES --}}
 <section class="section" id="features">
     <div class="section-inner fade-up">
