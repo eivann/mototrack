@@ -57,7 +57,7 @@
 
             <!-- Google reCAPTCHA -->
             <div class="mb-4 flex flex-col items-center">
-                <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
             </div>
 
             <!-- Honeypot (Invisible Trap) -->

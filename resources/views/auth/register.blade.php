@@ -148,7 +148,7 @@
                 
                 <!-- Google reCAPTCHA -->
                 <div class="mb-6 flex flex-col items-center">
-                    <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+                    <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
                     @if ($errors->has('g-recaptcha-response'))
                         <p class="mt-2 text-red-500 text-xs font-semibold">{{ $errors->first('g-recaptcha-response') }}</p>
                     @endif

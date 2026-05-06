@@ -37,7 +37,7 @@ class RegisteredUserController extends Controller
             'my_extra_field' => 'prohibited',
             'g-recaptcha-response' => ['required', function ($attribute, $value, $fail) {
                 $response = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-                    'secret' => env('RECAPTCHA_SECRET_KEY'),
+                    'secret' => config('services.recaptcha.secret_key'),
                     'response' => $value,
                     'remoteip' => request()->ip(),
                 ]);
