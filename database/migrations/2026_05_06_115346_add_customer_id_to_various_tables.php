@@ -12,15 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sales', function (Blueprint $table) {
-            $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
+            if (!Schema::hasColumn('sales', 'customer_id')) {
+                $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
+            }
         });
 
         Schema::table('repairs', function (Blueprint $table) {
-            $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
+            if (!Schema::hasColumn('repairs', 'customer_id')) {
+                $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
+            }
         });
 
         Schema::table('pre_orders', function (Blueprint $table) {
-            $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
+            if (!Schema::hasColumn('pre_orders', 'customer_id')) {
+                $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
+            }
         });
     }
 
