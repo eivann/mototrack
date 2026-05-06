@@ -55,7 +55,7 @@ public function storeSale(Request $request)
             $change = $request->amount_tendered - $totalAmount;
 
             // Process sales
-            foreach ($cartItems as $index => $cartItem) {
+            foreach ($cartItems as $cartItem) {
                 $item = InventoryItem::find($cartItem['id']);
                 $total = $item->price * $cartItem['quantity'];
 
@@ -65,8 +65,8 @@ public function storeSale(Request $request)
                     'price' => $item->price, 
                     'total_price' => $total,
                     'transaction_reference' => $transactionReference,
-                    'amount_tendered' => $index === 0 ? $request->amount_tendered : 0,
-                    'change' => $index === 0 ? $change : 0
+                    'amount_tendered' => $request->amount_tendered,
+                    'change' => $change
                 ]);
 
                 $item->decrement('quantity', $cartItem['quantity']);
@@ -83,37 +83,41 @@ public function storeSale(Request $request)
 
     return redirect("/sales/{$transactionReference}/receipt")->with('success', 'Transaction completed successfully!');
 }
-public function history(Request $request)
-{
-    $query = \App\Models\Sale::with('item');
+    public function history(Request $request)
+    {
+        $query = \App\Models\Sale::with('item');
 
 
-    if ($request->from && $request->to) {
-        $query->whereBetween('created_at', [$request->from, $request->to]);
+        if ($request->from && $request->to) {
+            $query->whereBetween('created_at', [$request->from, $request->to]);
+        }
+
+        if ($request->filter == 'today') {
+            $query->whereDate('created_at', today());
+        } elseif ($request->filter == 'week') {
+            $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+        } elseif ($request->filter == 'month') {
+            $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+        }
+
+        $sales = $query->latest()->get();
+
+        $totalSales = $sales->sum('total_price');
+
+        // Count unique orders by transaction_reference
+        $totalTransactions = $sales->whereNotNull('transaction_reference')->unique('transaction_reference')->count() 
+                            + $sales->whereNull('transaction_reference')->count();
+
+        // Fetch all items for the Stock Report tab
+        $inventoryItems = \App\Models\InventoryItem::orderBy('quantity', 'asc')->get();
+
+        return view('history', compact(
+            'sales',
+            'totalSales',
+            'totalTransactions',
+            'inventoryItems'
+        ));
     }
-
-    if ($request->filter == 'today') {
-        $query->whereDate('created_at', today());
-    } elseif ($request->filter == 'week') {
-        $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-    } elseif ($request->filter == 'month') {
-        $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
-    }
-
-    $sales = $query->latest()->get();
-
-    $totalSales = $sales->sum('total_price');
-
-    // Count unique orders by transaction_reference
-    $totalTransactions = $sales->whereNotNull('transaction_reference')->unique('transaction_reference')->count() 
-                        + $sales->whereNull('transaction_reference')->count();
-
-    return view('history', compact(
-        'sales',
-        'totalSales',
-        'totalTransactions'
-    ));
-}
 public function destroy($id)
 {
     $sale = Sale::findOrFail($id);

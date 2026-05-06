@@ -19,6 +19,11 @@ Route::get('/dashboard', function () {
     return redirect()->route('customer.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/browse', [CustomerController::class, 'browse'])->name('browse');
+Route::get('/search-parts', [CustomerController::class, 'searchParts'])->middleware('throttle:60,1')->name('search.parts');
+Route::get('/compatibility', [CustomerController::class, 'compatibilityForm'])->name('compatibility.view');
+Route::post('/compatibility', [CustomerController::class, 'checkCompatibility'])->name('compatibility.check');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -57,11 +62,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CustomerController::class, 'checkout'])->name('checkout.view');
     Route::post('/checkout', [CustomerController::class, 'processCheckout'])->name('checkout.process');
     Route::get('/receiptcart', [CustomerController::class, 'receipt'])->name('checkout.receipt');
-
-    Route::get('/browse', [CustomerController::class, 'browse'])->name('browse');
-    Route::get('/search-parts', [CustomerController::class, 'searchParts'])->middleware('throttle:60,1')->name('search.parts');
-    Route::get('/compatibility', [CustomerController::class, 'compatibilityForm'])->name('compatibility.view');
-    Route::post('/compatibility', [CustomerController::class, 'checkCompatibility'])->name('compatibility.check');
 
     // Pre-orders
     Route::get('/preorder-parts', [CustomerController::class, 'preorderParts'])->name('preorder.parts');

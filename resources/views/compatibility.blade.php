@@ -21,22 +21,37 @@
                 <!-- Decorative background glow -->
                 <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
                 
-                <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl flex items-center p-2 border border-white/50">
-                    <div class="pl-4 pr-2 text-gray-400">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </div>
-                    <input type="text" id="searchInput" autocomplete="off" placeholder="E.g., Honda Brake Pad..." value="{{ $searchQuery ?? '' }}"
-                        class="w-full bg-transparent border-none text-gray-800 text-lg focus:ring-0 placeholder-gray-400 py-3 px-2 outline-none">
-                    
-                    <!-- Loading Spinner (Hidden by default) -->
-                    <div id="loadingSpinner" class="pr-4 hidden">
-                        <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-white/50">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="flex flex-col">
+                            <label class="text-xs font-bold text-gray-500 uppercase ml-1 mb-1">Make</label>
+                            <input type="text" id="makeInput" placeholder="E.g., Honda" class="bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-xs font-bold text-gray-500 uppercase ml-1 mb-1">Model</label>
+                            <input type="text" id="modelInput" placeholder="E.g., TMX 125" class="bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="flex flex-col relative">
+                            <label class="text-xs font-bold text-gray-500 uppercase ml-1 mb-1">Year</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="yearInput" placeholder="E.g., 2024" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500">
+                                <!-- Loading Spinner -->
+                                <div id="loadingSpinner" class="hidden absolute right-3 top-[34px]">
+                                    <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
+                <!-- RESULTS GRID -->
+                <div id="resultsBox" class="mt-8 transition-all duration-300 relative z-10">
+                    <!-- Results injected here -->
+                </div>
+            </div>
                 <!-- RESULTS GRID -->
                 <div id="resultsBox" class="mt-8 transition-all duration-300 relative z-10">
                     <!-- Results injected here -->
@@ -58,12 +73,14 @@
     </style>
 
     <script>
-        const input = document.getElementById('searchInput');
+        const makeInput = document.getElementById('makeInput');
+        const modelInput = document.getElementById('modelInput');
+        const yearInput = document.getElementById('yearInput');
         const resultsBox = document.getElementById('resultsBox');
         const spinner = document.getElementById('loadingSpinner');
         const toastContainer = document.getElementById('toast-container');
+        const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
         let timeout = null;
-        let currentQuery = '';
 
         // Toast Notification System
         function showToast(message, type = 'success') {
@@ -86,6 +103,11 @@
 
         // Add to Cart Logic
         async function addToCart(id) {
+            if (!isAuthenticated) {
+                window.location.href = "{{ route('login') }}";
+                return;
+            }
+
             const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
             const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
 
@@ -103,7 +125,6 @@
 
                 if (response.ok) {
                     showToast(data.success || 'Item added to cart successfully!');
-                    // Optional: update a cart counter if you have one
                 } else {
                     showToast(data.error || 'Failed to add item', 'error');
                 }
@@ -113,7 +134,7 @@
             }
         }
 
-        // Event Delegation for Add to Cart buttons
+        // Event Delegation for buttons
         resultsBox.addEventListener('click', (e) => {
             const btn = e.target.closest('.add-to-cart-btn');
             if (btn) {
@@ -126,26 +147,21 @@
         // Highlight matching text
         function highlightText(text, query) {
             if (!query || !text) return text;
-            const terms = query.trim().split(/\\s+/).filter(t => t.length > 0);
+            const terms = query.trim().split(/\s+/).filter(t => t.length > 0);
             if(terms.length === 0) return text;
             const regex = new RegExp(`(${terms.join('|')})`, 'gi');
             return String(text).replace(regex, '<span class="highlight">$1</span>');
         }
 
-        input.addEventListener('keyup', function (e) {
+        function triggerSearch() {
             clearTimeout(timeout);
-            let query = this.value.trim();
+            const query = `${makeInput.value} ${modelInput.value} ${yearInput.value}`.trim();
 
             if (query.length < 2) {
                 resultsBox.innerHTML = '';
                 return;
             }
 
-            if (query === currentQuery && resultsBox.innerHTML !== '') {
-                return;
-            }
-
-            currentQuery = query;
             spinner.classList.remove('hidden');
 
             timeout = setTimeout(() => {
@@ -160,24 +176,29 @@
                                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center text-gray-500 max-w-2xl mx-auto">
                                     <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     <p class="font-bold text-xl text-gray-800 mb-2">No matching parts found</p>
-                                    <p class="text-gray-500">We couldn't find any parts matching "${query}".</p>
+                                    <p class="text-gray-500">No parts found for this specific motorcycle.</p>
                                 </div>
                             `;
                         } else {
                             const grid = document.createElement('div');
-                            grid.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4';
+                            grid.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4';
                             
                             data.forEach(item => {
                                 const card = document.createElement('div');
                                 card.className = 'bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg border border-gray-100 hover:border-indigo-300 transition-all duration-300 flex flex-col group';
                                 
                                 const stockBadge = item.quantity > 0
-                                    ? `<span class="text-[11px] font-medium text-gray-500">${item.quantity} items left</span>`
+                                    ? `<span class="text-[11px] font-medium text-gray-500">${item.quantity} in stock</span>`
                                     : `<span class="text-[11px] font-medium text-red-500">Out of Stock</span>`;
 
-                                const actionBtn = item.quantity > 0
-                                    ? `<button data-id="${item.id}" class="add-to-cart-btn mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer">Add to Cart</button>`
-                                    : `<a href="/preorder/${item.id}" class="mt-3 block text-center w-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95">Pre-order</a>`;
+                                let actionBtn = '';
+                                if (isAuthenticated) {
+                                    actionBtn = item.quantity > 0
+                                        ? `<button data-id="${item.id}" class="add-to-cart-btn mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer">Add to Cart</button>`
+                                        : `<a href="/preorder/${item.id}" class="mt-3 block text-center w-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95">Pre-order</a>`;
+                                } else {
+                                    actionBtn = `<a href="{{ route('login') }}" class="mt-3 block text-center w-full bg-gray-100 text-gray-600 text-sm font-semibold py-2 rounded-lg hover:bg-gray-200">Login to Order</a>`;
+                                }
 
                                 const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${item.brand}</p>` : '';
                                 const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 bg-gray-50 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
@@ -193,7 +214,6 @@
                                             ${highlightText(item.part_name, query)}
                                         </h3>
                                         ${modelBadge}
-                                        
                                         <div class="flex items-end justify-between mt-3">
                                             <div class="leading-none">
                                                 <span class="text-xs font-semibold text-orange-500 align-top">₱</span><span class="text-lg font-bold text-orange-500">${parseFloat(item.price).toFixed(2)}</span>
@@ -211,13 +231,16 @@
                         spinner.classList.add('hidden');
                     });
             }, 400);
+        }
+
+        [makeInput, modelInput, yearInput].forEach(el => {
+            el.addEventListener('keyup', triggerSearch);
         });
 
-        // Auto-trigger search if query exists from landing page
+        // Auto-trigger search if query exists
         document.addEventListener('DOMContentLoaded', () => {
-            if (input.value.trim().length >= 2) {
-                input.dispatchEvent(new Event('focus'));
-                input.dispatchEvent(new Event('keyup'));
+            if (makeInput.value || modelInput.value || yearInput.value) {
+                triggerSearch();
             }
         });
     </script>

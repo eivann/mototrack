@@ -35,8 +35,16 @@
 
                 <form method="POST" action="/repairs">
                     @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                        <input name="customer_name" placeholder="Customer Name" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                        <div class="lg:col-span-1">
+                            <select name="customer_id" class="w-full border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Walk-in / Other</option>
+                                @foreach($customers as $customer)
+                                    <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <input name="customer_name" placeholder="Manual Name (if walk-in)" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500">
                         <input name="bike_model" placeholder="Bike Model" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
                         <input name="issue" placeholder="Reported Issue" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 lg:col-span-2" required>
                         <div class="relative">

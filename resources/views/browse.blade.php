@@ -93,16 +93,24 @@
                         ₱{{ number_format($item->price, 2) }}
                     </p>
 
-                    <form method="POST" action="/cart/add/{{ $item->id }}" class="mt-3">
-                        @csrf
-                        @if($item->quantity == 0)
-    <a href="/preorder/{{ $item->id }}" class="btn btn-warning w-full">
-        Pre-order
-    </a>
-@else
-    <button class="btn btn-primary w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Add to Cart</button>
-@endif
-                    </form>
+                    @auth
+                        <form method="POST" action="/cart/add/{{ $item->id }}" class="mt-3">
+                            @csrf
+                            @if($item->quantity == 0)
+                                <a href="/preorder/{{ $item->id }}" class="btn btn-warning w-full block text-center bg-amber-500 text-white py-2 rounded-lg hover:bg-amber-600">
+                                    Pre-order
+                                </a>
+                            @else
+                                <button class="btn btn-primary w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Add to Cart</button>
+                            @endif
+                        </form>
+                    @else
+                        <div class="mt-3">
+                            <a href="{{ route('login') }}" class="block text-center w-full bg-gray-100 text-gray-600 text-sm font-semibold py-2 rounded-lg hover:bg-gray-200">
+                                Login to Order
+                            </a>
+                        </div>
+                    @endauth
 
                 </div>
             @empty

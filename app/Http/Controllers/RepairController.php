@@ -9,22 +9,23 @@ use App\Models\Repair;
 
 class RepairController extends Controller
 {
-public function index(Request $request)
-{
-    $query = Repair::query();
+    public function index(Request $request)
+    {
+        $query = Repair::query();
 
-    if ($request->status) {
-        $query->where('status', $request->status);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->paid !== null) {
+            $query->where('is_paid', $request->paid);
+        }
+
+        $repairs = $query->latest()->get();
+        $customers = \App\Models\Customer::orderBy('name')->get();
+
+        return view('repair', compact('repairs', 'customers'));
     }
-
-    if ($request->paid !== null) {
-        $query->where('is_paid', $request->paid);
-    }
-
-    $repairs = $query->latest()->get();
-
-    return view('repair', compact('repairs'));
-}
 
 public function store(Request $request)
 {
@@ -36,7 +37,8 @@ public function store(Request $request)
     ]);
 
     Repair::create([
-        'customer_name' => ucwords($request->customer_name),
+        'customer_id'   => $request->customer_id,
+        'customer_name' => $request->customer_id ? \App\Models\Customer::find($request->customer_id)->name : ucwords($request->customer_name),
         'bike_model'    => $request->bike_model ? ucwords($request->bike_model) : null,
         'issue'         => $request->issue ? ucfirst($request->issue) : null,
         'cost'          => $request->cost,
