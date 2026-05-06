@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
         Schema::table('sales', function (Blueprint $table) {
             if (!Schema::hasColumn('sales', 'customer_id')) {
                 $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
             } else {
-                // Fix type if it exists manually to avoid Error 150
                 $table->unsignedBigInteger('customer_id')->nullable()->change();
                 $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
             }
@@ -38,6 +39,8 @@ return new class extends Migration
                 $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
             }
         });
+
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
 
     /**
