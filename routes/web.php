@@ -48,7 +48,12 @@ Route::middleware('auth')->group(function () {
             ->latest()
             ->get();
             
-        return view('customer_dashboard', compact('repairs'));
+        $preorders = \App\Models\PreOrder::where('customer_id', $customer->id)
+            ->orWhere('customer_name', $user->name) // Fallback for old records
+            ->latest()
+            ->get();
+            
+        return view('customer_dashboard', compact('repairs', 'preorders'));
     })->name('customer.dashboard');
 
     // Checkout & Cart

@@ -96,6 +96,63 @@
                 </div>
             @endif
         </div>
+        
+        <!-- Track Pre-orders Section -->
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                Track My Pre-Orders
+            </h2>
+
+            @if(isset($preorders) && $preorders->count() > 0)
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-100 text-xs tracking-wider uppercase text-gray-500">
+                                    <th class="p-5 font-semibold">Part Name</th>
+                                    <th class="p-5 font-semibold">Model</th>
+                                    <th class="p-5 font-semibold text-center">Quantity</th>
+                                    <th class="p-5 font-semibold">Down Payment</th>
+                                    <th class="p-5 font-semibold">Status</th>
+                                    <th class="p-5 font-semibold">Date Requested</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50 text-sm">
+                                @foreach($preorders as $order)
+                                    <tr class="hover:bg-gray-50/50 transition-colors">
+                                        <td class="p-5 font-semibold text-gray-900">{{ $order->part_name }}</td>
+                                        <td class="p-5 text-gray-600">{{ $order->model ?? 'N/A' }}</td>
+                                        <td class="p-5 text-center font-medium">{{ $order->quantity }}</td>
+                                        <td class="p-5 font-medium text-gray-900">₱{{ number_format($order->down_payment, 2) }}</td>
+                                        <td class="p-5">
+                                            @if(strtolower($order->status) == 'pending')
+                                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Pending Review</span>
+                                            @elseif(in_array(strtolower($order->status), ['approved', 'processing']))
+                                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">Sourcing Part</span>
+                                            @elseif(strtolower($order->status) == 'ready')
+                                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 animate-pulse">Ready for Pickup</span>
+                                            @elseif(in_array(strtolower($order->status), ['completed', 'done']))
+                                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">Completed</span>
+                                            @else
+                                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">{{ ucfirst($order->status) }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="p-5 text-gray-500">{{ $order->created_at->format('M d, Y') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @else
+                <div class="bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-10 text-center">
+                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 12H4M8 16l-4-4 4-4"></path></svg>
+                    <p class="text-gray-500 font-medium">You don't have any active pre-orders.</p>
+                    <p class="text-gray-400 text-sm mt-1">If you need a specific part we don't have in stock, you can request it above.</p>
+                </div>
+            @endif
+        </div>
 
     </div>
 

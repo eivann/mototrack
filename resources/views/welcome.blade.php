@@ -188,9 +188,9 @@
                 <div class="contact-card"><div class="ci"><i data-lucide="clock" style="width:20px;height:20px"></i></div><div><h4>Shop Hours</h4><p>Open Daily: 6:00 AM — 6:00 PM</p></div></div>
             </div>
             <div class="map-wrap">
-                @if(config('services.google_maps.key', env('GOOGLE_MAPS_API_KEY')))
-                    <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
-                        src="https://www.google.com/maps/embed/v1/place?key={{ config('services.google_maps.key', env('GOOGLE_MAPS_API_KEY')) }}&q=Edmar+Motorcycle+Parts,+Pandi,+Bulacan,+Philippines"></iframe>
+                @if(config('services.google_maps.key'))
+                    <iframe width="100%" height="450" style="border:0;" loading="lazy" allowfullscreen 
+                        src="https://www.google.com/maps/embed/v1/place?key={{ config('services.google_maps.key') }}&q=Edmar+Motorcycle+Parts,+Pandi,+Bulacan,+Philippines"></iframe>
                 @else
                     <div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,0.3)">
                         <p>Map will appear once API key is configured.</p>
