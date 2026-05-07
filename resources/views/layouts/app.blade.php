@@ -10,9 +10,9 @@
             (function() {
                 var theme = localStorage.getItem('theme');
                 if (theme === 'dark' || (!theme)) {
-                    document.getElementById('html-root').classList.add('dark');
+                    document.documentElement.classList.add('dark');
                 } else {
-                    document.getElementById('html-root').classList.remove('dark');
+                    document.documentElement.classList.remove('dark');
                 }
             })();
         </script>

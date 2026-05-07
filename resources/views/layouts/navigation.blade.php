@@ -361,7 +361,7 @@
 
 <script>
 (function() {
-    var htmlEl = document.getElementById('html-root');
+    var htmlEl = document.documentElement;
     var toggle = document.getElementById('globalThemeToggle');
     var mobileToggle = document.getElementById('mobileThemeToggle');
     var icon = document.getElementById('globalThemeIcon');
@@ -385,7 +385,7 @@
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
-    // Set correct icon on load
+    // Set correct state on load
     var savedTheme = localStorage.getItem('theme');
     applyTheme(savedTheme !== 'light');
 
