@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\InventoryItem;
 use App\Models\Sale;
 use App\Models\PreOrder;
+use App\Models\User;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\StatusUpdated;
 
 
 class CustomerController extends Controller
@@ -146,7 +149,7 @@ class CustomerController extends Controller
         }
 
         $transactionReference = 'TRX-' . strtoupper(uniqid());
-        $paymentMethod = $request->input('payment_method', 'cash');
+        $paymentMethod = $request->input('payment_method', 'gcash');
         
         // Find or create customer profile for logged-in user
         $customerId = null;
@@ -186,8 +189,8 @@ class CustomerController extends Controller
                         'price' => $inventory->price,
                         'total_price' => $total,
                         'transaction_reference' => $transactionReference,
-                        'amount_tendered' => $isFirstItem ? ($paymentMethod === 'gcash' ? $grandTotal : $request->input('amount_tendered')) : 0,
-                        'change' => $isFirstItem ? ($paymentMethod === 'gcash' ? 0 : (($request->input('amount_tendered') ?? 0) - $grandTotal)) : 0,
+                        'amount_tendered' => $isFirstItem ? ($request->input('amount_tendered') ?: $grandTotal) : 0,
+                        'change' => $isFirstItem ? (max(0, ($request->input('amount_tendered') ?? 0) - $grandTotal)) : 0,
                     ]);
 
                     $inventory->decrement('quantity', $item['quantity']);
@@ -203,7 +206,24 @@ class CustomerController extends Controller
         session()->forget('cart');
         session()->put('last_trx', $transactionReference);
 
-        $amountTendered = $paymentMethod === 'gcash' ? $grandTotal : $request->input('amount_tendered');
+        // Notify customer
+        if (auth()->check()) {
+            auth()->user()->notify(new StatusUpdated(
+                'Order Placed',
+                "Your order #{$transactionReference} has been placed successfully. We'll notify you when it's ready for pickup!",
+                '/customer-dashboard'
+            ));
+        }
+
+        // Notify Owner
+        $owners = User::where('role', 'owner')->get();
+        Notification::send($owners, new StatusUpdated(
+            'New Order Received',
+            "Customer " . auth()->user()->name . " has placed a new order #{$transactionReference}.",
+            "/sales/{$transactionReference}/receipt"
+        ));
+
+        $paymentAmount = $request->input('amount_tendered') ?: $grandTotal;
 
         if ($paymentMethod === 'gcash') {
             try {
@@ -212,7 +232,7 @@ class CustomerController extends Controller
                 $create_invoice_request = new \Xendit\Invoice\CreateInvoiceRequest([
                     'external_id' => $transactionReference,
                     'description' => 'MotoTrack Order ' . $transactionReference,
-                    'amount' => $grandTotal,
+                    'amount' => $paymentAmount,
                     'invoice_duration' => 86400,
                     'currency' => 'PHP',
                     'payment_methods' => ['GCASH'],
@@ -272,7 +292,7 @@ class CustomerController extends Controller
             $customerId = $customer->id;
         }
 
-        PreOrder::create([
+        $preorder = PreOrder::create([
             'customer_id' => $customerId, // Linked to Customer ID
             'customer_name' => ucwords(auth()->user()->name),
             'part_name' => ucwords($request->part_name),
@@ -280,9 +300,50 @@ class CustomerController extends Controller
             'quantity' => $request->quantity,
             'down_payment' => $request->down_payment,
             'status' => 'pending',
+            'is_paid' => false,
         ]);
 
-        return redirect('/customer-dashboard')->with('success', 'Pre-order submitted successfully!');
+        $externalId = 'PRE-' . $preorder->id . '-' . time();
+
+        try {
+            \Xendit\Configuration::setXenditKey(config('services.xendit.secret_key'));
+            $apiInstance = new \Xendit\Invoice\InvoiceApi();
+            $create_invoice_request = new \Xendit\Invoice\CreateInvoiceRequest([
+                'external_id' => $externalId,
+                'description' => 'Down Payment for Pre-order: ' . $request->part_name,
+                'amount' => $request->down_payment,
+                'invoice_duration' => 86400,
+                'currency' => 'PHP',
+                'payment_methods' => ['GCASH'],
+                'success_redirect_url' => url('/customer-dashboard?success=preorder_paid'),
+                'failure_redirect_url' => url('/customer-dashboard?error=preorder_failed'),
+            ]);
+            $result = $apiInstance->createInvoice($create_invoice_request);
+            
+            $preorder->update([
+                'xendit_invoice_id' => $result['id'],
+                'xendit_invoice_url' => $result['invoice_url']
+            ]);
+
+            // Notify customer
+            auth()->user()->notify(new StatusUpdated(
+                'Pre-order Initiated',
+                "Your pre-order for {$request->part_name} has been received. Please complete the down payment of ₱" . number_format($request->down_payment, 2) . " via GCash to proceed.",
+                $result['invoice_url']
+            ));
+
+            // Notify Owner
+            $owners = User::where('role', 'owner')->get();
+            Notification::send($owners, new StatusUpdated(
+                'New Pre-order Request',
+                "Customer " . auth()->user()->name . " has requested a pre-order for {$request->part_name} (Payment Pending).",
+                "/preorders"
+            ));
+
+            return redirect($result['invoice_url']);
+        } catch (\Exception $e) {
+            return redirect('/customer-dashboard')->with('error', 'Pre-order saved but payment redirection failed: ' . $e->getMessage());
+        }
     }
 
     public function preorderParts()

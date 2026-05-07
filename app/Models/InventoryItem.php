@@ -11,6 +11,7 @@ class InventoryItem extends Model
     public $timestamps = false; // IMPORTANT (no created_at, updated_at)
 
     protected $fillable = [
+        'sku',
         'category',
         'part_name',
         'brand',
@@ -64,7 +65,8 @@ class InventoryItem extends Model
         return $query->where(function ($q) use ($terms) {
             foreach ($terms as $term) {
                 $q->where(function ($inner) use ($term) {
-                    $inner->where('model', 'LIKE', "%$term%")
+                    $inner->where('sku', 'LIKE', "%$term%")
+                          ->orWhere('model', 'LIKE', "%$term%")
                           ->orWhere('part_name', 'LIKE', "%$term%")
                           ->orWhere('category', 'LIKE', "%$term%")
                           ->orWhere('brand', 'LIKE', "%$term%");

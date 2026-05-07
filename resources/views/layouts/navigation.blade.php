@@ -97,8 +97,109 @@
                 </div>
             </div>
 
-            <!-- User Dropdown / Auth Actions -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-2">
+                {{-- Notification Bell --}}
+                @auth
+                <div class="relative group" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
+                    <button @click="open = !open; hasNew = false" 
+                        class="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 relative">
+                        <i data-lucide="bell" class="w-4 h-4" :class="hasNew ? 'animate-bounce' : ''"></i>
+                        <template x-if="hasNew">
+                            <span class="absolute top-0 right-0 flex h-3 w-3">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-indigo-600 border-2 border-white dark:border-gray-900"></span>
+                            </span>
+                        </template>
+                    </button>
+
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                         class="absolute right-0 mt-3 w-80 md:w-[400px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden z-[70]"
+                         x-cloak>
+                        
+                        <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50">
+                            <h3 class="font-bold text-sm text-gray-900 dark:text-white uppercase tracking-tight">Recent Notifications</h3>
+                            <template x-if="hasNew">
+                                <span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 text-[10px] font-black rounded-full">{{ auth()->user()->unreadNotifications->count() }} NEW</span>
+                            </template>
+                        </div>
+
+                        <div class="overflow-y-auto scrollbar-thin" style="max-height: 280px;">
+                            @forelse(auth()->user()->notifications->take(10) as $notification)
+                                <div class="relative flex items-center gap-4 p-4 {{ $notification->unread() ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : '' }} hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-50 dark:border-gray-700 last:border-0 group">
+                                    <!-- Left: Icon/Avatar -->
+                                    <div class="shrink-0">
+                                        <div class="w-10 h-10 rounded-full {{ $notification->unread() ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-400' }} flex items-center justify-center">
+                                            <i data-lucide="{{ str_contains(strtolower($notification->data['title']), 'repair') ? 'wrench' : 'package' }}" class="w-5 h-5"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Center: Content -->
+                                    <div class="flex-1 min-w-0 pr-6">
+                                        <h4 class="text-xs font-bold {{ $notification->unread() ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400' }} truncate">
+                                            {{ $notification->data['title'] }}
+                                        </h4>
+                                        <p class="text-[11px] {{ $notification->unread() ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400 dark:text-gray-500' }} line-clamp-1 mt-0.5">
+                                            {{ $notification->data['message'] }}
+                                        </p>
+                                        <p class="text-[9px] text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-widest font-semibold">
+                                            {{ $notification->created_at->diffForHumans() }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Right: Action (Only for unread) -->
+                                    @if($notification->unread())
+                                    <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        @csrf
+                                        <button type="submit" class="p-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-indigo-600 dark:text-indigo-400" title="Mark as read">
+                                            <i data-lucide="check" class="w-4 h-4"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+
+                                    <!-- Link Overlay -->
+                                    <a href="{{ $notification->data['link'] ?? '#' }}" class="absolute inset-0 z-0 {{ $notification->unread() ? 'pr-12' : '' }}"></a>
+                                </div>
+                            @empty
+                                <div class="p-8 text-center">
+                                    <div class="bg-gray-100 dark:bg-gray-700 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i data-lucide="bell-off" class="w-5 h-5 text-gray-400"></i>
+                                    </div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">All caught up!</p>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- Dropdown Footer Actions -->
+                        <div class="p-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-1.5 text-[11px] font-bold text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                    <i data-lucide="list" class="w-3.5 h-3.5"></i>
+                                    See all
+                                </a>
+                                <form action="{{ route('notifications.read_all') }}" method="POST">
+                                    @csrf
+                                    <button class="flex items-center gap-1.5 text-[11px] font-bold text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                        <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+                                        Mark all read
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endauth
+
+                {{-- Global Theme Toggle --}}
+                <button id="globalThemeToggle" title="Toggle Light/Dark Mode"
+                    class="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
+                    <i id="globalThemeIcon" data-lucide="moon" class="w-4 h-4"></i>
+                </button>
                 @auth
                     <x-dropdown align="right" width="56">
                         <x-slot name="trigger">
@@ -217,6 +318,12 @@
                     </a>
                 </div>
             @endauth
+            {{-- Mobile Theme Toggle --}}
+            <button id="mobileThemeToggle"
+                class="flex items-center w-full px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <i id="mobileThemeIcon" data-lucide="moon" class="w-5 h-5 mr-4"></i>
+                <span id="mobileThemeLabel">Dark Mode</span>
+            </button>
         </div>
 
         @auth
@@ -252,3 +359,45 @@
     </div>
 </nav>
 
+<script>
+(function() {
+    var htmlEl = document.getElementById('html-root');
+    var toggle = document.getElementById('globalThemeToggle');
+    var mobileToggle = document.getElementById('mobileThemeToggle');
+    var icon = document.getElementById('globalThemeIcon');
+    var mobileIcon = document.getElementById('mobileThemeIcon');
+    var mobileLabel = document.getElementById('mobileThemeLabel');
+
+    function applyTheme(isDark) {
+        if (isDark) {
+            htmlEl.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            if (icon) { icon.setAttribute('data-lucide', 'sun'); }
+            if (mobileIcon) { mobileIcon.setAttribute('data-lucide', 'sun'); }
+            if (mobileLabel) { mobileLabel.textContent = 'Light Mode'; }
+        } else {
+            htmlEl.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            if (icon) { icon.setAttribute('data-lucide', 'moon'); }
+            if (mobileIcon) { mobileIcon.setAttribute('data-lucide', 'moon'); }
+            if (mobileLabel) { mobileLabel.textContent = 'Dark Mode'; }
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    // Set correct icon on load
+    var savedTheme = localStorage.getItem('theme');
+    applyTheme(savedTheme !== 'light');
+
+    if (toggle) {
+        toggle.addEventListener('click', function() {
+            applyTheme(!htmlEl.classList.contains('dark'));
+        });
+    }
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function() {
+            applyTheme(!htmlEl.classList.contains('dark'));
+        });
+    }
+})();
+</script>

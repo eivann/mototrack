@@ -16,6 +16,9 @@ class PreOrder extends Model
     'status',
     'price',
     'total',
+    'is_paid',
+    'xendit_invoice_id',
+    'xendit_invoice_url',
 ];
 
 public function customer()

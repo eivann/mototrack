@@ -1,6 +1,6 @@
 <x-app-layout>
     <!-- Background styling with subtle gradient for premium feel -->
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 py-16 px-4 sm:px-6 lg:px-8 font-sans">
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 py-16 px-4 sm:px-6 lg:px-8 font-sans">
 
         <!-- Toast Notification Container -->
         <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
@@ -8,10 +8,10 @@
         <div class="max-w-3xl mx-auto mt-10">
             <!-- Header -->
             <div class="text-center mb-10">
-                <h2 class="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
+                            <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight sm:text-5xl">
                     Compatibility Checker
                 </h2>
-                <p class="mt-4 text-lg text-gray-500">
+                <p class="mt-4 text-lg text-gray-500 dark:text-gray-400">
                     Find the perfect parts for your motorcycle. Search by model, part name, or category.
                 </p>
             </div>
@@ -21,20 +21,20 @@
                 <!-- Decorative background glow -->
                 <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
                 
-                <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-white/50">
+                <div class="relative bg-white dark:bg-gray-800 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="flex flex-col">
-                            <label class="text-xs font-bold text-gray-500 uppercase ml-1 mb-1">Make</label>
-                            <input type="text" id="makeInput" placeholder="E.g., Honda" class="bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500">
+                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Make</label>
+                            <input type="text" id="makeInput" placeholder="E.g., Honda" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none">
                         </div>
                         <div class="flex flex-col">
-                            <label class="text-xs font-bold text-gray-500 uppercase ml-1 mb-1">Model</label>
-                            <input type="text" id="modelInput" placeholder="E.g., TMX 125" class="bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500">
+                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Model</label>
+                            <input type="text" id="modelInput" placeholder="E.g., TMX 125" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none">
                         </div>
                         <div class="flex flex-col relative">
-                            <label class="text-xs font-bold text-gray-500 uppercase ml-1 mb-1">Year</label>
+                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Year</label>
                             <div class="flex items-center gap-2">
-                                <input type="text" id="yearInput" placeholder="E.g., 2024" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500">
+                                <input type="text" id="yearInput" placeholder="E.g., 2024" class="w-full bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500">
                                 <!-- Loading Spinner -->
                                 <div id="loadingSpinner" class="hidden absolute right-3 top-[34px]">
                                     <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -173,10 +173,10 @@
 
                         if (data.length === 0) {
                             resultsBox.innerHTML = `
-                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center text-gray-500 max-w-2xl mx-auto">
-                                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    <p class="font-bold text-xl text-gray-800 mb-2">No matching parts found</p>
-                                    <p class="text-gray-500">No parts found for this specific motorcycle.</p>
+                                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+                                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <p class="font-bold text-xl text-gray-800 dark:text-white mb-2">No matching parts found</p>
+                                    <p class="text-gray-500 dark:text-gray-400">No parts found for this specific motorcycle.</p>
                                 </div>
                             `;
                         } else {
@@ -185,7 +185,7 @@
                             
                             data.forEach(item => {
                                 const card = document.createElement('div');
-                                card.className = 'bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg border border-gray-100 hover:border-indigo-300 transition-all duration-300 flex flex-col group';
+                                card.className = 'bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg border border-gray-100 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300 flex flex-col group';
                                 
                                 const stockBadge = item.quantity > 0
                                     ? `<span class="text-[11px] font-medium text-gray-500">${item.quantity} in stock</span>`
@@ -201,16 +201,16 @@
                                 }
 
                                 const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${item.brand}</p>` : '';
-                                const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 bg-gray-50 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
+                                const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
 
                                 card.innerHTML = `
-                                    <div class="aspect-square bg-gray-50 flex items-center justify-center p-4 relative overflow-hidden group-hover:bg-gray-100 transition-colors border-b border-gray-100">
-                                        <svg class="w-16 h-16 text-gray-300 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                    <div class="aspect-square bg-gray-50 dark:bg-gray-700 flex items-center justify-center p-4 relative overflow-hidden group-hover:bg-gray-100 dark:group-hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-700">
+                                        <svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                                         ${item.quantity <= 0 ? '<div class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">Sold Out</div>' : ''}
                                     </div>
                                     <div class="p-4 flex-1 flex flex-col">
                                         ${brandText}
-                                        <h3 class="text-sm font-medium text-gray-800 line-clamp-2 leading-snug flex-1" title="${item.part_name}">
+                                        <h3 class="text-sm font-medium text-gray-800 dark:text-white line-clamp-2 leading-snug flex-1" title="${item.part_name}">
                                             ${highlightText(item.part_name, query)}
                                         </h3>
                                         ${modelBadge}

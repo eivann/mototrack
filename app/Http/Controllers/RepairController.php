@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Repair;
 use Illuminate\Support\Str;
+use App\Models\User;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\StatusUpdated;
+use Illuminate\Support\Facades\DB;
 
 
 class RepairController extends Controller
@@ -62,12 +66,21 @@ public function store(Request $request)
             'status' => 'required|string|in:pending,ongoing,done',
         ]);
 
-    $repair = Repair::findOrFail($id);
-    $repair->status = $request->status;
-    $repair->save();
+        $repair = Repair::findOrFail($id);
+        $repair->status = $request->status;
+        $repair->save();
 
-   return redirect('/repairs')->with('success', 'Status updated!');
-}
+        // Notify customer via dashboard
+        if ($repair->customer && $repair->customer->user) {
+            $repair->customer->user->notify(new \App\Notifications\StatusUpdated(
+                'Repair Status Updated',
+                "Your repair job for {$repair->bike_model} is now: " . strtoupper($request->status),
+                '/customer-dashboard'
+            ));
+        }
+
+        return redirect('/repairs')->with('success', 'Status updated!');
+    }
 
 public function destroy($id)
 {
@@ -78,17 +91,37 @@ public function destroy($id)
     public function markPaid($id)
     {
         $repair = Repair::findOrFail($id);
-        $repair->is_paid = true;
-        $repair->save();
 
-        // Record this as a sale for the reports
-        \App\Models\Sale::create([
-            'inventory_item_id' => null, // Service/Labor
-            'quantity' => 1,
-            'total_price' => $repair->cost,
-            'customer_id' => $repair->customer_id,
-            'transaction_reference' => 'REPAIR-' . strtoupper(Str::random(8)),
-        ]);
+        DB::transaction(function () use ($repair) {
+            $repair->is_paid = true;
+            $repair->save();
+
+            // Record this as a sale for the reports
+            \App\Models\Sale::create([
+                'inventory_item_id' => null, // Service/Labor
+                'quantity' => 1,
+                'total_price' => $repair->cost,
+                'customer_id' => $repair->customer_id,
+                'transaction_reference' => 'REPAIR-' . strtoupper(Str::random(8)),
+            ]);
+        });
+
+        // Notify Owner
+        $owners = User::where('role', 'owner')->get();
+        Notification::send($owners, new StatusUpdated(
+            'Repair Payment Received',
+            "Payment of ₱" . number_format($repair->cost, 2) . " received for {$repair->bike_model} ({$repair->customer_name}).",
+            "/repairs"
+        ));
+
+        // Notify Customer
+        if ($repair->customer && $repair->customer->user) {
+            $repair->customer->user->notify(new StatusUpdated(
+                'Payment Confirmed',
+                "Your payment of ₱" . number_format($repair->cost, 2) . " for {$repair->bike_model} has been received. Thank you!",
+                '/customer-dashboard'
+            ));
+        }
 
         return back()->with('success', 'Payment recorded and added to sales history!');
     }

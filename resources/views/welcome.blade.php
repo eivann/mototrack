@@ -1,8 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{-- Apply theme before paint to avoid flash --}}
+<script>
+    (function() {
+        var theme = localStorage.getItem('theme');
+        var html = document.getElementById('html-root');
+        if (theme === 'dark' || (!theme)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+    })();
+</script>
 <title>MotoTrack — Edmar Motorcycle Parts & Accessories</title>
 <meta name="description" content="Your trusted motorcycle parts shop in Pandi, Bulacan since 2009. Browse parts, check compatibility, and pre-order online.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -110,7 +122,7 @@
                     <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> Expert Mechanics</div>
                     <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> Fast Turnaround</div>
                     <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> Fair Pricing</div>
-                    <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> GCash Payments</div>
+                    <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> Gcash Payments</div>
                     <div class="about-check"><i data-lucide="check-circle" style="width:18px;height:18px"></i> 15+ Years Experience</div>
                 </div>
             </div>
@@ -146,16 +158,16 @@
         <div class="preorder-grid">
             <div class="po-steps">
                 <div class="po-step"><div class="po-step-num">1</div><div><h4>Submit Pre-Order</h4><p>Fill out the form with the part details you need</p></div></div>
-                <div class="po-step"><div class="po-step-num">2</div><div><h4>Pay 50% Down Payment</h4><p>We'll send GCash payment details via SMS</p></div></div>
+                <div class="po-step"><div class="po-step-num">2</div><div><h4>Pay 50% Down Payment</h4><p>We'll send Gcash payment details via SMS</p></div></div>
                 <div class="po-step"><div class="po-step-num">3</div><div><h4>We Process Your Order</h4><p>Your part will be ordered and reserved for you</p></div></div>
                 <div class="po-step"><div class="po-step-num">4</div><div><h4>Pick Up & Pay Balance</h4><p>Pay the remaining 50% when you pick up at our shop</p></div></div>
             </div>
             <div class="po-info">
                 <h3>Payment & Pickup Info</h3>
                 <ul style="list-style:none;padding:0">
-                    <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Pre-Order:</b> 50% down payment required via GCash</span></li>
+                    <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Pre-Order:</b> 50% down payment required via Gcash</span></li>
                     <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Available Products:</b> 100% payment required for checkout</span></li>
-                    <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Payment:</b> Cash or GCash accepted</span></li>
+                    <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Payment:</b> Gcash Payment only accepted</span></li>
                     <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Delivery:</b> Pick up only at our shop in Pandi, Bulacan</span></li>
                     <li><i data-lucide="check" style="width:16px;height:16px;min-width:16px"></i><span><b>Shop Hours:</b> Open daily from 6:00 AM to 6:00 PM</span></li>
                 </ul>
@@ -238,33 +250,30 @@
 lucide.createIcons();
 
 // Theme Toggle Logic
-const body = document.body;
+const htmlRoot = document.getElementById('html-root');
 const themeToggle = document.getElementById('themeToggle');
 const themeIcon = document.getElementById('themeIcon');
 
-// Check for saved theme
-if (localStorage.getItem('theme') === 'light') {
-    body.classList.add('light-mode');
-    updateThemeIcon('sun');
-} else {
-    updateThemeIcon('moon');
-}
-
-themeToggle.addEventListener('click', () => {
-    body.classList.toggle('light-mode');
-    const isLight = body.classList.contains('light-mode');
-    localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    updateThemeIcon(isLight ? 'sun' : 'moon');
-});
-
-function updateThemeIcon(type) {
-    if (type === 'sun') {
+function applyLandingTheme(isDark) {
+    if (isDark) {
+        htmlRoot.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
         themeIcon.setAttribute('data-lucide', 'sun');
     } else {
+        htmlRoot.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
         themeIcon.setAttribute('data-lucide', 'moon');
     }
     lucide.createIcons();
 }
+
+// Check for saved theme
+const savedTheme = localStorage.getItem('theme');
+applyLandingTheme(savedTheme !== 'light');
+
+themeToggle.addEventListener('click', () => {
+    applyLandingTheme(!htmlRoot.classList.contains('dark'));
+});
 
 // Navbar scroll effect
 const nav = document.getElementById('navbar');

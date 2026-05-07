@@ -1,132 +1,118 @@
 <x-app-layout>
-    <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
-        
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 font-sans">
         <div class="max-w-7xl mx-auto">
-            <!-- Header Section -->
             <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-                        <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+                        <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                         Manage Inventory
                     </h1>
-                    <p class="mt-2 text-sm text-gray-500">Add, edit, or remove parts from your catalog.</p>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Add, edit, or remove parts from your catalog.</p>
                 </div>
-
-                <!-- SEARCH -->
                 <form method="GET" action="/inventory" class="flex gap-2">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
-                        <input type="text" name="search"
-                            class="pl-10 pr-4 py-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 shadow-sm w-64"
-                            placeholder="Search parts..."
-                            value="{{ $search }}">
+                        <input type="text" name="search" class="pl-10 pr-4 py-2 border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-xl focus:border-indigo-500 focus:ring-indigo-500 shadow-sm w-64" placeholder="Search parts..." value="{{ $search }}">
                     </div>
                     <button class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition-colors">Search</button>
                     @if($search)
-                        <a href="/inventory" class="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-colors">Clear</a>
+                        <a href="/inventory" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Clear</a>
                     @endif
                 </form>
             </div>
 
-            <!-- ADD ITEM -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 relative overflow-hidden">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8 relative overflow-hidden" 
+                 x-data="{ 
+                    category: '', 
+                    brand: '', 
+                    sku: '',
+                    generateSKU() {
+                        if(!this.category || !this.brand) {
+                            alert('Please enter Category and Brand first');
+                            return;
+                        }
+                        const c = this.category.substring(0, 3).toUpperCase();
+                        const b = this.brand.substring(0, 3).toUpperCase();
+                        const r = Math.floor(1000 + Math.random() * 9000);
+                        this.sku = `${c}-${b}-${r}`;
+                    }
+                 }">
                 <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
-                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                     <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Add New Item
                 </h2>
-
                 <form method="POST" action="/inventory">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <input name="category" placeholder="Category (e.g. Engine)" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="part_name" placeholder="Part Name" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="brand" placeholder="Brand" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="model" placeholder="Motorcycle Model" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        
-                        <input name="quantity" type="number" placeholder="Quantity" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="price" type="number" step="0.01" placeholder="Price (₱)" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="notes" placeholder="Notes (Optional)" class="border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 lg:col-span-2">
+                        <div class="relative group">
+                            <input name="sku" x-model="sku" placeholder="SKU (e.g. ENG-HON-001)" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 pr-10">
+                            <button type="button" @click="generateSKU()" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-indigo-500 transition-colors" title="Generate SKU">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </button>
+                        </div>
+                        <input name="category" x-model="category" placeholder="Category (e.g. Engine)" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="part_name" placeholder="Part Name" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="brand" x-model="brand" placeholder="Brand" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="model" placeholder="Motorcycle Model" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="quantity" type="number" placeholder="Quantity" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="price" type="number" step="0.01" placeholder="Price (₱)" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input name="notes" placeholder="Notes (Optional)" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button class="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 transition-colors active:scale-[0.98]">
-                            Save Item to Catalog
-                        </button>
+                        <button class="bg-gray-900 dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 dark:hover:bg-indigo-700 transition-colors active:scale-[0.98]">Save Item to Catalog</button>
                     </div>
                 </form>
             </div>
 
-            <!-- GRID -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($items as $item)
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow relative p-5 flex flex-col justify-between">
-                    
-                    <!-- Top section: Title, Brand, Category -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow relative p-5 flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-gray-900 text-lg leading-tight">{{ $item->part_name }}</h3>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 shrink-0 ml-2">
-                                {{ $item->category }}
-                            </span>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-lg leading-tight">{{ $item->part_name }}</h3>
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 uppercase tracking-tight">{{ $item->sku ?? 'No SKU' }}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">{{ $item->category }}</span>
+                            </div>
                         </div>
-                        
-                        <p class="text-sm text-gray-500 mb-2">
-                            {{ $item->brand }} • {{ $item->model }}
-                        </p>
-                        
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ $item->brand }} • {{ $item->model }}</p>
                         @if($item->notes)
-                            <p class="text-xs text-gray-400 italic mb-4 line-clamp-2">"{{ $item->notes }}"</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 italic mb-4 line-clamp-2">"{{ $item->notes }}"</p>
                         @endif
                     </div>
-                    
-                    <!-- Bottom section: Price, Stock, Actions -->
                     <div class="mt-auto">
                         <div class="flex justify-between items-end mb-4">
                             <div>
-                                <p class="text-xs text-gray-400 mb-0.5">Price</p>
-                                <p class="font-extrabold text-gray-900 text-xl">₱{{ number_format($item->price, 2) }}</p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Price</p>
+                                <p class="font-extrabold text-gray-900 dark:text-white text-xl">₱{{ number_format($item->price, 2) }}</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-xs text-gray-400 mb-0.5">Stock</p>
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold 
-                                    {{ $item->quantity <= 0 ? 'bg-red-100 text-red-800' : ($item->quantity <= ($item->low_stock_threshold ?? 5) ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800') }}">
-                                    {{ $item->quantity }}
-                                </span>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Stock</p>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $item->quantity <= 0 ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300' : ($item->quantity <= ($item->low_stock_threshold ?? 5) ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300') }}">{{ $item->quantity }}</span>
                             </div>
                         </div>
-
-                        <div class="flex gap-2 pt-4 border-t border-gray-100">
-                            <a href="/inventory/{{ $item->id }}/edit" class="flex-1 text-center bg-gray-50 hover:bg-indigo-50 text-gray-600 hover:text-indigo-600 font-semibold py-2 rounded-xl transition-colors text-sm">
-                                Edit
-                            </a>
-                            <form method="POST" action="/inventory/{{ $item->id }}" class="flex-1" onsubmit="return confirm('Are you sure you want to delete this item?');">
-                                @csrf
-                                @method('DELETE')
-                                <button class="w-full text-center bg-gray-50 hover:bg-red-50 text-gray-600 hover:text-red-600 font-semibold py-2 rounded-xl transition-colors text-sm">
-                                    Delete
-                                </button>
+                        <div class="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <a href="/inventory/{{ $item->id }}/edit" class="flex-1 text-center bg-gray-50 dark:bg-gray-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold py-2 rounded-xl transition-colors text-sm">Edit</a>
+                            <form method="POST" action="/inventory/{{ $item->id }}" class="flex-1" onsubmit="return confirm('Delete this item?');">
+                                @csrf @method('DELETE')
+                                <button class="w-full text-center bg-gray-50 dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 font-semibold py-2 rounded-xl transition-colors text-sm">Delete</button>
                             </form>
                         </div>
                     </div>
                 </div>
                 @empty
-                <div class="col-span-full bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center text-gray-500">
-                    <div class="flex flex-col items-center justify-center">
-                        <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                        <p class="font-medium text-gray-600">No inventory items found.</p>
-                        <p class="text-sm mt-1">Try a different search or add a new item above.</p>
-                    </div>
+                <div class="col-span-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
+                    <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    <p class="font-medium text-gray-600 dark:text-gray-400">No inventory items found.</p>
+                    <p class="text-sm mt-1 text-gray-500 dark:text-gray-500">Try a different search or add a new item above.</p>
                 </div>
                 @endforelse
             </div>
 
-            <!-- PAGINATION -->
-            <div class="mt-8">
-                {{ $items->links() }}
-            </div>
-
+            <div class="mt-8">{{ $items->links() }}</div>
         </div>
     </div>
 </x-app-layout>

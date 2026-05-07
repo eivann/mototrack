@@ -12,11 +12,28 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background: radial-gradient(circle at top, #eef2ff, #f8fafc);
             min-height: 100vh;
+            transition: background 0.3s ease;
+        }
+        
+        .dark body {
+            background: radial-gradient(circle at top, #1e1b4b, #0f172a);
+            color: white;
         }
         
         .card {
@@ -24,6 +41,12 @@
             border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
+        }
+        
+        .dark .card {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: none;
         }
         
         .btn {
@@ -59,11 +82,22 @@
             width: 100%;
             background: #f8fafc;
         }
+        
+        .dark .input-field {
+            background: #334155;
+            border-color: #475569;
+            color: white;
+        }
+        
         .input-field:focus {
             border-color: #4f46e5;
             box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
             outline: none;
             background: white;
+        }
+        
+        .dark .input-field:focus {
+            background: #1e293b;
         }
         
         .input-group:focus-within i {
@@ -84,12 +118,12 @@
             <a href="/" class="inline-flex flex-col items-center gap-2 mb-6 hover:opacity-80 transition-opacity">
                 <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white w-12 h-12 flex items-center justify-center rounded-xl font-bold text-xl shadow-lg shadow-blue-500/30">M</div>
                 <div class="text-center">
-                    <h1 class="font-bold text-xl text-gray-900 tracking-tight">MOTOTRACK</h1>
-                    <p class="text-xs text-gray-500 font-medium">Edmar Motorcycle Parts</p>
+                    <h1 class="font-bold text-xl text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
                 </div>
             </a>
-            <h2 class="text-3xl font-extrabold text-gray-900">Welcome Back</h2>
-            <p class="text-gray-500 mt-2">Sign in to manage your account and orders</p>
+            <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white">Welcome Back</h2>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">Sign in to manage your account and orders</p>
         </div>
 
         <div class="card p-8 sm:p-10">
@@ -101,10 +135,10 @@
 
                 <!-- Email Address -->
                 <div class="mb-5 relative input-group">
-                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
+                    <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
                     <div class="relative">
                         <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
-                        <input id="email" type="email" name="email" value="{{ old('email', 'macapagal.eivan@gmail.com') }}" required autofocus autocomplete="username" 
+                        <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" 
                             class="input-field" placeholder="you@example.com">
                     </div>
                     <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-500 text-sm" />
@@ -113,9 +147,9 @@
                 <!-- Password -->
                 <div class="mb-5 relative input-group">
                     <div class="flex justify-between items-center mb-1.5">
-                        <label for="password" class="block text-sm font-semibold text-gray-700">Password</label>
+                        <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Password</label>
                         @if (Route::has('password.request'))
-                            <a href="{{ route('password.request') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                            <a href="{{ route('password.request') }}" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 font-medium transition-colors">
                                 Forgot password?
                             </a>
                         @endif
@@ -135,8 +169,8 @@
 
                 <!-- Remember Me -->
                 <div class="mb-4 flex items-center">
-                    <input id="remember_me" type="checkbox" name="remember" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
-                    <label for="remember_me" class="ml-2 text-sm text-gray-600 font-medium cursor-pointer">Keep me signed in</label>
+                    <input id="remember_me" type="checkbox" name="remember" class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500">
+                    <label for="remember_me" class="ml-2 text-sm text-gray-600 dark:text-gray-400 font-medium cursor-pointer">Keep me signed in</label>
                 </div>
 
                 <!-- Google reCAPTCHA -->
@@ -163,9 +197,9 @@
             </form>
         </div>
         
-        <p class="text-center mt-8 text-gray-600 text-sm">
+        <p class="text-center mt-8 text-gray-600 dark:text-gray-400 text-sm">
             Don't have an account? 
-            <a href="{{ route('register') }}" class="text-blue-600 font-semibold hover:underline">Sign up</a>
+            <a href="{{ route('register') }}" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Sign up</a>
         </p>
     </div>
 

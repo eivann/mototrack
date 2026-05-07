@@ -42,6 +42,26 @@ Route::middleware('auth')->group(function () {
                 'email' => $user->email,
             ]);
         }
+
+        // Handle success redirect from Xendit
+        if (request()->query('success') === 'preorder_paid') {
+            $latestUnpaid = \App\Models\PreOrder::where('customer_id', $customer->id)
+                ->where('is_paid', false)
+                ->latest()
+                ->first();
+            
+            if ($latestUnpaid) {
+                $latestUnpaid->update(['is_paid' => true]);
+
+                // Notify Owner that payment is received
+                $owners = \App\Models\User::where('role', 'owner')->get();
+                \Illuminate\Support\Facades\Notification::send($owners, new \App\Notifications\StatusUpdated(
+                    'Pre-order Payment Received',
+                    "Customer {$user->name} has completed the down payment for {$latestUnpaid->part_name}.",
+                    "/preorders"
+                ));
+            }
+        }
         
         $repairs = \App\Models\Repair::where('customer_id', $customer->id)
             ->orWhere('customer_name', $user->name) // Fallback for old records
@@ -73,6 +93,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/preorder-custom', [CustomerController::class, 'customPreorderForm'])->name('preorder.custom');
     Route::get('/preorder/{id}', [CustomerController::class, 'preOrderForm'])->name('preorder.form');
     Route::post('/preorder/store', [CustomerController::class, 'storePreOrder'])->name('preorder.store');
+
+    Route::post('/notifications/{id}/read', function ($id) {
+        auth()->user()->notifications()->findOrFail($id)->markAsRead();
+        return back();
+    })->name('notifications.read');
+
+    Route::post('/notifications/read-all', function () {
+        auth()->user()->unreadNotifications->markAsRead();
+        return back();
+    })->name('notifications.read_all');
 });
 
 Route::middleware(['auth', 'owner'])->group(function () {
@@ -100,6 +130,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::get('/preorders', [PreOrderController::class, 'index'])->name('preorders.index');
     Route::post('/preorders/{id}/complete', [PreOrderController::class, 'complete'])->name('preorders.complete');
     Route::post('/preorders/{id}/cancel', [PreOrderController::class, 'cancel'])->name('preorders.cancel');
+    Route::post('/preorders/{id}/pay', [PreOrderController::class, 'markPaid'])->name('preorders.pay');
     Route::delete('/preorders/{id}', [PreOrderController::class, 'destroy'])->name('preorders.destroy');
 });
 

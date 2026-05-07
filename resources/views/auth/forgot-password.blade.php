@@ -11,11 +11,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background: radial-gradient(circle at top, #eef2ff, #f8fafc);
             min-height: 100vh;
+            transition: background 0.3s ease;
+        }
+        
+        .dark body {
+            background: radial-gradient(circle at top, #1e1b4b, #0f172a);
+            color: white;
         }
         
         .card {
@@ -23,6 +40,12 @@
             border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
+        }
+        
+        .dark .card {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: none;
         }
         
         .btn {
@@ -58,11 +81,22 @@
             width: 100%;
             background: #f8fafc;
         }
+        
+        .dark .input-field {
+            background: #334155;
+            border-color: #475569;
+            color: white;
+        }
+        
         .input-field:focus {
             border-color: #4f46e5;
             box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
             outline: none;
             background: white;
+        }
+        
+        .dark .input-field:focus {
+            background: #1e293b;
         }
         
         .input-group:focus-within i {
@@ -83,17 +117,17 @@
             <a href="/" class="inline-flex items-center gap-3 mb-6 hover:opacity-80 transition-opacity">
                 <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white w-12 h-12 flex items-center justify-center rounded-xl font-bold text-xl shadow-lg shadow-blue-500/30">M</div>
                 <div class="text-left">
-                    <h1 class="font-bold text-xl text-gray-900 tracking-tight">MOTOTRACK</h1>
-                    <p class="text-xs text-gray-500 font-medium">Edmar Motorcycle Parts</p>
+                    <h1 class="font-bold text-xl text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
                 </div>
             </a>
-            <h2 class="text-3xl font-extrabold text-gray-900">Reset Password</h2>
-            <p class="text-gray-500 mt-2">Enter your email to get a password reset link</p>
+            <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white">Reset Password</h2>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">Enter your email to get a password reset link</p>
         </div>
 
         <div class="card p-8 sm:p-10">
             
-            <div class="mb-6 text-sm text-gray-600 bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+            <div class="mb-6 text-sm text-gray-600 dark:text-gray-300 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 flex items-start gap-3">
                 <i data-lucide="info" class="w-5 h-5 text-blue-500 mt-0.5 shrink-0"></i>
                 <p>Forgot your password? No problem. Just let us know your email address and we will email you a password reset link.</p>
             </div>
@@ -105,7 +139,7 @@
 
                 <!-- Email Address -->
                 <div class="mb-6 relative input-group">
-                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
+                    <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
                     <div class="relative">
                         <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" 
@@ -125,9 +159,9 @@
             </form>
         </div>
         
-        <p class="text-center mt-8 text-gray-600 text-sm">
+        <p class="text-center mt-8 text-gray-600 dark:text-gray-400 text-sm">
             Remember your password? 
-            <a href="{{ route('login') }}" class="text-blue-600 font-semibold hover:underline">Sign in</a>
+            <a href="{{ route('login') }}" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Sign in</a>
         </p>
     </div>
 

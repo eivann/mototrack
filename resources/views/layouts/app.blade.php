@@ -1,9 +1,21 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" id="html-root">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        {{-- Apply theme before paint to avoid flash --}}
+        <script>
+            (function() {
+                var theme = localStorage.getItem('theme');
+                if (theme === 'dark' || (!theme)) {
+                    document.getElementById('html-root').classList.add('dark');
+                } else {
+                    document.getElementById('html-root').classList.remove('dark');
+                }
+            })();
+        </script>
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
@@ -16,6 +28,20 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <script src="https://unpkg.com/lucide@latest"></script>
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <style>
+            [x-cloak] { display: none !important; }
+            
+            /* Custom Scrollbar */
+            ::-webkit-scrollbar { width: 6px; }
+            ::-webkit-scrollbar-track { background: transparent; }
+            ::-webkit-scrollbar-thumb { 
+                background: #6366f1; 
+                border-radius: 10px; 
+            }
+            ::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
+            
+            .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+        </style>
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -34,6 +60,109 @@
             <main>
                 {{ $slot }}
             </main>
+
+            <!-- Notification Toast System -->
+            @auth
+            <div x-data="notificationToasts()" 
+                 class="fixed top-24 right-5 z-[60] flex flex-col gap-4 pointer-events-none"
+                 @keydown.window.escape="toasts = []">
+                
+                <template x-for="toast in toasts" :key="toast.id">
+                    <div x-show="toast.visible"
+                         x-transition:enter="transition ease-out duration-500"
+                         x-transition:enter-start="opacity-0 translate-x-12 scale-90"
+                         x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+                         x-transition:leave="transition ease-in duration-300"
+                         x-transition:leave-start="opacity-100 translate-x-0"
+                         x-transition:leave-end="opacity-0 translate-x-12"
+                         class="pointer-events-auto w-80 md:w-96 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border-l-4 border-indigo-600 dark:border-indigo-400 shadow-2xl rounded-2xl p-5 group hover:scale-[1.02] transition-all"
+                         @click="window.location.href = toast.link">
+                        
+                        <div class="flex items-start gap-4">
+                            <div class="bg-indigo-100 dark:bg-indigo-900/50 p-2 rounded-xl text-indigo-600 dark:text-indigo-400 animate-pulse">
+                                <i data-lucide="bell" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight" x-text="toast.title"></h4>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2" x-text="toast.message"></p>
+                                <div class="flex items-center gap-2 mt-3">
+                                    <button @click.stop="markAsRead(toast.id)" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-white transition-colors">
+                                        Dismiss
+                                    </button>
+                                    <span class="text-[10px] text-gray-400">•</span>
+                                    <span class="text-[10px] text-gray-400 uppercase tracking-widest" x-text="toast.time"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+            </div>
+
+            <script>
+                function notificationToasts() {
+                    return {
+                        toasts: [],
+                        init() {
+                            const rawNotifs = @json(auth()->user()->unreadNotifications->take(3));
+                            
+                            if (rawNotifs.length > 0) {
+                                // Delay slightly for a nice intro
+                                setTimeout(() => {
+                                    rawNotifs.forEach((n, index) => {
+                                        setTimeout(() => {
+                                            this.addToast(n);
+                                        }, index * 400);
+                                    });
+                                }, 800);
+                            }
+                        },
+                        addToast(n) {
+                            const toast = {
+                                id: n.id,
+                                title: n.data.title,
+                                message: n.data.message,
+                                link: n.data.link,
+                                time: 'Just Now',
+                                visible: true
+                            };
+                            this.toasts.push(toast);
+                            
+                            // Play sound
+                            const sound = document.getElementById('notif-sound');
+                            if (sound) {
+                                sound.currentTime = 0;
+                                sound.play().catch(e => console.log('Autoplay blocked'));
+                            }
+
+                            // Auto hide after 8 seconds
+                            setTimeout(() => {
+                                this.removeToast(toast.id);
+                            }, 8000);
+                        },
+                        removeToast(id) {
+                            const index = this.toasts.findIndex(t => t.id === id);
+                            if (index !== -1) {
+                                this.toasts[index].visible = false;
+                                setTimeout(() => {
+                                    this.toasts = this.toasts.filter(t => t.id !== id);
+                                }, 500);
+                            }
+                        },
+                        markAsRead(id) {
+                            fetch(`/notifications/${id}/read`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Content-Type': 'application/json'
+                                }
+                            }).then(() => this.removeToast(id));
+                        }
+                    }
+                }
+            </script>
+            @endauth
             
             <!-- Global Flash Messages / Mock SMS -->
             @if(session('mock_sms'))
