@@ -4,13 +4,12 @@
             <div class="flex items-center">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-12">
-                    <a href="{{ auth()->check() ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard')) : url('/') }}" class="flex items-center gap-3">
-                        <div class="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none">
-                            <x-application-logo class="block h-7 w-auto fill-current text-white" />
+                    <a href="{{ auth()->check() ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard')) : url('/') }}" class="flex items-center gap-4">
+                        <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-12 w-auto object-contain">
+                        <div class="flex flex-col leading-none hidden lg:flex">
+                            <span class="text-xl font-black tracking-tighter text-gray-900 dark:text-white">EM</span>
+                            <span class="text-[10px] font-bold tracking-widest text-blue-600 uppercase">Parts & Accessories</span>
                         </div>
-                        <span class="text-2xl font-black tracking-tighter text-gray-900 dark:text-white hidden lg:block">
-                            MOTO<span class="text-blue-600">TRACK</span>
-                        </span>
                     </a>
                 </div>
 
