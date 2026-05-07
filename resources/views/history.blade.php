@@ -115,6 +115,8 @@
                             </tbody>
                         </table>
                     </div>
+                <div class="mt-8">
+                    {{ $sales->links() }}
                 </div>
             </div>
 
@@ -153,6 +155,8 @@
                             </tbody>
                         </table>
                     </div>
+                <div class="mt-8">
+                    {{ $inventoryItems->links() }}
                 </div>
             </div>
         </div>

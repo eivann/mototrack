@@ -100,16 +100,19 @@ public function storeSale(Request $request)
             $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
         }
 
-        $sales = $query->latest()->get();
+        $salesQuery = $query->latest();
+        
+        // Totals should still be calculated from ALL records matching filters
+        $allSalesForTotals = $salesQuery->get();
+        $totalSales = $allSalesForTotals->sum('total_price');
+        $totalTransactions = $allSalesForTotals->whereNotNull('transaction_reference')->unique('transaction_reference')->count() 
+                            + $allSalesForTotals->whereNull('transaction_reference')->count();
 
-        $totalSales = $sales->sum('total_price');
+        // Paginated results for the table
+        $sales = $salesQuery->paginate(10)->withQueryString();
 
-        // Count unique orders by transaction_reference
-        $totalTransactions = $sales->whereNotNull('transaction_reference')->unique('transaction_reference')->count() 
-                            + $sales->whereNull('transaction_reference')->count();
-
-        // Fetch all items for the Stock Report tab
-        $inventoryItems = \App\Models\InventoryItem::orderBy('quantity', 'asc')->get();
+        // Paginate inventory items for the Stock Levels tab too
+        $inventoryItems = \App\Models\InventoryItem::orderBy('quantity', 'asc')->paginate(12, ['*'], 'stock_page')->withQueryString();
 
         return view('history', compact(
             'sales',

@@ -93,7 +93,7 @@ public function lowStock()
 {
 
     // Fetch items where quantity is less than or equal to low_stock_threshold
-    $lowStockItems = InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->get();
+    $lowStockItems = InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->paginate(10);
     return view('low_stock', compact('lowStockItems'));
 }
 

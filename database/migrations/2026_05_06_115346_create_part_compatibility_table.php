@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('part_compatibility', function (Blueprint $table) {
             $table->id();
-            $table->integer('inventory_item_id');
-            $table->foreign('inventory_item_id')->references('id')->on('inventory_items')->onDelete('cascade');
+            $table->foreignId('inventory_item_id')->constrained('inventory_items')->onDelete('cascade');
             $table->foreignId('motorcycle_id')->constrained('motorcycles')->onDelete('cascade');
             $table->string('notes')->nullable();
             $table->timestamps();

@@ -11,7 +11,7 @@ class PreOrderController extends Controller
 {
    public function index()
 {
-    $preorders  = PreOrder::latest()->get();
+    $preorders  = PreOrder::latest()->paginate(10);
     return view('preorders', compact('preorders'));
 }
 

@@ -58,7 +58,7 @@
                         @if(auth()->user()->role !== 'owner')
                             <a href="{{ route('customer.dashboard') }}" class="{{ $linkClasses }} {{ request()->routeIs('customer.dashboard') ? $activeClasses : $inactiveClasses }}">
                                 <i data-lucide="layout-dashboard" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
-                                <span>Dashboard</span>
+                                <span>{{ auth()->user()->role === 'owner' ? 'My Orders' : 'Dashboard' }}</span>
                                 @if(request()->routeIs('customer.dashboard'))
                                     <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
                                 @else
@@ -84,12 +84,16 @@
                                     <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
                                 @endif
                             </a>
-                        @else
+                        @endif
+
+                        @if(auth()->user()->role === 'owner')
                             <a href="{{ route('dashboard') }}" class="{{ $linkClasses }} {{ request()->routeIs('dashboard') ? $activeClasses : $inactiveClasses }}">
                                 <i data-lucide="activity" class="w-5 h-5 mr-2.5 transition-transform group-hover:-translate-y-0.5"></i>
-                                <span>Admin Dashboard</span>
+                                <span>Admin Panel</span>
                                 @if(request()->routeIs('dashboard'))
-                                    <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full"></span>
+                                    <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
+                                @else
+                                    <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
                                 @endif
                             </a>
                         @endif

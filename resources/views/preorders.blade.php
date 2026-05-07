@@ -98,6 +98,10 @@
                     </table>
                 </div>
             </div>
+
+            <div class="mt-8">
+                {{ $preorders->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

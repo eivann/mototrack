@@ -153,8 +153,8 @@
                     </div>
                 @else
                     <div class="bg-white dark:bg-gray-800 rounded-[3rem] border-2 border-dashed border-gray-100 dark:border-gray-700 p-24 text-center">
-                        <div class="w-24 h-24 bg-gray-50 dark:bg-gray-900/50 rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-sm">
-                            <i data-lucide="wrench" class="w-12 h-12 text-gray-200 dark:text-gray-700"></i>
+                        <div class="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-sm border border-indigo-100 dark:border-indigo-800/50">
+                            <i data-lucide="wrench" class="w-12 h-12 text-indigo-200 dark:text-indigo-600"></i>
                         </div>
                         <p class="text-gray-900 dark:text-white font-extrabold text-3xl">No active repairs</p>
                         <p class="text-gray-500 dark:text-gray-400 text-lg mt-4 max-w-md mx-auto leading-relaxed">When you drop off a bike for servicing, your progress, costs, and payment status will appear here for real-time tracking.</p>
@@ -230,8 +230,8 @@
                     </div>
                 @else
                     <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] border-2 border-dashed border-gray-100 dark:border-gray-700 p-20 text-center">
-                        <div class="w-24 h-24 bg-gray-50 dark:bg-gray-900/50 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
-                            <i data-lucide="clipboard-list" class="w-12 h-12 text-gray-200 dark:text-gray-700"></i>
+                        <div class="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm border border-indigo-100 dark:border-indigo-800/50">
+                            <i data-lucide="clipboard-list" class="w-12 h-12 text-indigo-200 dark:text-indigo-600"></i>
                         </div>
                         <p class="text-gray-900 dark:text-white font-extrabold text-2xl">No active pre-orders</p>
                         <p class="text-gray-500 dark:text-gray-400 text-base mt-3 max-w-sm mx-auto leading-relaxed">Any specialized motorcycle parts you've requested will appear here for tracking once submitted.</p>

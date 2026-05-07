@@ -62,6 +62,10 @@
                     </table>
                 </div>
             </div>
+
+            <div class="mt-8">
+                {{ $lowStockItems->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

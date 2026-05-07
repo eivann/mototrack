@@ -26,7 +26,7 @@ class RepairController extends Controller
             $query->where('is_paid', $request->paid);
         }
 
-        $repairs = $query->latest()->get();
+        $repairs = $query->latest()->paginate(10)->withQueryString();
         $customers = \App\Models\Customer::orderBy('name')->get();
 
         return view('repair', compact('repairs', 'customers'));

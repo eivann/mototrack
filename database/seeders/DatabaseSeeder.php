@@ -16,10 +16,10 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Create Admin User manually (Avoids Factory/Faker error)
         User::updateOrCreate(
-            ['email' => 'admin@mototrack.com'],
+            ['email' => 'macapagal.eivan@gmail.com'],
             [
-                'name' => 'MotoTrack Admin',
-                'password' => Hash::make('admin123'),
+                'name' => 'Eivan Macapagal',
+                'password' => Hash::make('Admin123'),
                 'role' => 'owner',
             ]
         );
@@ -37,34 +37,28 @@ class DatabaseSeeder extends Seeder
         // 3. Create Initial Inventory Items manually
         $items = [
             [
-                'name' => 'Engine Oil (Fully Synthetic)',
-                'category' => 'Maintenance',
+                'part_name' => 'Engine Oil (Fully Synthetic)',
                 'price' => 450.00,
-                'stock' => 50,
+                'quantity' => 50,
                 'sku' => 'OIL-001',
-                'description' => 'Premium engine oil for motorcycles.',
             ],
             [
-                'name' => 'Brake Pads (Front)',
-                'category' => 'Parts',
+                'part_name' => 'Brake Pads (Front)',
                 'price' => 250.00,
-                'stock' => 30,
+                'quantity' => 30,
                 'sku' => 'BRK-001',
-                'description' => 'High-performance brake pads.',
             ],
             [
-                'name' => 'Drive Chain (428H)',
-                'category' => 'Transmission',
+                'part_name' => 'Drive Chain (428H)',
                 'price' => 850.00,
-                'stock' => 15,
+                'quantity' => 15,
                 'sku' => 'CHN-001',
-                'description' => 'Heavy-duty drive chain.',
             ],
         ];
 
         foreach ($items as $item) {
             InventoryItem::updateOrCreate(
-                ['sku' => $item['sku']],
+                ['part_name' => $item['part_name']],
                 $item
             );
         }
