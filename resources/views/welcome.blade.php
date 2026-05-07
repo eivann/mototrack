@@ -254,7 +254,7 @@ const themeToggle = document.getElementById('themeToggle');
 const themeIcon = document.getElementById('themeIcon');
 
 function applyLandingTheme(isDark) {
-    console.log('🌓 Landing Theme Change:', isDark ? 'DARK' : 'LIGHT');
+    console.log('Landing Theme Change:', isDark ? 'DARK' : 'LIGHT');
     if (isDark) {
         document.documentElement.classList.add('dark');
         localStorage.setItem('theme', 'dark');
@@ -268,7 +268,7 @@ function applyLandingTheme(isDark) {
 }
 
 const savedTheme = localStorage.getItem('theme');
-console.log('💾 Landing Saved Theme:', savedTheme);
+console.log('Landing Saved Theme:', savedTheme);
 applyLandingTheme(savedTheme !== 'light');
 
 themeToggle.addEventListener('click', () => {

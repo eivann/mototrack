@@ -42,36 +42,40 @@
                 </div>
 
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8">
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 mr-2">Quick Filters:</span>
-                            <a href="{{ url()->current() }}?filter=today" class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request('filter') == 'today' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">Today</a>
-                            <a href="{{ url()->current() }}?filter=week" class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request('filter') == 'week' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">This Week</a>
-                            <a href="{{ url()->current() }}?filter=month" class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request('filter') == 'month' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">This Month</a>
-                            <a href="{{ url()->current() }}" class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ !request('filter') && !request('from') ? 'bg-gray-800 dark:bg-gray-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">All Time</a>
-                        </div>
-                        <form method="GET" class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
-                            <div class="flex items-center gap-2">
-                                <div class="flex flex-col">
-                                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">From Date</label>
-                                    <input type="date" name="from" value="{{ request('from') }}" class="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
-                                </div>
-                                <span class="text-gray-400 mt-5">-</span>
-                                <div class="flex flex-col">
-                                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">To Date</label>
-                                    <input type="date" name="to" value="{{ request('to') }}" class="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
-                                </div>
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                        <div>
+                            <span class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Quick Filters</span>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <a href="{{ url()->current() }}?filter=today" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('filter') == 'today' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">Today</a>
+                                <a href="{{ url()->current() }}?filter=week" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('filter') == 'week' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">This Week</a>
+                                <a href="{{ url()->current() }}?filter=month" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('filter') == 'month' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">This Month</a>
+                                <a href="{{ url()->current() }}" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all {{ !request('filter') && !request('from') ? 'bg-gray-900 dark:bg-gray-600 text-white shadow-lg shadow-gray-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">All Time</a>
                             </div>
-                            <button type="submit" class="mt-4 sm:mt-0 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition-colors flex items-center gap-2 h-[38px]">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-                                Filter Custom
-                            </button>
+                        </div>
+                        <form method="GET" class="w-full lg:w-auto">
+                            <span class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Custom Range</span>
+                            <div class="flex flex-col sm:flex-row items-end gap-3">
+                                <div class="grid grid-cols-2 gap-3 w-full sm:w-auto">
+                                    <div class="flex flex-col">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">From</label>
+                                        <input type="date" name="from" value="{{ request('from') }}" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl text-sm px-4 py-2.5 focus:ring-blue-500">
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <label class="text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">To</label>
+                                        <input type="date" name="to" value="{{ request('to') }}" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl text-sm px-4 py-2.5 focus:ring-blue-500">
+                                    </div>
+                                </div>
+                                <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] h-[46px] flex items-center justify-center gap-2">
+                                    <i data-lucide="filter" class="w-4 h-4"></i>
+                                    Apply
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
 
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                    <div class="overflow-x-auto">
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs tracking-wider uppercase text-gray-500 dark:text-gray-400">
@@ -115,15 +119,49 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- MOBILE SALES CARDS -->
+                    <div class="grid grid-cols-1 gap-4 p-4 md:hidden">
+                        @forelse($sales as $sale)
+                            <div class="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">{{ $sale->item->part_name ?? 'Unknown Item' }}</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $sale->item->brand ?? '' }} {{ $sale->item->model ?? '' }}</p>
+                                    </div>
+                                    <span class="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-lg text-xs font-bold">
+                                        Qty: {{ $sale->quantity }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200/50 dark:border-gray-600/50">
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 uppercase font-black mb-1">Total Amount</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">₱{{ number_format($sale->total_price, 2) }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-[10px] text-gray-400 uppercase font-black mb-1">{{ $sale->created_at->format('M d, Y') }}</p>
+                                        <a href="/sales/{{ $sale->id }}/receipt" class="text-xs font-bold text-green-600 dark:text-green-400 flex items-center justify-end gap-1">
+                                            View Receipt <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="p-8 text-center text-gray-500">
+                                No sales recorded.
+                            </div>
+                        @endforelse
+                    </div>
                 <div class="mt-8">
                     {{ $sales->links() }}
+                </div>
                 </div>
             </div>
 
             <!-- STOCK TAB -->
-            <div x-show="activeTab === 'stock'" x-transition>
+            <div x-show="activeTab === 'stock'" x-transition x-cloak>
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                    <div class="overflow-x-auto">
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs tracking-wider uppercase text-gray-500 dark:text-gray-400">
@@ -155,8 +193,42 @@
                             </tbody>
                         </table>
                     </div>
-                <div class="mt-8">
-                    {{ $inventoryItems->links() }}
+
+                    <!-- MOBILE STOCK CARDS -->
+                    <div class="grid grid-cols-1 gap-4 p-4 md:hidden">
+                        @foreach($inventoryItems as $item)
+                            <div class="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">{{ $item->part_name }}</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $item->brand }} • {{ $item->model }}</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-white dark:bg-gray-800 text-[10px] font-black uppercase tracking-widest rounded-md border border-gray-100 dark:border-gray-600">
+                                        {{ $item->category }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200/50 dark:border-gray-600/50">
+                                    <div class="text-center">
+                                        <p class="text-[10px] text-gray-400 uppercase font-black mb-1">Stock</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $item->quantity }}</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-[10px] text-gray-400 uppercase font-black mb-1">Price</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">₱{{ number_format($item->price, 2) }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest
+                                            {{ $item->quantity <= 0 ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300' : ($item->quantity <= ($item->low_stock_threshold ?? 5) ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300') }}">
+                                            {{ $item->quantity <= 0 ? 'Out' : ($item->quantity <= ($item->low_stock_threshold ?? 5) ? 'Low' : 'OK') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="p-6 border-t border-gray-100 dark:border-gray-700">
+                        {{ $inventoryItems->links() }}
+                    </div>
                 </div>
             </div>
         </div>

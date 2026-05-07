@@ -27,18 +27,17 @@
         </a>
     </div>
 
-    <div class="grid grid-cols-4 gap-6">
-
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- FILTER SIDEBAR -->
-        <form method="GET" action="/browse" class="col-span-1 bg-white dark:bg-gray-800 border dark:border-gray-700 p-4 rounded-xl shadow">
-            <h2 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Filters</h2>
+        <form method="GET" action="/browse" class="lg:col-span-3 bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm h-fit sticky top-24">
+            <h2 class="font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-xs">Filters</h2>
             <input type="hidden" name="search" value="{{ request('search') }}">
 
             <!-- CATEGORY -->
-            <div class="mb-4">
-                <label class="block mb-1 font-semibold text-gray-700 dark:text-gray-300">Category</label>
-                <select name="category" class="w-full border dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                    <option value="">All</option>
+            <div class="mb-5">
+                <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Category</label>
+                <select name="category" class="w-full border-gray-200 dark:border-gray-600 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500">
+                    <option value="">All Categories</option>
                     <option value="engine" {{ request('category')=='engine'?'selected':'' }}>Engine</option>
                     <option value="brakes" {{ request('category')=='brakes'?'selected':'' }}>Brakes</option>
                     <option value="electrical" {{ request('category')=='electrical'?'selected':'' }}>Electrical</option>
@@ -48,23 +47,23 @@
             </div>
 
             <!-- SORT -->
-            <div class="mb-4">
-                <label class="block mb-1 font-semibold text-gray-700 dark:text-gray-300">Sort</label>
-                <select name="sort" class="w-full border dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            <div class="mb-5">
+                <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Sort By</label>
+                <select name="sort" class="w-full border-gray-200 dark:border-gray-600 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500">
                     <option value="">Default</option>
                     <option value="low_high" {{ request('sort')=='low_high'?'selected':'' }}>Price Low → High</option>
                     <option value="high_low" {{ request('sort')=='high_low'?'selected':'' }}>Price High → Low</option>
                 </select>
             </div>
 
-            <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95">
                 Apply Filters
             </button>
         </form>
 
         <!-- PRODUCTS -->
-        <div class="col-span-3">
-            <div class="grid grid-cols-3 gap-6">
+        <div class="lg:col-span-9">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
             @forelse($items as $item)
                 <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow hover:shadow-lg transition p-4">
@@ -101,19 +100,5 @@
     </div>
 
 </div>
-
-@if(session('success'))
-<div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
-     x-transition:enter="transition ease-out duration-300"
-     x-transition:enter-start="opacity-0 translate-y-2"
-     x-transition:enter-end="opacity-100 translate-y-0"
-     x-transition:leave="transition ease-in duration-200"
-     x-transition:leave-start="opacity-100 translate-y-0"
-     x-transition:leave-end="opacity-0 translate-y-2"
-     class="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-xl shadow-xl flex items-center gap-3 z-50">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-    <span class="font-semibold">{{ session('success') }}</span>
-</div>
-@endif
 
 </x-app-layout>

@@ -373,7 +373,7 @@
     var mobileLabel = document.getElementById('mobileThemeLabel');
 
     function applyTheme(isDark) {
-        console.log('🌓 MotoTrack Theme Change:', isDark ? 'DARK' : 'LIGHT');
+        console.log('MotoTrack Theme Change:', isDark ? 'DARK' : 'LIGHT');
         if (isDark) {
             htmlEl.classList.add('dark');
             localStorage.setItem('theme', 'dark');
@@ -391,7 +391,7 @@
     }
 
     var savedTheme = localStorage.getItem('theme');
-    console.log('💾 Current Saved Theme:', savedTheme);
+    console.log('Current Saved Theme:', savedTheme);
     applyTheme(savedTheme !== 'light');
 
     if (toggle) {
