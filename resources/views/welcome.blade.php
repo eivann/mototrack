@@ -26,7 +26,7 @@
 <nav class="land-nav" id="navbar">
     <div class="nav-brand">
         <img src="{{ asset('images/logo.png') }}" alt="EM Parts Logo" style="height:50px;width:auto;margin-right:15px">
-        <div><h1 style="font-size:1.5rem;letter-spacing:-1px">EM PARTS</h1><p>Motorcycle Parts & Accessories</p></div>
+        <div><h1 style="font-size:1.5rem;letter-spacing:-1px">EDMAR MOTORCYCLE</h1><p style="color:#9ca3af">Parts and Accessories</p></div>
     </div>
     <ul class="nav-links">
         <li><a href="#home">Home</a></li>

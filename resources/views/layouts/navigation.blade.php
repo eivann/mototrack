@@ -7,8 +7,8 @@
                     <a href="{{ auth()->check() ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard')) : url('/') }}" class="flex items-center gap-4">
                         <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-12 w-auto object-contain">
                         <div class="flex flex-col leading-none hidden lg:flex">
-                            <span class="text-xl font-black tracking-tighter text-gray-900 dark:text-white">EM</span>
-                            <span class="text-[10px] font-bold tracking-widest text-blue-600 uppercase">Parts & Accessories</span>
+                            <span class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
+                            <span class="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mt-0.5">Parts and Accessories</span>
                         </div>
                     </a>
                 </div>
