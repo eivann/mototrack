@@ -45,9 +45,10 @@ Route::middleware('auth')->group(function () {
 
         // Handle success redirect from Xendit
         if (request()->query('success') === 'preorder_paid') {
-            $latestUnpaid = \App\Models\PreOrder::where('customer_id', $customer->id)
+            $preorderId = request()->query('id');
+            $latestUnpaid = \App\Models\PreOrder::where('id', $preorderId)
+                ->where('customer_id', $customer->id)
                 ->where('is_paid', false)
-                ->latest()
                 ->first();
             
             if ($latestUnpaid) {

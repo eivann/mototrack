@@ -164,18 +164,49 @@
             </script>
             @endauth
             
-            <!-- Global Flash Messages / Mock SMS -->
-            @if(session('mock_sms'))
-                <div class="fixed bottom-5 right-5 max-w-sm w-full bg-white dark:bg-gray-800 border-l-4 border-amber-500 shadow-2xl rounded-xl p-4 z-50 animate-bounce transition-all">
-                    <div class="flex items-start gap-4">
-                        <div class="bg-amber-100 p-2 rounded-lg">
-                            <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            <!-- Global Flash Messages (Unified Toast System) -->
+            @php
+                $flash = null;
+                if (session('success')) $flash = ['type' => 'success', 'message' => session('success'), 'title' => 'Success'];
+                elseif (session('error')) $flash = ['type' => 'error', 'message' => session('error'), 'title' => 'Error'];
+                elseif (session('warning')) $flash = ['type' => 'warning', 'message' => session('warning'), 'title' => 'Warning'];
+                elseif (session('mock_sms')) $flash = ['type' => 'info', 'message' => session('mock_sms'), 'title' => 'SMS Alert (Mock)'];
+            @endphp
+
+            @if($flash)
+                <div x-data="{ show: true }" 
+                     x-show="show"
+                     x-init="setTimeout(() => show = false, 6000)"
+                     x-transition:enter="transition ease-out duration-500"
+                     x-transition:enter-start="opacity-0 translate-y-12 scale-90"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-300"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-12"
+                     class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-4 pointer-events-none">
+                    
+                    <div class="pointer-events-auto bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-l-4 rounded-2xl shadow-2xl p-5 flex items-start gap-4 
+                        {{ $flash['type'] === 'success' ? 'border-emerald-500 shadow-emerald-200/20' : '' }}
+                        {{ $flash['type'] === 'error' ? 'border-red-500 shadow-red-200/20' : '' }}
+                        {{ $flash['type'] === 'warning' ? 'border-amber-500 shadow-amber-200/20' : '' }}
+                        {{ $flash['type'] === 'info' ? 'border-blue-500 shadow-blue-200/20' : '' }}">
+                        
+                        <div class="shrink-0 p-2 rounded-xl
+                            {{ $flash['type'] === 'success' ? 'bg-emerald-100 text-emerald-600' : '' }}
+                            {{ $flash['type'] === 'error' ? 'bg-red-100 text-red-600' : '' }}
+                            {{ $flash['type'] === 'warning' ? 'bg-amber-100 text-amber-600' : '' }}
+                            {{ $flash['type'] === 'info' ? 'bg-blue-100 text-blue-600' : '' }}">
+                            <i data-lucide="{{ $flash['type'] === 'success' ? 'check-circle' : ($flash['type'] === 'error' ? 'x-circle' : ($flash['type'] === 'warning' ? 'alert-triangle' : 'info')) }}" class="w-6 h-6"></i>
                         </div>
-                        <div>
-                            <h4 class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">SMS Alert Sent</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ session('mock_sms') }}</p>
-                            <p class="text-xs text-gray-400 mt-2 italic">This is a mock notification. To send real SMS, add your API key to .env</p>
+                        
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight">{{ $flash['title'] }}</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">{{ $flash['message'] }}</p>
                         </div>
+
+                        <button @click="show = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </div>
             @endif

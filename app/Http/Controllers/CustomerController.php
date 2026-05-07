@@ -315,8 +315,8 @@ class CustomerController extends Controller
                 'invoice_duration' => 86400,
                 'currency' => 'PHP',
                 'payment_methods' => ['GCASH'],
-                'success_redirect_url' => url('/customer-dashboard?success=preorder_paid'),
-                'failure_redirect_url' => url('/customer-dashboard?error=preorder_failed'),
+                'success_redirect_url' => url('/customer-dashboard?success=preorder_paid&id=' . $preorder->id),
+                'failure_redirect_url' => url('/customer-dashboard?error=preorder_failed&id=' . $preorder->id),
             ]);
             $result = $apiInstance->createInvoice($create_invoice_request);
             

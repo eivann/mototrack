@@ -74,6 +74,12 @@ public function update(Request $request, $id)
         'price'     => $request->price,
     ]);
 
+    // Reset low stock notification flag if stock is now above threshold
+    if ($item->quantity > ($item->low_stock_threshold ?? 5)) {
+        $item->low_stock_notified = false;
+        $item->save();
+    }
+
     return redirect('/inventory');
 }
 public function destroy($id)

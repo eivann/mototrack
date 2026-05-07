@@ -54,12 +54,11 @@ class SmsService
         if ($item->quantity <= $item->low_stock_threshold && !$item->low_stock_notified) {
             $message = "⚠️ MotoTrack Alert: '{$item->part_name}' (ID: {$item->id}) is running low on stock. Only {$item->quantity} left! Please restock soon.";
             
-            // Try to send SMS
-            self::send($message);
-            
-            // Mark as notified so we don't spam
-            $item->low_stock_notified = true;
-            $item->save();
+            // Try to send SMS and only mark as notified if successful
+            if (self::send($message)) {
+                $item->low_stock_notified = true;
+                $item->save();
+            }
         }
     }
 }
