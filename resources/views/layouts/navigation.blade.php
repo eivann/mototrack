@@ -369,6 +369,7 @@
     var mobileLabel = document.getElementById('mobileThemeLabel');
 
     function applyTheme(isDark) {
+        console.log('🌓 MotoTrack Theme Change:', isDark ? 'DARK' : 'LIGHT');
         if (isDark) {
             htmlEl.classList.add('dark');
             localStorage.setItem('theme', 'dark');
@@ -385,18 +386,20 @@
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
-    // Set correct state on load
     var savedTheme = localStorage.getItem('theme');
+    console.log('💾 Current Saved Theme:', savedTheme);
     applyTheme(savedTheme !== 'light');
 
     if (toggle) {
         toggle.addEventListener('click', function() {
-            applyTheme(!htmlEl.classList.contains('dark'));
+            var target = !htmlEl.classList.contains('dark');
+            applyTheme(target);
         });
     }
     if (mobileToggle) {
         mobileToggle.addEventListener('click', function() {
-            applyTheme(!htmlEl.classList.contains('dark'));
+            var target = !htmlEl.classList.contains('dark');
+            applyTheme(target);
         });
     }
 })();
