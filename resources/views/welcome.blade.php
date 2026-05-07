@@ -7,11 +7,10 @@
 <script>
     (function() {
         var theme = localStorage.getItem('theme');
-        var html = document.getElementById('html-root');
         if (theme === 'dark' || (!theme)) {
-            html.classList.add('dark');
+            document.documentElement.classList.add('dark');
         } else {
-            html.classList.remove('dark');
+            document.documentElement.classList.remove('dark');
         }
     })();
 </script>
@@ -19,7 +18,7 @@
 <meta name="description" content="Your trusted motorcycle parts shop in Pandi, Bulacan since 2009. Browse parts, check compatibility, and pre-order online.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+<link rel="stylesheet" href="{{ asset('css/landing.css') }}?v=1.1">
 </head>
 <body>
 
@@ -255,20 +254,21 @@ const themeToggle = document.getElementById('themeToggle');
 const themeIcon = document.getElementById('themeIcon');
 
 function applyLandingTheme(isDark) {
+    console.log('🌓 Landing Theme Change:', isDark ? 'DARK' : 'LIGHT');
     if (isDark) {
-        htmlRoot.classList.add('dark');
+        document.documentElement.classList.add('dark');
         localStorage.setItem('theme', 'dark');
-        themeIcon.setAttribute('data-lucide', 'sun');
+        if (themeIcon) themeIcon.setAttribute('data-lucide', 'sun');
     } else {
-        htmlRoot.classList.remove('dark');
+        document.documentElement.classList.remove('dark');
         localStorage.setItem('theme', 'light');
-        themeIcon.setAttribute('data-lucide', 'moon');
+        if (themeIcon) themeIcon.setAttribute('data-lucide', 'moon');
     }
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// Check for saved theme
 const savedTheme = localStorage.getItem('theme');
+console.log('💾 Landing Saved Theme:', savedTheme);
 applyLandingTheme(savedTheme !== 'light');
 
 themeToggle.addEventListener('click', () => {
