@@ -152,7 +152,11 @@
                             </div>
                         @endforelse
                     </div>
-                <div class="mt-8">
+                <div class="mt-8 px-4">
+                    <div class="mb-4 text-[11px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 md:hidden text-center">
+                        Showing {{ $sales->firstItem() }} - {{ $sales->lastItem() }} of {{ $sales->total() }} results
+                        <span class="block mt-1 text-indigo-600 dark:text-indigo-400">Page {{ $sales->currentPage() }} of {{ $sales->lastPage() }}</span>
+                    </div>
                     {{ $sales->links() }}
                 </div>
                 </div>
@@ -227,6 +231,10 @@
                         @endforeach
                     </div>
                     <div class="p-6 border-t border-gray-100 dark:border-gray-700">
+                        <div class="mb-4 text-[11px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 md:hidden text-center">
+                            Showing {{ $inventoryItems->firstItem() }} - {{ $inventoryItems->lastItem() }} of {{ $inventoryItems->total() }} stock items
+                            <span class="block mt-1 text-indigo-600 dark:text-indigo-400">Page {{ $inventoryItems->currentPage() }} of {{ $inventoryItems->lastPage() }}</span>
+                        </div>
                         {{ $inventoryItems->links() }}
                     </div>
                 </div>

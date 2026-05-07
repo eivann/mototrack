@@ -64,6 +64,10 @@
             </div>
 
             <div class="mt-8">
+                <div class="mb-4 text-[11px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 md:hidden text-center">
+                    Showing {{ $lowStockItems->firstItem() }} - {{ $lowStockItems->lastItem() }} of {{ $lowStockItems->total() }} alerts
+                    <span class="block mt-1 text-indigo-600 dark:text-indigo-400">Page {{ $lowStockItems->currentPage() }} of {{ $lowStockItems->lastPage() }}</span>
+                </div>
                 {{ $lowStockItems->links() }}
             </div>
         </div>

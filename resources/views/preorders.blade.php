@@ -100,6 +100,10 @@
             </div>
 
             <div class="mt-8">
+                <div class="mb-4 text-[11px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 md:hidden text-center">
+                    Showing {{ $preorders->firstItem() }} - {{ $preorders->lastItem() }} of {{ $preorders->total() }} pre-orders
+                    <span class="block mt-1 text-indigo-600 dark:text-indigo-400">Page {{ $preorders->currentPage() }} of {{ $preorders->lastPage() }}</span>
+                </div>
                 {{ $preorders->links() }}
             </div>
         </div>

@@ -112,7 +112,13 @@
                 @endforelse
             </div>
 
-            <div class="mt-8">{{ $items->links() }}</div>
+            <div class="mt-8">
+                <div class="mb-4 text-[11px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 md:hidden text-center">
+                    Showing {{ $items->firstItem() }} - {{ $items->lastItem() }} of {{ $items->total() }} items
+                    <span class="block mt-1 text-indigo-600 dark:text-indigo-400">Page {{ $items->currentPage() }} of {{ $items->lastPage() }}</span>
+                </div>
+                {{ $items->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>
