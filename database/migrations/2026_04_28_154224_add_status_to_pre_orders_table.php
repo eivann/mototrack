@@ -10,11 +10,13 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up()
-{
-    Schema::table('pre_orders', function (Blueprint $table) {
-        $table->string('status')->default('pending'); // pending, completed, cancelled
-    });
-}
+    {
+        Schema::table('pre_orders', function (Blueprint $table) {
+            if (!Schema::hasColumn('pre_orders', 'status')) {
+                $table->string('status')->default('pending');
+            }
+        });
+    }
 
     /**
      * Reverse the migrations.

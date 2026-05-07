@@ -12,9 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pre_orders', function (Blueprint $table) {
-        $table->decimal('price', 10, 2)->nullable();
-        $table->decimal('total', 10, 2)->nullable();
-    });
+            if (!Schema::hasColumn('pre_orders', 'price')) {
+                $table->decimal('price', 10, 2)->nullable();
+            }
+            if (!Schema::hasColumn('pre_orders', 'total')) {
+                $table->decimal('total', 10, 2)->nullable();
+            }
+        });
     }
 
     /**

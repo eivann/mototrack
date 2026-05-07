@@ -1,58 +1,79 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏍️ MotoTrack Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**MotoTrack** is a professional-grade, automated motorcycle shop management and e-commerce platform. It streamlines shop operations with a Smart POS, real-time inventory tracking, and a seamless customer-to-owner notification bridge.
 
-## About Laravel
+![MotoTrack Dashboard Preview](public/images/hero.png)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Core Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 🏢 For Shop Owners (Admin Dashboard)
+- **Smart POS System**: Rapid checkout interface with automated inventory deduction and transaction grouping.
+- **Inventory Management**: Real-time tracking of parts with automated **SMS Low-Stock Alerts** via Semaphore API.
+- **Repair Tracking**: Manage service jobs, track progress, and record payments with one-click receipt generation.
+- **Pre-Order Processing**: Sourcing management for out-of-stock parts with down-payment verification.
+- **Financial Analytics**: Comprehensive sales history and reporting filtered by day, week, or custom date ranges.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 👤 For Customers
+- **Compatibility Checker**: Intelligently filter parts based on motorcycle make and model.
+- **Live Order Tracking**: Real-time status updates on repairs (Pending -> Ongoing -> Done).
+- **GCash Integration**: Secure online payments for orders and pre-order down payments via **Xendit API**.
+- **Real-time Notifications**: Dashboard alerts for order confirmations and status changes.
 
-## Learning Laravel
+## 🛠️ Technical Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Framework**: Laravel 11
+- **Frontend**: Blade, Alpine.js, Tailwind CSS (Custom Dark/Light mode)
+- **Database**: MySQL / MariaDB (Supports PostgreSQL/Supabase)
+- **APIs**: Xendit (Payments), Semaphore (SMS), Google reCAPTCHA v2
+- **Icons**: Lucide Icons
+- **Typography**: Inter
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## ⚙️ Setup & Installation
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 1. Prerequisites
+- PHP 8.2+
+- Composer
+- Node.js & NPM
+- MySQL Database
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
+### 2. Installation
 ```bash
-composer require laravel/boost --dev
+# Clone the repository
+git clone https://github.com/yourusername/mototrack.git
+cd mototrack
 
-php artisan boost:install
+# Install dependencies
+composer install
+npm install
+
+# Configure environment
+cp .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 3. Database & Assets
+```bash
+# Run migrations
+php artisan migrate
 
-## Contributing
+# Compile assets
+npm run build
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Configuration
+Ensure the following keys are set in your `.env` file:
+- `XENDIT_SECRET_KEY`: Your Xendit API key
+- `SEMAPHORE_API_KEY`: Your Semaphore SMS key
+- `SEMAPHORE_NOTIFY_NUMBER`: Owner's notification number
+- `NOCAPTCHA_SITEKEY` / `NOCAPTCHA_SECRET`: Google reCAPTCHA keys
 
-## Code of Conduct
+## 🛡️ Security & Performance
+- **Role-Based Access Control (RBAC)**: Strict owner vs. customer middleware.
+- **Database Transactions**: Ensures financial data integrity during POS and checkout operations.
+- **Optimized UI**: Minimalistic and efficient layout with persistent theme preference (LocalStorage).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 📝 License
+This project was developed for the Capstone Project at Pandi, Bulacan.
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+*Developed with ❤️ by Your Name*
