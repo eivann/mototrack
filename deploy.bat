@@ -1,31 +1,28 @@
 @echo off
 echo ===================================================
-echo    MotoTrack Local Deployment Script
+echo    MotoTrack Sync - LOCAL to CLOUD
 echo ===================================================
 echo.
-echo Step 1: Compiling latest CSS and JavaScript...
+echo Step 1: Building assets (Vite)...
 call npm run build
 
 echo.
-echo Step 2: Preparing files for GitHub...
+echo Step 2: Saving changes for GitHub...
 git add .
-git add -f public/build
 
 echo.
 echo Step 3: Committing changes...
-set "timestamp=%date% %time%"
-git commit -m "Auto-deployment update: %timestamp%"
+set /p commit_msg="Enter a description of your change: "
+git commit -m "%commit_msg%"
 
 echo.
-echo Step 4: Pushing to GitHub...
-git push
+echo Step 4: Pushing to the Cloud...
+git push origin main
 
 echo.
 echo ===================================================
-echo    Done! Your code is now safely on GitHub.
+echo    SUCCESS! Your site is being updated.
+echo    Check Laravel Cloud for the progress.
 echo ===================================================
-echo.
-echo Next step: Open your cPanel Terminal and run:
-echo    cd ~/mototrack_app ^&^& git pull ^&^& php artisan migrate --force ^&^& php artisan optimize:clear
 echo.
 pause
