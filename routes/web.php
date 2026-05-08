@@ -17,13 +17,18 @@ Route::get('/dashboard', function () {
         $stats = [
             'totalProducts' => \App\Models\InventoryItem::count(),
             'lowStockCount' => \App\Models\InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->count(),
-            'activeRepairs' => \App\Models\Repair::whereIn('status', ['Pending', 'In Progress'])->count(),
+            'activeRepairs' => \App\Models\Repair::whereIn('status', ['pending', 'ongoing'])->count(),
             'todayRevenue' => \App\Models\Sale::whereDate('created_at', now()->today())->sum('total_price'),
         ];
         
         $recentActivities = auth()->user()->notifications()->latest()->take(5)->get();
         
-        return view('dashboard', compact('stats', 'recentActivities'));
+        // Data for other tabs
+        $inventorySummary = \App\Models\InventoryItem::latest()->take(10)->get();
+        $recentSales = \App\Models\Sale::with('item', 'customer')->latest()->take(10)->get();
+        $activeServiceJobs = \App\Models\Repair::whereIn('status', ['pending', 'ongoing'])->latest()->take(10)->get();
+        
+        return view('dashboard', compact('stats', 'recentActivities', 'inventorySummary', 'recentSales', 'activeServiceJobs'));
     }
     return redirect()->route('customer.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
