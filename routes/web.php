@@ -14,7 +14,16 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     if (auth()->user()->role === 'owner') {
-        return view('dashboard');
+        $stats = [
+            'totalProducts' => \App\Models\InventoryItem::count(),
+            'lowStockCount' => \App\Models\InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->count(),
+            'activeRepairs' => \App\Models\Repair::whereIn('status', ['Pending', 'In Progress'])->count(),
+            'todayRevenue' => \App\Models\Sale::whereDate('created_at', now()->today())->sum('total_price'),
+        ];
+        
+        $recentActivities = auth()->user()->notifications()->latest()->take(5)->get();
+        
+        return view('dashboard', compact('stats', 'recentActivities'));
     }
     return redirect()->route('customer.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

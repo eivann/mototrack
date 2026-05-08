@@ -1,5 +1,19 @@
 # 🏍️ MotoTrack Management System
 
+> [!IMPORTANT]
+> **Premium UI Hybrid Active**: This project is currently on the `premium-ui` branch, which integrates the high-fidelity design from the React prototype into the Laravel functional core.
+
+## How to Revert to Original
+If you want to go back to the standard UI:
+1. Open your terminal in this directory.
+2. Run `git checkout main`.
+3. The project will instantly revert to the original functional state.
+
+## New Features (Premium UI)
+- **Tabbed Dashboard:** Seamless switching between Overview, Inventory, Sales, and Reports.
+- **Modern Aesthetic:** Uses gradients, 3D-effect cards (3xl rounding), and fluid animations.
+- **Centralized Command:** One-click access to all functional modules from a single dashboard view.
+
 **MotoTrack** is a professional-grade, automated motorcycle shop management and e-commerce platform. It streamlines shop operations with a Smart POS, real-time inventory tracking, and a seamless customer-to-owner notification bridge.
 
 ![MotoTrack Dashboard Preview](public/images/hero.png)
@@ -21,12 +35,21 @@
 
 ## 🛠️ Technical Stack
 
-- **Framework**: Laravel 11
+- **Framework**: Laravel 13
 - **Frontend**: Blade, Alpine.js, Tailwind CSS (Custom Dark/Light mode)
-- **Database**: MySQL / MariaDB (Supports PostgreSQL/Supabase)
+- **Database**: **PostgreSQL (Supabase)** — *Primary Production Database*
 - **APIs**: Xendit (Payments), Semaphore (SMS), Google reCAPTCHA v2
 - **Icons**: Lucide Icons
 - **Typography**: Inter
+
+## 📈 Professional Features Roadmap
+
+We are currently moving towards a more professional, data-driven architecture. The following features are in the pipeline:
+
+- **[In Progress] Phase 1: Dashboard Analytics** — Visual sales trends and inventory insights using ApexCharts.
+- **[Planned] Phase 2: Activity Logging** — Comprehensive audit trails for all administrative actions via Spatie ActivityLog.
+- **[Planned] Phase 3: RESTful API Support** — Enabling future mobile app and third-party integrations with Sanctum.
+- **[Planned] Phase 4: Automated Testing** — Ensuring stability with Pest PHP automated testing suites.
 
 ## ⚙️ Setup & Installation
 
@@ -34,7 +57,7 @@
 - PHP 8.2+
 - Composer
 - Node.js & NPM
-- MySQL Database
+- PostgreSQL (or MySQL for local dev)
 
 ### 2. Installation
 ```bash
@@ -53,7 +76,7 @@ php artisan key:generate
 
 ### 3. Database & Assets
 ```bash
-# Run migrations
+# Run migrations (ensure DB_CONNECTION is set to pgsql for Supabase)
 php artisan migrate
 
 # Compile assets
@@ -69,6 +92,7 @@ Ensure the following keys are set in your `.env` file:
 
 ## 🛡️ Security & Performance
 - **Role-Based Access Control (RBAC)**: Strict owner vs. customer middleware.
+- **PostgreSQL Optimization**: Optimized for Supabase cloud hosting.
 - **Database Transactions**: Ensures financial data integrity during POS and checkout operations.
 - **Optimized UI**: Minimalistic and efficient layout with persistent theme preference (LocalStorage).
 
@@ -76,4 +100,4 @@ Ensure the following keys are set in your `.env` file:
 This project was developed for the Capstone Project at Pandi, Bulacan.
 
 ---
-*Developed with ❤️ by Your Name*
+*Developed with ❤️ by Eivann*

@@ -16,6 +16,16 @@ export default {
             fontFamily: {
                 sans: ['Inter', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                primary: '#030213',
+                accent: '#6366f1', // Indigo for a premium feel, matching the SVG icons
+                'premium-gray': '#f3f3f5',
+                'premium-border': 'rgba(0, 0, 0, 0.1)',
+            },
+            borderRadius: {
+                'xl': '1rem',
+                '2xl': '1.5rem',
+            },
         },
     },
 
