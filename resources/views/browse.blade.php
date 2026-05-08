@@ -29,7 +29,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- FILTER SIDEBAR -->
-        <form method="GET" action="/browse" class="lg:col-span-3 bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm h-fit sticky top-24">
+        <form method="GET" action="/browse" class="lg:col-span-3 bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm h-fit lg:sticky top-24">
             <h2 class="font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-xs">Filters</h2>
             <input type="hidden" name="search" value="{{ request('search') }}">
 

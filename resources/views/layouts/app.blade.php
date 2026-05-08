@@ -76,7 +76,8 @@
                          x-transition:leave-start="opacity-100 translate-x-0"
                          x-transition:leave-end="opacity-0 translate-x-12"
                          class="pointer-events-auto w-80 md:w-96 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border-l-4 border-indigo-600 dark:border-indigo-400 shadow-2xl rounded-2xl p-5 group hover:scale-[1.02] transition-all"
-                         @click="window.location.href = toast.link">
+                         :class="toast.link ? 'cursor-pointer' : ''"
+                         @click="if(toast.link) window.location.href = toast.link">
                         
                         <div class="flex items-start gap-4">
                             <div class="bg-indigo-100 dark:bg-indigo-900/50 p-2 rounded-xl text-indigo-600 dark:text-indigo-400 animate-pulse">
@@ -86,7 +87,7 @@
                                 <h4 class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight" x-text="toast.title"></h4>
                                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2" x-text="toast.message"></p>
                                 <div class="flex items-center gap-2 mt-3">
-                                    <button @click.stop="markAsRead(toast.id)" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-white transition-colors">
+                                    <button @click.stop="markAsRead(toast.id)" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-white transition-colors cursor-pointer">
                                         Dismiss
                                     </button>
                                     <span class="text-[10px] text-gray-400">•</span>
