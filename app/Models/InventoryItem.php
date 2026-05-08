@@ -65,11 +65,11 @@ class InventoryItem extends Model
         return $query->where(function ($q) use ($terms) {
             foreach ($terms as $term) {
                 $q->where(function ($inner) use ($term) {
-                    $inner->where('sku', 'LIKE', "%$term%")
-                          ->orWhere('model', 'LIKE', "%$term%")
-                          ->orWhere('part_name', 'LIKE', "%$term%")
-                          ->orWhere('category', 'LIKE', "%$term%")
-                          ->orWhere('brand', 'LIKE', "%$term%");
+                    $inner->where('sku', 'ILIKE', "%$term%")
+                          ->orWhere('model', 'ILIKE', "%$term%")
+                          ->orWhere('part_name', 'ILIKE', "%$term%")
+                          ->orWhere('category', 'ILIKE', "%$term%")
+                          ->orWhere('brand', 'ILIKE', "%$term%");
                 });
             }
         });
