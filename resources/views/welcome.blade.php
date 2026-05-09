@@ -32,10 +32,10 @@
     {{-- NAVBAR --}}
     <nav class="fixed w-full z-50 transition-all duration-300 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
+            <div class="flex justify-between items-center h-20 md:h-28 lg:h-32">
                 <!-- Brand -->
                 <a href="/" class="flex items-center gap-3 group">
-                    <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts Logo" class="h-10 w-auto group-hover:scale-105 transition-transform">
+                    <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts Logo" class="h-14 md:h-20 lg:h-24 w-auto group-hover:scale-105 transition-transform">
                     <div>
                         <h1 class="text-xl font-black tracking-tighter leading-none text-gray-900 dark:text-white">EDMAR MOTORCYCLE</h1>
                         <p class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest mt-0.5">Parts and Accessories</p>
@@ -103,7 +103,7 @@
 
             <div class="flex-1 relative mt-12 lg:mt-0 w-full max-w-lg lg:max-w-none mx-auto" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
                 <div class="absolute inset-0 bg-indigo-600/10 dark:bg-indigo-900/20 rounded-full blur-[100px] pointer-events-none -z-10"></div>
-                <img src="{{ asset('images/hero.png') }}" alt="Motorcycle Parts Shop" class="w-full h-auto drop-shadow-2xl relative z-10 hover:scale-[1.02] transition-transform duration-500">
+                <img src="{{ asset('images/hero.png') }}" alt="Motorcycle Parts Shop" class="w-full h-auto drop-shadow-2xl relative z-10 hover:scale-[1.02] transition-transform duration-500" fetchpriority="high">
                 
                 <!-- Floating badge -->
                 <div class="absolute -bottom-6 -left-6 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-20 flex items-center gap-4 animate-bounce" style="animation-duration: 3s;">
@@ -174,7 +174,7 @@
             <div class="flex flex-col lg:flex-row items-center gap-16">
                 <div class="flex-1 w-full relative">
                     <div class="absolute inset-0 bg-blue-600/10 rounded-[3rem] -rotate-6 transform scale-105 pointer-events-none"></div>
-                    <img src="{{ asset('images/about.png') }}" alt="Expert Mechanics" class="w-full h-auto rounded-[3rem] shadow-2xl relative z-10 border border-gray-100 dark:border-gray-800">
+                    <img src="{{ asset('images/about.png') }}" alt="Expert Mechanics" class="w-full h-auto rounded-[3rem] shadow-2xl relative z-10 border border-gray-100 dark:border-gray-800" loading="lazy">
                 </div>
                 
                 <div class="flex-1">
@@ -360,7 +360,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div class="md:col-span-2">
                     <div class="flex items-center gap-3 mb-6">
-                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-8 w-auto grayscale opacity-80">
+                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-10 w-auto grayscale opacity-80">
                         <h2 class="text-xl font-black tracking-tighter text-gray-900 dark:text-white">MOTOTRACK</h2>
                     </div>
                     <p class="text-gray-500 dark:text-gray-400 font-medium max-w-sm">Your trusted partner for quality motorcycle parts and expert repair services in Pandi, Bulacan since 2009.</p>

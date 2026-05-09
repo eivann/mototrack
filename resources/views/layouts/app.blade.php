@@ -2,8 +2,11 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" id="html-root">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="theme-color" content="#4f46e5">
+        <link rel="manifest" href="/manifest.json">
+        <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
 
         {{-- Apply theme before paint to avoid flash --}}
         <script>
@@ -86,8 +89,8 @@
                             <div class="flex-1 min-w-0">
                                 <h4 class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight" x-text="toast.title"></h4>
                                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2" x-text="toast.message"></p>
-                                <div class="flex items-center gap-2 mt-3">
-                                    <button @click.stop="markAsRead(toast.id)" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-white transition-colors cursor-pointer">
+                                <div class="flex items-center gap-4 mt-3">
+                                    <button @click.stop="markAsRead(toast.id); hapticPulse();" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-white transition-colors cursor-pointer py-2 pr-4">
                                         Dismiss
                                     </button>
                                     <span class="text-[10px] text-gray-400">•</span>
@@ -215,6 +218,13 @@
 
         <script>
             lucide.createIcons();
+
+            // Global Haptic Feedback Helper
+            function hapticPulse() {
+                if (window.navigator && window.navigator.vibrate) {
+                    window.navigator.vibrate(10);
+                }
+            }
         </script>
     </body>
 </html>

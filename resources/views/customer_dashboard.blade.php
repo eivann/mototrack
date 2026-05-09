@@ -183,7 +183,7 @@
                                     </div>
                                     <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="mt-2 text-right">
                                         @csrf
-                                        <button type="submit" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Mark Read</button>
+                                        <button type="submit" @click="hapticPulse()" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline py-3 px-4 -mr-4 inline-block">Mark Read</button>
                                     </form>
                                     @if(!$loop->last)
                                         <hr class="border-gray-100 dark:border-gray-800">
