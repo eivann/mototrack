@@ -26,12 +26,12 @@ public function store(Request $request)
 {
     $request->validate([
         'sku' => 'nullable|unique:inventory_items,sku',
-        'category' => 'required',
-        'part_name' => 'required',
-        'brand' => 'required',
-        'model' => 'required',
-        'quantity' => 'required|integer',
-        'price' => 'required|numeric',
+        'category' => 'required|string|max:255',
+        'part_name' => 'required|string|max:255',
+        'brand' => 'required|string|max:255',
+        'model' => 'required|string|max:255',
+        'quantity' => 'required|integer|min:0',
+        'price' => 'required|numeric|min:0',
     ]);
 
     InventoryItem::create([

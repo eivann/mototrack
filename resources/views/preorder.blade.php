@@ -26,20 +26,50 @@
             @csrf
             <input type="hidden" name="part_name" value="{{ $item->part_name }}">
             <input type="hidden" name="model" value="{{ $item->model }}">
+            <input type="hidden" name="price" value="{{ $item->price }}">
 
             <!-- Quantity -->
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Quantity</label>
-                <input type="number" name="quantity" min="1" required
-                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-400 outline-none">
+                <input type="number" id="quantity" name="quantity" min="1" value="1" required
+                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-400 outline-none transition-all">
             </div>
 
-            <!-- Down Payment -->
+            <!-- Down Payment (Auto Calculated) -->
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Down Payment</label>
-                <input type="number" name="down_payment" min="0"
-                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-400 outline-none">
+                <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    Required Down Payment (50%)
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 uppercase">Auto-calculated</span>
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span class="text-gray-500 font-bold">₱</span>
+                    </div>
+                    <input type="number" id="down_payment" name="down_payment" step="0.01" readonly
+                        class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-8 pr-4 py-2 bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-bold outline-none cursor-not-allowed">
+                </div>
             </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const quantityInput = document.getElementById('quantity');
+                    const downPaymentInput = document.getElementById('down_payment');
+                    const itemPrice = {{ $item->price }};
+
+                    function calculateDownPayment() {
+                        const qty = parseInt(quantityInput.value) || 0;
+                        const total = qty * itemPrice;
+                        const downPayment = total * 0.50;
+                        downPaymentInput.value = downPayment.toFixed(2);
+                    }
+
+                    // Calculate initially
+                    calculateDownPayment();
+
+                    // Recalculate on input change
+                    quantityInput.addEventListener('input', calculateDownPayment);
+                });
+            </script>
 
             <!-- Google reCAPTCHA -->
             <div class="mb-4 flex flex-col items-center">

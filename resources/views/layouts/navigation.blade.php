@@ -5,7 +5,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-12">
                     <a href="{{ auth()->check() ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard')) : url('/') }}" class="flex items-center gap-4">
-                        <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-12 w-auto object-contain">
+                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-12 w-auto object-contain">
                         <div class="flex flex-col leading-none hidden lg:flex">
                             <span class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
                             <span class="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mt-0.5">Parts and Accessories</span>
@@ -372,7 +372,6 @@
     var mobileLabel = document.getElementById('mobileThemeLabel');
 
     function applyTheme(isDark) {
-        console.log('MotoTrack Theme Change:', isDark ? 'DARK' : 'LIGHT');
         if (isDark) {
             htmlEl.classList.add('dark');
             localStorage.setItem('theme', 'dark');
@@ -390,7 +389,6 @@
     }
 
     var savedTheme = localStorage.getItem('theme');
-    console.log('Current Saved Theme:', savedTheme);
     applyTheme(savedTheme !== 'light');
 
     if (toggle) {

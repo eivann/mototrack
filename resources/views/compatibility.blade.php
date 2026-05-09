@@ -52,11 +52,6 @@
                     <!-- Results injected here -->
                 </div>
             </div>
-                <!-- RESULTS GRID -->
-                <div id="resultsBox" class="mt-8 transition-all duration-300 relative z-10">
-                    <!-- Results injected here -->
-                </div>
-            </div>
         </div>
 
     </div>

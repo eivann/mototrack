@@ -14,6 +14,53 @@ use App\Notifications\StatusUpdated;
 
 class CustomerController extends Controller
 {
+    public function dashboard(Request $request)
+    {
+        $user = auth()->user();
+        $customer = $user->customer;
+        
+        // Ensure customer record exists
+        if (!$customer) {
+            $customer = \App\Models\Customer::create([
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
+        }
+
+        // Handle success redirect from Xendit
+        if ($request->query('success') === 'preorder_paid') {
+            $preorderId = $request->query('id');
+            $latestUnpaid = PreOrder::where('id', $preorderId)
+                ->where('customer_id', $customer->id)
+                ->where('is_paid', false)
+                ->first();
+            
+            if ($latestUnpaid) {
+                $latestUnpaid->update(['is_paid' => true]);
+
+                // Notify Owner that payment is received
+                $owners = User::where('role', 'owner')->get();
+                Notification::send($owners, new StatusUpdated(
+                    'Pre-order Payment Received',
+                    "Customer {$user->name} has completed the down payment for {$latestUnpaid->part_name}.",
+                    "/preorders"
+                ));
+            }
+        }
+        
+        $repairs = \App\Models\Repair::where('customer_id', $customer->id)
+            ->orWhere('customer_name', $user->name) // Fallback for old records
+            ->latest()
+            ->get();
+            
+        $preorders = PreOrder::where('customer_id', $customer->id)
+            ->orWhere('customer_name', $user->name) // Fallback for old records
+            ->latest()
+            ->get();
+            
+        return view('customer_dashboard', compact('repairs', 'preorders'));
+    }
     public function browse()
     {
         $query = InventoryItem::query();
@@ -292,13 +339,19 @@ class CustomerController extends Controller
             $customerId = $customer->id;
         }
 
+        $price = $request->price ?? 0;
+        $total = $price * $request->quantity;
+        $downPayment = $request->down_payment ?? 0;
+
         $preorder = PreOrder::create([
             'customer_id' => $customerId, // Linked to Customer ID
             'customer_name' => ucwords(auth()->user()->name),
             'part_name' => ucwords($request->part_name),
             'model' => $request->model ? ucwords($request->model) : null,
             'quantity' => $request->quantity,
-            'down_payment' => $request->down_payment,
+            'price' => $price,
+            'total' => $total,
+            'down_payment' => $downPayment,
             'status' => 'pending',
             'is_paid' => false,
         ]);

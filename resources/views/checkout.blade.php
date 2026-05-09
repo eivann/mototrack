@@ -86,16 +86,21 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Down Payment Amount (₱)</label>
+                            <label class="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                Required Down Payment (50%)
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 uppercase">Auto-calculated</span>
+                            </label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <span class="text-gray-400 font-bold">₱</span>
                                 </div>
-                                <input type="number" name="amount_tendered" step="0.01" min="0"
-                                    class="w-full pl-10 pr-4 py-4 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-lg font-bold text-gray-900 dark:text-white"
-                                    placeholder="0.00 (Optional)">
+                                <input type="number" name="amount_tendered" value="{{ number_format($grandTotal * 0.50, 2, '.', '') }}" step="0.01" readonly
+                                    class="w-full pl-10 pr-4 py-4 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl text-lg font-bold text-gray-500 dark:text-gray-400 cursor-not-allowed focus:outline-none">
                             </div>
-                            <p class="text-[10px] text-gray-400 mt-2 italic">Leave empty to pay full amount now, or enter a partial payment.</p>
+                            <p class="text-[10px] text-gray-400 mt-2 italic flex items-start gap-1.5">
+                                <svg class="w-3 h-3 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                A strict 50% down payment is required to process all orders.
+                            </p>
                         </div>
 
                         <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] flex items-center justify-center gap-3">

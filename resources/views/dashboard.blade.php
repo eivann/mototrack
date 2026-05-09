@@ -14,20 +14,12 @@
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-3">
-                        <div class="hidden md:flex flex-col items-end">
-                            <span class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ Auth::user()->name }}</span>
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Store Owner</span>
-                        </div>
-                        <div class="h-10 w-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 border border-indigo-100 dark:border-indigo-800 shadow-sm">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-                        </div>
-                    </div>
+
                 </div>
 
                 <!-- Navigation Tabs -->
                 <div class="flex gap-2 overflow-x-auto no-scrollbar pb-0 mt-2">
-                    @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'reports' => 'Reports'] as $id => $label)
+                    @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'preorders' => 'Pre-orders', 'reports' => 'Reports'] as $id => $label)
                         <button 
                             @click="activeTab = '{{ $id }}'"
                             :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'"
@@ -127,8 +119,9 @@
                     <!-- Service Jobs Tab -->
                     <div x-show="activeTab === 'repairs'" x-cloak class="space-y-6">
                         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
-                            <div class="p-8 border-b border-gray-100 dark:border-gray-800">
+                            <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                                 <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Active Repairs Tracker</h3>
+                                <a href="{{ route('repairs.index') }}" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">Manage All &rarr;</a>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left">
@@ -150,15 +143,70 @@
                         </div>
                     </div>
 
-                    <!-- Reports Tab -->
-                    <div x-show="activeTab === 'reports'" x-cloak>
-                        <div class="bg-white dark:bg-gray-900 rounded-[3rem] p-16 text-center border border-gray-100 dark:border-gray-800">
-                            <div class="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center mx-auto mb-6 text-indigo-600">
-                                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                    <!-- Pre-orders Tab -->
+                    <div x-show="activeTab === 'preorders'" x-cloak class="space-y-6">
+                        <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                            <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                                <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Recent Pre-orders</h3>
+                                <a href="/preorders" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">Manage All &rarr;</a>
                             </div>
-                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Performance Reports</h3>
-                            <p class="text-gray-400 font-bold mb-8">Deep analytics and shop growth trends are being prepared.</p>
-                            <a href="/sales/history" class="inline-flex px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-xl hover:scale-105 transition-all">Go to History</a>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                                        @forelse($recentPreorders as $preorder)
+                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                                <td class="p-6">
+                                                    <div class="font-bold text-gray-900 dark:text-white">{{ $preorder->part_name }}</div>
+                                                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{{ $preorder->customer_name }}</div>
+                                                </td>
+                                                <td class="p-6">
+                                                    <span class="px-4 py-1 rounded-full {{ $preorder->status === 'pending' ? 'bg-amber-50 text-amber-600' : ($preorder->status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600') }} font-black text-[10px] uppercase tracking-widest">
+                                                        {{ $preorder->status }}
+                                                    </span>
+                                                </td>
+                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">
+                                                    ₱{{ number_format($preorder->down_payment, 2) }}
+                                                    <div class="text-[10px] font-bold text-gray-400 mt-1 uppercase">DP Received</div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="p-6 text-center text-gray-500 font-bold italic">No recent pre-orders found.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reports Tab -->
+                    <div x-show="activeTab === 'reports'" x-cloak class="space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Revenue Card -->
+                            <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Monthly Revenue</div>
+                                <div class="text-4xl font-black text-gray-900 dark:text-white mb-4">₱{{ number_format($stats['monthlyRevenue'], 2) }}</div>
+                                <div class="flex items-center gap-2 text-indigo-600 font-bold text-xs bg-indigo-50 dark:bg-indigo-900/20 w-fit px-3 py-1 rounded-full italic">{{ number_format($stats['totalSalesCount']) }} Total Transactions</div>
+                            </div>
+                            
+                            <!-- Repair Card -->
+                            <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Completed Repairs</div>
+                                <div class="text-4xl font-black text-gray-900 dark:text-white mb-4">{{ number_format($stats['completedRepairs']) }}</div>
+                                <div class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 dark:bg-emerald-900/20 w-fit px-3 py-1 rounded-full italic">All time</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-indigo-600 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-xl">
+                            <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+                            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div>
+                                    <h3 class="text-2xl font-black tracking-tighter mb-2 italic">Full Sales History</h3>
+                                    <p class="text-indigo-100 text-sm font-medium">Export and view all detailed POS transactions and receipts.</p>
+                                </div>
+                                <a href="/sales/history" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-lg whitespace-nowrap">View History</a>
+                            </div>
                         </div>
                     </div>
                 </div>

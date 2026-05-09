@@ -19,6 +19,9 @@ Route::get('/dashboard', function () {
             'lowStockCount' => \App\Models\InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->count(),
             'activeRepairs' => \App\Models\Repair::whereIn('status', ['pending', 'ongoing'])->count(),
             'todayRevenue' => \App\Models\Sale::whereDate('created_at', now()->today())->sum('total_price'),
+            'monthlyRevenue' => \App\Models\Sale::whereMonth('created_at', now()->month)->sum('total_price'),
+            'totalSalesCount' => \App\Models\Sale::count(),
+            'completedRepairs' => \App\Models\Repair::where('status', 'completed')->count(),
         ];
         
         $recentActivities = auth()->user()->notifications()->latest()->take(5)->get();
@@ -27,8 +30,9 @@ Route::get('/dashboard', function () {
         $inventorySummary = \App\Models\InventoryItem::latest()->take(10)->get();
         $recentSales = \App\Models\Sale::with('item', 'customer')->latest()->take(10)->get();
         $activeServiceJobs = \App\Models\Repair::whereIn('status', ['pending', 'ongoing'])->latest()->take(10)->get();
+        $recentPreorders = \App\Models\PreOrder::latest()->take(10)->get();
         
-        return view('dashboard', compact('stats', 'recentActivities', 'inventorySummary', 'recentSales', 'activeServiceJobs'));
+        return view('dashboard', compact('stats', 'recentActivities', 'inventorySummary', 'recentSales', 'activeServiceJobs', 'recentPreorders'));
     }
     return redirect()->route('customer.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -44,52 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Customer Dashboard
-    Route::get('/customer-dashboard', function () {
-        $user = auth()->user();
-        $customer = $user->customer;
-        
-        // Ensure customer record exists
-        if (!$customer) {
-            $customer = \App\Models\Customer::create([
-                'user_id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ]);
-        }
-
-        // Handle success redirect from Xendit
-        if (request()->query('success') === 'preorder_paid') {
-            $preorderId = request()->query('id');
-            $latestUnpaid = \App\Models\PreOrder::where('id', $preorderId)
-                ->where('customer_id', $customer->id)
-                ->where('is_paid', false)
-                ->first();
-            
-            if ($latestUnpaid) {
-                $latestUnpaid->update(['is_paid' => true]);
-
-                // Notify Owner that payment is received
-                $owners = \App\Models\User::where('role', 'owner')->get();
-                \Illuminate\Support\Facades\Notification::send($owners, new \App\Notifications\StatusUpdated(
-                    'Pre-order Payment Received',
-                    "Customer {$user->name} has completed the down payment for {$latestUnpaid->part_name}.",
-                    "/preorders"
-                ));
-            }
-        }
-        
-        $repairs = \App\Models\Repair::where('customer_id', $customer->id)
-            ->orWhere('customer_name', $user->name) // Fallback for old records
-            ->latest()
-            ->get();
-            
-        $preorders = \App\Models\PreOrder::where('customer_id', $customer->id)
-            ->orWhere('customer_name', $user->name) // Fallback for old records
-            ->latest()
-            ->get();
-            
-        return view('customer_dashboard', compact('repairs', 'preorders'));
-    })->name('customer.dashboard');
+    Route::get('/customer-dashboard', [CustomerController::class, 'dashboard'])->name('customer.dashboard');
 
     // Checkout & Cart
     Route::get('/cart', [CustomerController::class, 'viewCart'])->name('cart.view');
