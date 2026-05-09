@@ -106,7 +106,7 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="flex items-center justify-center p-6 relative overflow-hidden">
+<body class="flex items-center justify-center p-6 py-12 relative">
     
     <!-- Background accents -->
     <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200/40 rounded-full blur-3xl pointer-events-none"></div>

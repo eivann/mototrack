@@ -1,11 +1,11 @@
 <nav x-data="{ open: false }" class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-20 md:h-28 lg:h-32">
+        <div class="flex justify-between h-24 md:h-36 lg:h-44">
             <div class="flex items-center">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-12">
                     <a href="{{ auth()->check() ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard')) : url('/') }}" class="flex items-center gap-4">
-                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-16 md:h-24 lg:h-28 w-auto object-contain">
+                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-20 md:h-28 lg:h-36 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
                         <div class="flex flex-col leading-none hidden lg:flex">
                             <span class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
                             <span class="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mt-0.5">Parts and Accessories</span>

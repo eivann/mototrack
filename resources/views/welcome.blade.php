@@ -32,10 +32,10 @@
     {{-- NAVBAR --}}
     <nav class="fixed w-full z-50 transition-all duration-300 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20 md:h-28 lg:h-32">
+            <div class="flex justify-between items-center h-24 md:h-36 lg:h-44">
                 <!-- Brand -->
                 <a href="/" class="flex items-center gap-3 group">
-                    <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts Logo" class="h-14 md:h-20 lg:h-24 w-auto group-hover:scale-105 transition-transform">
+                    <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts Logo" class="h-20 md:h-28 lg:h-36 w-auto group-hover:scale-110 transition-transform duration-500">
                     <div>
                         <h1 class="text-xl font-black tracking-tighter leading-none text-gray-900 dark:text-white">EDMAR MOTORCYCLE</h1>
                         <p class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest mt-0.5">Parts and Accessories</p>
