@@ -22,7 +22,7 @@ public function storeSale(Request $request)
     ]);
 
     $cartItems = json_decode($request->cart_data, true);
-    
+
     if (empty($cartItems) || !is_array($cartItems)) {
         return back()->with('error', 'Cart is empty!');
     }
@@ -42,34 +42,40 @@ public function storeSale(Request $request)
     try {
         $totalAmount = \Illuminate\Support\Facades\DB::transaction(function () use ($cartItems, $transactionReference, $request) {
             $totalAmount = 0;
+            $itemsToProcess = [];
 
-            // Validate all stock with locks
+            // Validate all stock with locks and prepare items
             foreach ($cartItems as $cartItem) {
                 $item = InventoryItem::lockForUpdate()->find($cartItem['id']);
                 if (!$item || $cartItem['quantity'] > $item->quantity) {
                     throw new \Exception('Not enough stock for ' . ($item ? $item->part_name : 'Unknown item'));
                 }
                 $totalAmount += ($item->price * $cartItem['quantity']);
+                $itemsToProcess[] = [
+                    'item' => $item,
+                    'quantity' => $cartItem['quantity']
+                ];
             }
 
             $change = $request->amount_tendered - $totalAmount;
 
             // Process sales
-            foreach ($cartItems as $cartItem) {
-                $item = InventoryItem::find($cartItem['id']);
-                $total = $item->price * $cartItem['quantity'];
+            foreach ($itemsToProcess as $process) {
+                $item = $process['item'];
+                $quantity = $process['quantity'];
+                $total = $item->price * $quantity;
 
                 Sale::create([
                     'inventory_item_id' => $item->id,
-                    'quantity' => $cartItem['quantity'],
-                    'price' => $item->price, 
+                    'quantity' => $quantity,
+                    'price' => $item->price,
                     'total_price' => $total,
                     'transaction_reference' => $transactionReference,
                     'amount_tendered' => $request->amount_tendered,
                     'change' => $change
                 ]);
 
-                $item->decrement('quantity', $cartItem['quantity']);
+                $item->decrement('quantity', $quantity);
 
                 // Check for low stock and send alert if necessary
                 \App\Services\SmsService::checkLowStockAlert($item);
@@ -101,11 +107,11 @@ public function storeSale(Request $request)
         }
 
         $salesQuery = $query->latest();
-        
+
         // Totals should still be calculated from ALL records matching filters
         $allSalesForTotals = $salesQuery->get();
         $totalSales = $allSalesForTotals->sum('total_price');
-        $totalTransactions = $allSalesForTotals->whereNotNull('transaction_reference')->unique('transaction_reference')->count() 
+        $totalTransactions = $allSalesForTotals->whereNotNull('transaction_reference')->unique('transaction_reference')->count()
                             + $allSalesForTotals->whereNull('transaction_reference')->count();
 
         // Paginated results for the table
@@ -128,12 +134,12 @@ public function destroy($id)
 
     if ($item) {
         $item->quantity += $sale->quantity;
-        
+
         // If stock is back above threshold, reset the notification flag
         if ($item->quantity > $item->low_stock_threshold) {
             $item->low_stock_notified = false;
         }
-        
+
         $item->save();
     }
     $sale->delete();
@@ -144,7 +150,7 @@ public function receipt($id)
 {
     // Try to find by transaction_reference first
     $sales = Sale::with('item')->where('transaction_reference', $id)->get();
-    
+
     // Fallback for old single sales that don't have a transaction_reference
     if ($sales->isEmpty()) {
         $sales = collect([Sale::with('item')->findOrFail($id)]);

@@ -15,24 +15,23 @@ class PreOrderController extends Controller
     return view('preorders', compact('preorders'));
 }
 
-    public function complete($id)
+    public function complete(PreOrder $preorder)
     {
-        $preorders = PreOrder::findOrFail($id);
-        $item = InventoryItem::where('part_name', $preorders->part_name)
-            ->where('model', $preorders->model)
+        $item = InventoryItem::where('part_name', $preorder->part_name)
+            ->where('model', $preorder->model)
             ->first();
 
         if ($item) {
-            $item->increment('quantity', $preorders->quantity);
+            $item->increment('quantity', $preorder->quantity);
         }
-        $preorders->status = 'completed';
-        $preorders->save();
+        $preorder->status = 'completed';
+        $preorder->save();
 
         // Notify customer
-        if ($preorders->customer && $preorders->customer->user) {
-            $preorders->customer->user->notify(new \App\Notifications\StatusUpdated(
+        if ($preorder->customer && $preorder->customer->user) {
+            $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
                 'Pre-order Ready!',
-                "Your pre-order for {$preorders->part_name} has arrived and is ready for pickup at the store!",
+                "Your pre-order for {$preorder->part_name} has arrived and is ready for pickup at the store!",
                 '/customer-dashboard'
             ));
         }
@@ -40,17 +39,16 @@ class PreOrderController extends Controller
         return back()->with('success', 'Pre-order completed!');
     }
 
-    public function cancel($id)
+    public function cancel(PreOrder $preorder)
     {
-        $preorders = PreOrder::findOrFail($id);
-        $preorders->status = 'cancelled';
-        $preorders->save();
+        $preorder->status = 'cancelled';
+        $preorder->save();
 
         // Notify customer
-        if ($preorders->customer && $preorders->customer->user) {
-            $preorders->customer->user->notify(new \App\Notifications\StatusUpdated(
+        if ($preorder->customer && $preorder->customer->user) {
+            $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
                 'Pre-order Cancelled',
-                "Your pre-order for {$preorders->part_name} has been cancelled.",
+                "Your pre-order for {$preorder->part_name} has been cancelled.",
                 '/customer-dashboard'
             ));
         }
@@ -58,17 +56,15 @@ class PreOrderController extends Controller
         return back()->with('success', 'Pre-order cancelled!');
     }
 
-public function destroy($id)
+public function destroy(PreOrder $preorder)
 {
-    $order = PreOrder::findOrFail($id);
-    $order->delete();
+    $preorder->delete();
 
     return redirect()->back()->with('success', 'Pre-order deleted successfully.');
 }
 
-public function markPaid($id)
+public function markPaid(PreOrder $preorder)
 {
-    $preorder = PreOrder::findOrFail($id);
     $preorder->is_paid = true;
     $preorder->save();
 

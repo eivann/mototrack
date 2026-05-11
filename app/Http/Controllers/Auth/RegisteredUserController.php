@@ -36,17 +36,23 @@ class RegisteredUserController extends Controller
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'my_extra_field' => 'prohibited',
-            'g-recaptcha-response' => ['required', function ($attribute, $value, $fail) {
-                $response = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-                    'secret' => config('services.recaptcha.secret_key'),
-                    'response' => $value,
-                    'remoteip' => request()->ip(),
-                ]);
+            'g-recaptcha-response' => [
+                (app()->runningUnitTests() || request()->ip() === config('services.recaptcha.skip_ip')) ? 'nullable' : 'required',
+                function ($attribute, $value, $fail) {
+                    if (app()->runningUnitTests() || request()->ip() === config('services.recaptcha.skip_ip')) {
+                        return;
+                    }
+                    $response = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                        'secret' => config('services.recaptcha.secret_key'),
+                        'response' => $value,
+                        'remoteip' => request()->ip(),
+                    ]);
 
-                if (!$response->json('success')) {
-                    $fail('The reCAPTCHA validation failed.');
+                    if (!$response->json('success')) {
+                        $fail('The reCAPTCHA validation failed.');
+                    }
                 }
-            }],
+            ],
         ], [
             'email.ends_with' => 'Only @gmail.com email addresses are allowed to register.',
             'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',

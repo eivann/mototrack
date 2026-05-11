@@ -43,6 +43,56 @@ class InventoryItem extends Model
     ];
 
     /**
+     * Set the item's sku to uppercase.
+     */
+    protected function sku(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            set: fn (?string $value) => $value ? strtoupper($value) : null,
+        );
+    }
+
+    /**
+     * Set the item's category to title case.
+     */
+    protected function category(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            set: fn (string $value) => ucwords($value),
+        );
+    }
+
+    /**
+     * Set the item's part name to title case.
+     */
+    protected function partName(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            set: fn (string $value) => ucwords($value),
+        );
+    }
+
+    /**
+     * Set the item's brand to title case.
+     */
+    protected function brand(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            set: fn (string $value) => ucwords($value),
+        );
+    }
+
+    /**
+     * Set the item's model to title case.
+     */
+    protected function model(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            set: fn (string $value) => ucwords($value),
+        );
+    }
+
+    /**
      * Scope a query to search for inventory items.
      */
     public function scopeSearch($query, $searchTerm)
@@ -62,14 +112,16 @@ class InventoryItem extends Model
             $terms = $all_terms;
         }
 
-        return $query->where(function ($q) use ($terms) {
+        $likeOperator = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
+
+        return $query->where(function ($q) use ($terms, $likeOperator) {
             foreach ($terms as $term) {
-                $q->where(function ($inner) use ($term) {
-                    $inner->where('sku', 'ILIKE', "%$term%")
-                          ->orWhere('model', 'ILIKE', "%$term%")
-                          ->orWhere('part_name', 'ILIKE', "%$term%")
-                          ->orWhere('category', 'ILIKE', "%$term%")
-                          ->orWhere('brand', 'ILIKE', "%$term%");
+                $q->where(function ($inner) use ($term, $likeOperator) {
+                    $inner->where('sku', $likeOperator, "%$term%")
+                          ->orWhere('model', $likeOperator, "%$term%")
+                          ->orWhere('part_name', $likeOperator, "%$term%")
+                          ->orWhere('category', $likeOperator, "%$term%")
+                          ->orWhere('brand', $likeOperator, "%$term%");
                 });
             }
         });

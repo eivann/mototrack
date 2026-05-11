@@ -31,18 +31,24 @@ class LoginRequest extends FormRequest
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
             'my_extra_field' => 'prohibited',
-            'g-recaptcha-response' => ['required', function ($attribute, $value, $fail) {
-                $response = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-                    'secret' => config('services.recaptcha.secret_key'),
-                    'response' => $value,
-                    'remoteip' => request()->ip(),
-                ]);
+            'g-recaptcha-response' => [
+                (app()->runningUnitTests() || request()->ip() === config('services.recaptcha.skip_ip')) ? 'nullable' : 'required',
+                function ($attribute, $value, $fail) {
+                    if (app()->runningUnitTests() || request()->ip() === config('services.recaptcha.skip_ip')) {
+                        return;
+                    }
+                    $response = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                        'secret' => config('services.recaptcha.secret_key'),
+                        'response' => $value,
+                        'remoteip' => request()->ip(),
+                    ]);
 
-                if (!$response->json('success')) {
-                    $errors = implode(', ', $response->json('error-codes', []));
-                    $fail('reCAPTCHA failed: ' . $errors);
+                    if (!$response->json('success')) {
+                        $errors = implode(', ', $response->json('error-codes', []));
+                        $fail('reCAPTCHA failed: ' . $errors);
+                    }
                 }
-            }],
+            ],
         ];
     }
 

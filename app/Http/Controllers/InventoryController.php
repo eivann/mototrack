@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class InventoryController extends Controller
 {
-   
+
 
 public function index(Request $request)
 {
@@ -34,24 +34,15 @@ public function store(Request $request)
         'price' => 'required|numeric|min:0',
     ]);
 
-    InventoryItem::create([
-        'sku' => $request->sku ? strtoupper($request->sku) : null,
-        'category' => ucwords($request->category),
-        'part_name' => ucwords($request->part_name),
-        'brand' => ucwords($request->brand),
-        'model' => ucwords($request->model),
-        'quantity' => $request->quantity,
-        'notes' => $request->notes ? ucfirst($request->notes) : null,
-        'price' => $request->price,
-    ]);
+    InventoryItem::create($request->only(['sku', 'category', 'part_name', 'brand', 'model', 'quantity', 'price', 'notes']));
 
-    return redirect('/inventory');
+    return redirect()->route('inventory.index')->with('success', 'Item added successfully!');
 }
 
-public function update(Request $request, $id)
+public function update(Request $request, InventoryItem $item)
 {
     $request->validate([
-        'sku'       => 'nullable|unique:inventory_items,sku,' . $id,
+        'sku'       => 'nullable|unique:inventory_items,sku,' . $item->id,
         'category'  => 'required|string|max:255',
         'part_name' => 'required|string|max:255',
         'brand'     => 'required|string|max:255',
@@ -61,18 +52,7 @@ public function update(Request $request, $id)
         'notes'     => 'nullable|string|max:1000',
     ]);
 
-    $item = InventoryItem::findOrFail($id);
-
-    $item->update([
-        'sku'       => $request->sku ? strtoupper($request->sku) : null,
-        'category'  => ucwords($request->category),
-        'part_name' => ucwords($request->part_name),
-        'brand'     => ucwords($request->brand),
-        'model'     => ucwords($request->model),
-        'quantity'  => $request->quantity,
-        'notes'     => $request->notes ? ucfirst($request->notes) : null,
-        'price'     => $request->price,
-    ]);
+    $item->update($request->only(['sku', 'category', 'part_name', 'brand', 'model', 'quantity', 'price', 'notes']));
 
     // Reset low stock notification flag if stock is now above threshold
     if ($item->quantity > ($item->low_stock_threshold ?? 5)) {
@@ -80,18 +60,16 @@ public function update(Request $request, $id)
         $item->save();
     }
 
-    return redirect('/inventory');
+    return redirect()->route('inventory.index')->with('success', 'Item updated successfully!');
 }
-public function destroy($id)
+public function destroy(InventoryItem $item)
 {
-    $item = InventoryItem::findOrFail($id);
     $item->delete();
 
-    return redirect('/inventory');
+    return redirect()->route('inventory.index')->with('success', 'Item deleted successfully!');
 }
-public function edit($id)
+public function edit(InventoryItem $item)
 {
-    $item = InventoryItem::findOrFail($id);
     return view('edit', compact('item'));
 }
 

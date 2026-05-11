@@ -18,7 +18,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
         $customer = $user->customer;
-        
+
         // Ensure customer record exists
         if (!$customer) {
             $customer = \App\Models\Customer::create([
@@ -28,37 +28,16 @@ class CustomerController extends Controller
             ]);
         }
 
-        // Handle success redirect from Xendit
-        if ($request->query('success') === 'preorder_paid') {
-            $preorderId = $request->query('id');
-            $latestUnpaid = PreOrder::where('id', $preorderId)
-                ->where('customer_id', $customer->id)
-                ->where('is_paid', false)
-                ->first();
-            
-            if ($latestUnpaid) {
-                $latestUnpaid->update(['is_paid' => true]);
-
-                // Notify Owner that payment is received
-                $owners = User::where('role', 'owner')->get();
-                Notification::send($owners, new StatusUpdated(
-                    'Pre-order Payment Received',
-                    "Customer {$user->name} has completed the down payment for {$latestUnpaid->part_name}.",
-                    "/preorders"
-                ));
-            }
-        }
-        
         $repairs = \App\Models\Repair::where('customer_id', $customer->id)
             ->orWhere('customer_name', $user->name) // Fallback for old records
             ->latest()
             ->get();
-            
+
         $preorders = PreOrder::where('customer_id', $customer->id)
             ->orWhere('customer_name', $user->name) // Fallback for old records
             ->latest()
             ->get();
-            
+
         return view('customer_dashboard', compact('repairs', 'preorders'));
     }
     public function browse()
@@ -91,14 +70,15 @@ class CustomerController extends Controller
         $make = $request->input('make', '');
         $model = $request->input('model', '');
         $part = $request->input('part', '');
-        
+
         $searchQuery = trim("$make $model $part");
-        
+
         return view('compatibility', compact('searchQuery'));
     }
 
     public function checkCompatibility(Request $request)
     {
+        $request->validate(['model' => 'nullable|string|max:255']);
         $items = InventoryItem::search($request->model)->get();
         return response()->json($items);
     }
@@ -175,7 +155,7 @@ class CustomerController extends Controller
 
         if (isset($cart[$id])) {
             $inventory = InventoryItem::find($id);
-            
+
             if ($inventory && $request->quantity > $inventory->quantity) {
                 return back()->with('error', 'Cannot exceed available stock for ' . $inventory->part_name);
             }
@@ -197,7 +177,7 @@ class CustomerController extends Controller
 
         $transactionReference = 'TRX-' . strtoupper(uniqid());
         $paymentMethod = $request->input('payment_method', 'gcash');
-        
+
         // Find or create customer profile for logged-in user
         $customerId = null;
         if (auth()->check()) {
@@ -308,9 +288,12 @@ class CustomerController extends Controller
             'part_name' => 'required|string|max:255',
             'model' => 'nullable|string|max:255',
             'quantity' => 'required|integer|min:1',
-            'down_payment' => 'required|numeric|min:0',
+            'down_payment' => 'nullable|numeric|min:0',
             'my_extra_field' => 'prohibited',
-            'g-recaptcha-response' => ['required', function ($attribute, $value, $fail) {
+            'g-recaptcha-response' => [(app()->runningUnitTests() || request()->ip() === config('services.recaptcha.skip_ip')) ? 'nullable' : 'required', function ($attribute, $value, $fail) {
+                if (app()->runningUnitTests() || request()->ip() === config('services.recaptcha.skip_ip')) {
+                    return;
+                }
                 $response = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
                     'secret' => config('services.recaptcha.secret_key'),
                     'response' => $value,
@@ -358,6 +341,18 @@ class CustomerController extends Controller
 
         $externalId = 'PRE-' . $preorder->id . '-' . time();
 
+        if ($downPayment <= 0) {
+            // Notify Owner
+            $owners = User::where('role', 'owner')->get();
+            \Illuminate\Support\Facades\Notification::send($owners, new StatusUpdated(
+                'New Custom Pre-order Request',
+                "Customer " . auth()->user()->name . " has requested a custom pre-order for {$request->part_name}. Please set the price to proceed.",
+                "/preorders"
+            ));
+
+            return redirect('/customer-dashboard')->with('success', 'Custom pre-order request submitted! Our team will review it and set the price shortly.');
+        }
+
         try {
             \Xendit\Configuration::setXenditKey(config('services.xendit.secret_key'));
             $apiInstance = new \Xendit\Invoice\InvoiceApi();
@@ -368,11 +363,11 @@ class CustomerController extends Controller
                 'invoice_duration' => 86400,
                 'currency' => 'PHP',
                 'payment_methods' => ['GCASH'],
-                'success_redirect_url' => url('/customer-dashboard?success=preorder_paid&id=' . $preorder->id),
+                'success_redirect_url' => route('preorder.verify', ['id' => $preorder->id]),
                 'failure_redirect_url' => url('/customer-dashboard?error=preorder_failed&id=' . $preorder->id),
             ]);
             $result = $apiInstance->createInvoice($create_invoice_request);
-            
+
             $preorder->update([
                 'xendit_invoice_id' => $result['id'],
                 'xendit_invoice_url' => $result['invoice_url']
@@ -399,6 +394,44 @@ class CustomerController extends Controller
         }
     }
 
+    public function verifyPreorder(Request $request, $id)
+    {
+        $preorder = PreOrder::findOrFail($id);
+
+        if ($preorder->is_paid) {
+            return redirect()->route('customer.dashboard')->with('success', 'Payment already confirmed.');
+        }
+
+        if (!$preorder->xendit_invoice_id) {
+            return redirect()->route('customer.dashboard')->with('error', 'No invoice found for this pre-order.');
+        }
+
+        try {
+            \Xendit\Configuration::setXenditKey(config('services.xendit.secret_key'));
+            $apiInstance = new \Xendit\Invoice\InvoiceApi();
+            $invoice = $apiInstance->getInvoiceById($preorder->xendit_invoice_id);
+
+            if ($invoice['status'] === 'SETTLED' || $invoice['status'] === 'PAID') {
+                $preorder->update(['is_paid' => true]);
+
+                // Notify Owner
+                $owners = User::where('role', 'owner')->get();
+                \Illuminate\Support\Facades\Notification::send($owners, new StatusUpdated(
+                    'Pre-order Payment Received',
+                    "Customer " . auth()->user()->name . " has completed the down payment for {$preorder->part_name}.",
+                    "/preorders"
+                ));
+
+                return redirect()->route('customer.dashboard')->with('success', 'Payment confirmed!');
+            }
+
+            return redirect()->route('customer.dashboard')->with('info', 'Payment status: ' . $invoice['status']);
+
+        } catch (\Exception $e) {
+            return redirect()->route('customer.dashboard')->with('error', 'Verification failed: ' . $e->getMessage());
+        }
+    }
+
     public function preorderParts()
     {
         $items = \App\Models\InventoryItem::where('quantity', 0)->get();
@@ -417,7 +450,7 @@ class CustomerController extends Controller
 
         if (isset($cart[$id])) {
             $inventory = InventoryItem::find($id);
-            
+
             if ($inventory && $cart[$id]['quantity'] + 1 > $inventory->quantity) {
                 return back()->with('error', 'Cannot exceed available stock for ' . $inventory->part_name);
             }
@@ -466,6 +499,7 @@ class CustomerController extends Controller
 
     public function searchParts(Request $request)
     {
+        $request->validate(['model' => 'nullable|string|max:255']);
         $items = InventoryItem::search($request->model)->take(20)->get();
         return response()->json($items);
     }

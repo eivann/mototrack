@@ -60,13 +60,12 @@ public function store(Request $request)
     return back()->with('success', 'Repair job created successfully!');
 }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Repair $repair)
     {
         $request->validate([
-            'status' => 'required|string|in:pending,ongoing,done',
+            'status' => 'required|string|in:pending,ongoing,done,completed', // added completed just in case
         ]);
 
-        $repair = Repair::findOrFail($id);
         $repair->status = $request->status;
         $repair->save();
 
@@ -82,16 +81,13 @@ public function store(Request $request)
         return redirect('/repairs')->with('success', 'Status updated!');
     }
 
-public function destroy($id)
+public function destroy(Repair $repair)
 {
-    Repair::findOrFail($id)->delete();
-    return back();
-    
+    $repair->delete();
+    return back()->with('success', 'Repair job deleted.');
 }
-    public function markPaid($id)
+    public function markPaid(Repair $repair)
     {
-        $repair = Repair::findOrFail($id);
-
         DB::transaction(function () use ($repair) {
             $repair->is_paid = true;
             $repair->save();
@@ -126,9 +122,8 @@ public function destroy($id)
         return back()->with('success', 'Payment recorded and added to sales history!');
     }
 
-public function receipt($id)
+public function receipt(Repair $repair)
 {
-    $repair = Repair::findOrFail($id);
     return view('receipt', compact('repair'));
 }
 
