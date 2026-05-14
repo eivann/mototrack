@@ -340,7 +340,7 @@
                     </div>
                     <div class="bg-gray-50 dark:bg-gray-950 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 flex items-center gap-4">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="phone" class="w-6 h-6"></i></div>
-                        <div><h4 class="font-black text-gray-900 dark:text-white">Phone</h4><p class="text-sm font-medium text-gray-500 dark:text-gray-400">09776634982</p></div>
+                        <div><h4 class="font-black text-gray-900 dark:text-white">Phone</h4><p class="text-sm font-medium text-gray-500 dark:text-gray-400">+63 977-6634-982</p></div>
                     </div>
                     <div class="bg-gray-50 dark:bg-gray-950 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 flex items-center gap-4">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="mail" class="w-6 h-6"></i></div>
@@ -391,7 +391,7 @@
                     <h4 class="font-black text-gray-900 dark:text-white uppercase tracking-widest text-sm mb-6">Contact</h4>
                     <ul class="space-y-4">
                         <li class="flex items-center gap-3 text-gray-500 dark:text-gray-400 font-medium"><i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i> Pandi, Bulacan</li>
-                        <li class="flex items-center gap-3 text-gray-500 dark:text-gray-400 font-medium"><i data-lucide="phone" class="w-4 h-4 text-gray-400"></i> 09776634982</li>
+                        <li class="flex items-center gap-3 text-gray-500 dark:text-gray-400 font-medium"><i data-lucide="phone" class="w-4 h-4 text-gray-400"></i> +63 977-6634-982</li>
                         <li class="flex items-center gap-3 text-gray-500 dark:text-gray-400 font-medium"><i data-lucide="clock" class="w-4 h-4 text-gray-400"></i> Daily: 6AM — 6PM</li>
                     </ul>
                 </div>

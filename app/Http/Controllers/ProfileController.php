@@ -34,6 +34,11 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
+        // Also update the linked Customer phone number if provided
+        if ($request->filled('phone') && $request->user()->customer) {
+            $request->user()->customer->update(['phone' => $request->phone]);
+        }
+
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
