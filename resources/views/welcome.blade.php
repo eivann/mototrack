@@ -32,10 +32,10 @@
     {{-- NAVBAR --}}
     <nav class="fixed w-full z-50 transition-all duration-300 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-24 md:h-36 lg:h-44">
+            <div class="flex justify-between items-center h-16 md:h-20 lg:h-24">
                 <!-- Brand -->
                 <a href="/" class="flex items-center gap-3 group">
-                    <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts Logo" class="h-20 md:h-28 lg:h-36 w-auto group-hover:scale-110 transition-transform duration-500">
+                    <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts Logo" class="h-12 md:h-16 lg:h-20 w-auto group-hover:scale-110 transition-transform duration-500">
                     <div>
                         <h1 class="text-xl font-black tracking-tighter leading-none text-gray-900 dark:text-white">EDMAR MOTORCYCLE</h1>
                         <p class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest mt-0.5">Parts and Accessories</p>
@@ -169,30 +169,31 @@
     </section>
 
     {{-- ABOUT --}}
-    <section id="about" class="py-16 relative overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="about" class="py-24 relative overflow-hidden bg-gray-900 dark:bg-gray-950 text-white border-y border-gray-800">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="flex flex-col lg:flex-row items-center gap-16">
                 <div class="flex-1 w-full relative">
-                    <div class="absolute inset-0 bg-blue-600/10 rounded-[3rem] -rotate-6 transform scale-105 pointer-events-none"></div>
-                    <img src="{{ asset('images/about.png') }}" alt="Expert Mechanics" class="w-full h-auto rounded-[3rem] shadow-2xl relative z-10 border border-gray-100 dark:border-gray-800" loading="lazy">
+                    <div class="absolute inset-0 bg-blue-600/20 rounded-[3rem] -rotate-6 transform scale-105 pointer-events-none"></div>
+                    <img src="{{ asset('images/about.png') }}" alt="Expert Mechanics" class="w-full h-auto rounded-[3rem] shadow-2xl relative z-10 border border-gray-700" loading="lazy">
                 </div>
                 
                 <div class="flex-1">
-                    <div class="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm uppercase tracking-widest mb-4">
+                    <div class="inline-flex items-center gap-2 text-indigo-400 font-bold text-sm uppercase tracking-widest mb-4">
                         <i data-lucide="info" class="w-4 h-4"></i> About Us
                     </div>
-                    <h2 class="text-4xl md:text-5xl font-black tracking-tighter mb-6 text-gray-900 dark:text-white">Trusted by Riders Across Bulacan</h2>
-                    <p class="text-lg text-gray-600 dark:text-gray-400 font-medium mb-10 leading-relaxed">
+                    <h2 class="text-4xl md:text-5xl font-black tracking-tighter mb-6 text-white">Trusted by Riders Across Bulacan</h2>
+                    <p class="text-lg text-gray-400 font-medium mb-10 leading-relaxed">
                         Since 2009, Edmar Motorcycle Parts has been the go-to shop for riders in Pandi and beyond. We combine quality products with expert service to keep you safely on the road.
                     </p>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-600"></i><span class="font-bold text-gray-700 dark:text-gray-300">Genuine OEM Parts</span></div>
-                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-600"></i><span class="font-bold text-gray-700 dark:text-gray-300">Expert Mechanics</span></div>
-                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-600"></i><span class="font-bold text-gray-700 dark:text-gray-300">Fast Turnaround</span></div>
-                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-600"></i><span class="font-bold text-gray-700 dark:text-gray-300">Fair Pricing</span></div>
-                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-600"></i><span class="font-bold text-gray-700 dark:text-gray-300">Gcash Payments</span></div>
-                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-600"></i><span class="font-bold text-gray-700 dark:text-gray-300">15+ Years Experience</span></div>
+                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">Genuine OEM Parts</span></div>
+                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">Expert Mechanics</span></div>
+                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">Fast Turnaround</span></div>
+                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">Fair Pricing</span></div>
+                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">Gcash Payments</span></div>
+                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">15+ Years Experience</span></div>
                     </div>
                 </div>
             </div>
@@ -210,17 +211,27 @@
                 <p class="text-gray-500 dark:text-gray-400 font-medium text-lg">Enter your motorcycle details and we'll instantly find the exact parts that fit your ride.</p>
             </div>
 
-            <div class="bg-gradient-to-br from-indigo-600 to-indigo-900 rounded-[3rem] p-8 md:p-12 shadow-2xl shadow-indigo-500/30 overflow-hidden relative border border-indigo-500/20">
-                <div class="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-                
-                <div class="relative z-10">
-                    <form method="GET" action="/compatibility" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <input type="text" name="make" placeholder="Make (e.g. Yamaha)" class="flex-1 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-white/50 font-bold">
-                        <input type="text" name="model" placeholder="Model (e.g. R6)" class="flex-1 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-white/50 font-bold">
-                        <input type="text" name="part" placeholder="Part name" class="flex-1 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-white/50 font-bold">
-                        <button type="submit" class="bg-white text-indigo-900 font-black px-8 py-4 rounded-2xl hover:bg-indigo-50 transition-colors shadow-lg shadow-black/10 flex items-center justify-center gap-2">
-                            <i data-lucide="search" class="w-5 h-5"></i> Search
-                        </button>
+            <div class="relative group mt-8">
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
+                <div class="relative bg-white dark:bg-gray-800 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
+                    <form method="GET" action="/compatibility" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="flex flex-col">
+                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Make</label>
+                            <input type="text" name="make" placeholder="E.g., Honda" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Model</label>
+                            <input type="text" name="model" placeholder="E.g., TMX 125" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Year/Part</label>
+                            <input type="text" name="part" placeholder="E.g., 2024 or Brake" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-3.5 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">
+                                <i data-lucide="search" class="w-5 h-5"></i> Search
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -327,11 +338,11 @@
                     </div>
                     <div class="bg-gray-50 dark:bg-gray-950 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 flex items-center gap-4">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="phone" class="w-6 h-6"></i></div>
-                        <div><h4 class="font-black text-gray-900 dark:text-white">Phone</h4><p class="text-sm font-medium text-gray-500 dark:text-gray-400">+63 XXX XXX XXXX</p></div>
+                        <div><h4 class="font-black text-gray-900 dark:text-white">Phone</h4><p class="text-sm font-medium text-gray-500 dark:text-gray-400">09776634982</p></div>
                     </div>
                     <div class="bg-gray-50 dark:bg-gray-950 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 flex items-center gap-4">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="mail" class="w-6 h-6"></i></div>
-                        <div><h4 class="font-black text-gray-900 dark:text-white">Email</h4><p class="text-sm font-medium text-gray-500 dark:text-gray-400">contact@edmarmoto.ph</p></div>
+                        <div><h4 class="font-black text-gray-900 dark:text-white">Email</h4><p class="text-sm font-medium text-gray-500 dark:text-gray-400">edmarmotorshop@gmail.com</p></div>
                     </div>
                     <div class="bg-gray-50 dark:bg-gray-950 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 flex items-center gap-4">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="clock" class="w-6 h-6"></i></div>
@@ -378,7 +389,7 @@
                     <h4 class="font-black text-gray-900 dark:text-white uppercase tracking-widest text-sm mb-6">Contact</h4>
                     <ul class="space-y-4">
                         <li class="flex items-center gap-3 text-gray-500 dark:text-gray-400 font-medium"><i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i> Pandi, Bulacan</li>
-                        <li class="flex items-center gap-3 text-gray-500 dark:text-gray-400 font-medium"><i data-lucide="phone" class="w-4 h-4 text-gray-400"></i> +63 912 345 6789</li>
+                        <li class="flex items-center gap-3 text-gray-500 dark:text-gray-400 font-medium"><i data-lucide="phone" class="w-4 h-4 text-gray-400"></i> 09776634982</li>
                         <li class="flex items-center gap-3 text-gray-500 dark:text-gray-400 font-medium"><i data-lucide="clock" class="w-4 h-4 text-gray-400"></i> Daily: 6AM — 6PM</li>
                     </ul>
                 </div>

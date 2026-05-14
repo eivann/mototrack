@@ -1,11 +1,11 @@
 <nav x-data="{ open: false }" class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-24 md:h-36 lg:h-44">
+        <div class="flex justify-between h-16 md:h-20 lg:h-24">
             <div class="flex items-center">
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-12">
+                <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-8">
                     <a href="{{ auth()->check() ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard')) : url('/') }}" class="flex items-center gap-4">
-                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-20 md:h-28 lg:h-36 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
+                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-12 md:h-16 lg:h-20 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
                         <div class="flex flex-col leading-none hidden lg:flex">
                             <span class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
                             <span class="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mt-0.5">Parts and Accessories</span>
@@ -51,6 +51,25 @@
                                 <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
                             @endif
                         </a>
+
+                        <a href="{{ route('cart.view') }}" class="{{ $linkClasses }} {{ request()->routeIs('cart.view') ? $activeClasses : $inactiveClasses }}">
+                            <div class="relative transition-all duration-300 group-hover:-translate-y-1 flex items-center">
+                                <i data-lucide="shopping-cart" class="w-5 h-5 mr-2.5"></i>
+                                @if(count(session('cart', [])) > 0)
+                                    <span class="absolute -top-3 -left-2 flex h-5 w-5">
+                                        <span class="relative inline-flex rounded-full h-5 w-5 bg-red-600 text-[10px] text-white items-center justify-center font-black border-2 border-white dark:border-gray-900 shadow-sm">
+                                            {{ count(session('cart', [])) }}
+                                        </span>
+                                    </span>
+                                @endif
+                            </div>
+
+                            @if(request()->routeIs('cart.view'))
+                                <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
+                            @else
+                                <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
+                            @endif
+                        </a>
                     @endif
 
                     @auth
@@ -59,25 +78,6 @@
                                 <i data-lucide="layout-dashboard" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
                                 <span>{{ auth()->user()->role === 'owner' ? 'My Orders' : 'Dashboard' }}</span>
                                 @if(request()->routeIs('customer.dashboard'))
-                                    <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
-                                @else
-                                    <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
-                                @endif
-                            </a>
-
-                            <a href="{{ route('cart.view') }}" class="{{ $linkClasses }} {{ request()->routeIs('cart.view') ? $activeClasses : $inactiveClasses }}">
-                                <div class="relative transition-all duration-300 group-hover:-translate-y-1 flex items-center">
-                                    <i data-lucide="shopping-cart" class="w-5 h-5 mr-2.5"></i>
-                                    @if(count(session('cart', [])) > 0)
-                                        <span class="absolute -top-3 -left-2 flex h-5 w-5">
-                                            <span class="relative inline-flex rounded-full h-5 w-5 bg-red-600 text-[10px] text-white items-center justify-center font-black border-2 border-white dark:border-gray-900 shadow-sm">
-                                                {{ count(session('cart', [])) }}
-                                            </span>
-                                        </span>
-                                    @endif
-                                </div>
-                                <span>Cart</span>
-                                @if(request()->routeIs('cart.view'))
                                     <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
                                 @else
                                     <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
@@ -290,6 +290,11 @@
                     <i data-lucide="search" class="w-5 h-5 mr-4"></i>
                     Compatibility Checker
                 </a>
+
+                <a href="/cart" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->is('cart') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 mr-4"></i>
+                    My Cart
+                </a>
             @endif
             
             @auth
@@ -297,11 +302,6 @@
                     <a href="{{ route('customer.dashboard') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->routeIs('customer.dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
                         <i data-lucide="layout-dashboard" class="w-5 h-5 mr-4"></i>
                         Customer Dashboard
-                    </a>
-
-                    <a href="/cart" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->is('cart') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
-                        <i data-lucide="shopping-cart" class="w-5 h-5 mr-4"></i>
-                        My Cart
                     </a>
                 @else
                     <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">

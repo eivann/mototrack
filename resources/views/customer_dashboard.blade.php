@@ -29,7 +29,7 @@
                     <div class="bg-indigo-600 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl shadow-indigo-300 dark:shadow-none">
                         <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
                         <div class="relative z-10">
-                            <h3 class="text-4xl font-black tracking-tighter mb-4 italic">Welcome back, {{ explode(' ', Auth::user()->name)[0] }}!</h3>
+                            <h3 class="text-4xl font-black tracking-tighter mb-4">Welcome back, {{ explode(' ', Auth::user()->name)[0] }}!</h3>
                             <p class="text-indigo-100 text-lg max-w-md font-medium leading-relaxed mb-8">Ready to upgrade your ride? Track your active repairs, view pre-orders, and browse our massive catalog of premium parts.</p>
                             <div class="flex flex-wrap gap-4">
                                 <a href="/browse" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-xl inline-block">Shop Now</a>
@@ -81,7 +81,7 @@
                     <!-- Repairs Table -->
                     <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                         <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                            <h3 class="text-xl font-black text-gray-900 dark:text-white italic uppercase tracking-tight">Track My Repairs</h3>
+                            <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Track My Repairs</h3>
                         </div>
                         @if(isset($repairs) && $repairs->count() > 0)
                             <div class="overflow-x-auto">
@@ -116,7 +116,7 @@
                     <!-- Pre-orders Table -->
                     <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                         <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                            <h3 class="text-xl font-black text-gray-900 dark:text-white italic uppercase tracking-tight">Track My Pre-Orders</h3>
+                            <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Track My Pre-Orders</h3>
                         </div>
                         @if(isset($preorders) && $preorders->count() > 0)
                             <div class="overflow-x-auto">
@@ -155,7 +155,7 @@
                     <!-- Pro Tip -->
                     <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group">
                         <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-                        <h4 class="text-xl font-black mb-2 italic tracking-tighter uppercase">Rider Tip</h4>
+                        <h4 class="text-xl font-black mb-2 tracking-tighter uppercase">Rider Tip</h4>
                         <p class="text-xs text-gray-300 mb-8 font-medium leading-relaxed">
                             Not sure if a part fits your motorcycle model? Use our intelligent compatibility checker before purchasing to guarantee a perfect fit.
                         </p>

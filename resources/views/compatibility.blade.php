@@ -25,16 +25,16 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="flex flex-col">
                             <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Make</label>
-                            <input type="text" id="makeInput" placeholder="E.g., Honda" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            <input type="text" id="makeInput" value="{{ request('make') }}" placeholder="E.g., Honda" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none">
                         </div>
                         <div class="flex flex-col">
                             <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Model</label>
-                            <input type="text" id="modelInput" placeholder="E.g., TMX 125" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            <input type="text" id="modelInput" value="{{ request('model') }}" placeholder="E.g., TMX 125" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none">
                         </div>
                         <div class="flex flex-col relative">
-                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Year</label>
+                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Year/Part</label>
                             <div class="flex items-center gap-2">
-                                <input type="text" id="yearInput" placeholder="E.g., 2024" class="w-full bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500">
+                                <input type="text" id="yearInput" value="{{ request('part') }}" placeholder="E.g., 2024 or Brake" class="w-full bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500">
                                 <!-- Loading Spinner -->
                                 <div id="loadingSpinner" class="hidden absolute right-3 top-[34px]">
                                     <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
