@@ -9,6 +9,11 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\RepairController;
 use App\Http\Controllers\PreOrderController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\Auth\GoogleController;
+
+// Google OAuth
+Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 
 Route::get('/', function () {
     return view('welcome');

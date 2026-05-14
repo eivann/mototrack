@@ -49,15 +49,6 @@
                                 <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">View catalog</p>
                             </div>
                         </a>
-                        <a href="/cart" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6">
-                            <div class="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
-                                <i data-lucide="shopping-cart" class="w-8 h-8"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-black text-lg text-gray-900 dark:text-white uppercase tracking-tight">My Cart</h4>
-                                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Checkout now</p>
-                            </div>
-                        </a>
                         <a href="/compatibility" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6">
                             <div class="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform shrink-0">
                                 <i data-lucide="search" class="w-8 h-8"></i>
@@ -74,6 +65,15 @@
                             <div>
                                 <h4 class="font-black text-lg text-gray-900 dark:text-white uppercase tracking-tight">Pre-Order</h4>
                                 <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Request parts</p>
+                            </div>
+                        </a>
+                        <a href="/cart" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6">
+                            <div class="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
+                                <i data-lucide="shopping-cart" class="w-8 h-8"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-lg text-gray-900 dark:text-white uppercase tracking-tight">My Cart</h4>
+                                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Checkout now</p>
                             </div>
                         </a>
                     </div>

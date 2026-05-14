@@ -52,24 +52,7 @@
                             @endif
                         </a>
 
-                        <a href="{{ route('cart.view') }}" class="{{ $linkClasses }} {{ request()->routeIs('cart.view') ? $activeClasses : $inactiveClasses }}">
-                            <div class="relative transition-all duration-300 group-hover:-translate-y-1 flex items-center">
-                                <i data-lucide="shopping-cart" class="w-5 h-5 mr-2.5"></i>
-                                @if(count(session('cart', [])) > 0)
-                                    <span class="absolute -top-3 -left-2 flex h-5 w-5">
-                                        <span class="relative inline-flex rounded-full h-5 w-5 bg-red-600 text-[10px] text-white items-center justify-center font-black border-2 border-white dark:border-gray-900 shadow-sm">
-                                            {{ count(session('cart', [])) }}
-                                        </span>
-                                    </span>
-                                @endif
-                            </div>
 
-                            @if(request()->routeIs('cart.view'))
-                                <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
-                            @else
-                                <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
-                            @endif
-                        </a>
                     @endif
 
                     @auth
@@ -291,10 +274,7 @@
                     Compatibility Checker
                 </a>
 
-                <a href="/cart" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->is('cart') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
-                    <i data-lucide="shopping-cart" class="w-5 h-5 mr-4"></i>
-                    My Cart
-                </a>
+
             @endif
             
             @auth

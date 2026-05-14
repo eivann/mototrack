@@ -58,6 +58,8 @@
                         <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
                         <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
                     </button>
+
+
                     @guest
                         <a href="{{ route('login') }}" class="hidden lg:block text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Sign In</a>
                         <a href="{{ route('register') }}" class="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-5 py-2.5 rounded-xl text-sm font-black hover:scale-105 active:scale-95 transition-all shadow-lg hover:shadow-gray-900/20 dark:hover:shadow-white/20">Get Started</a>
