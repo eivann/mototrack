@@ -144,16 +144,18 @@
             <p class="text-gray-500 dark:text-gray-400 mt-2">Sign up to pre-order parts and track services</p>
         </div>
 
-        <div class="card p-8 sm:p-10 {{ $errors->any() ? 'shake' : '' }}">
+        <div class="card p-8 sm:p-10 {{ $errors->any() || session('error') ? 'shake' : '' }}">
             
-            @if($errors->any())
-                <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400">
-                    <div class="bg-red-100 dark:bg-red-900/40 p-2 rounded-lg">
+            @if($errors->any() || session('error'))
+                <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div class="bg-red-100 dark:bg-red-900/40 p-2 rounded-lg shrink-0">
                         <i data-lucide="alert-circle" class="w-5 h-5"></i>
                     </div>
                     <div>
                         <p class="text-sm font-bold">Registration Failed</p>
-                        <p class="text-xs opacity-80">Please correct the errors below.</p>
+                        <p class="text-xs opacity-80">
+                            {{ session('error') ?: 'Please correct the errors below.' }}
+                        </p>
                     </div>
                 </div>
             @endif
