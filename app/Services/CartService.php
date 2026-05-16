@@ -20,6 +20,7 @@ class CartService
      */
     public function addItem($id, $quantity = 1)
     {
+        $quantity = max(1, (int) $quantity);
         $item = InventoryItem::findOrFail($id);
 
         if ($item->quantity <= 0) {
@@ -66,6 +67,7 @@ class CartService
      */
     public function updateQuantity($id, $quantity)
     {
+        $quantity = max(1, (int) $quantity);
         $cart = $this->getCart();
 
         if (isset($cart[$id])) {
