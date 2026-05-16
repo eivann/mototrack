@@ -85,15 +85,17 @@
                                 <td class="p-4 align-top text-center">
                                     <form method="POST" action="/repairs/{{ $repair->id }}">
                                         @csrf @method('PUT')
-                                        <select name="status" onchange="this.form.submit()"
-                                                class="text-xs font-bold pl-3 pr-8 py-1 rounded-full border-0 focus:ring-0 cursor-pointer text-center appearance-none
-                                                {{ $repair->status == 'pending' ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300' : '' }}
-                                                {{ $repair->status == 'ongoing' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300' : '' }}
-                                                {{ $repair->status == 'done' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300' : '' }}">
-                                            <option value="pending" {{ $repair->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                            <option value="ongoing" {{ $repair->status == 'ongoing' ? 'selected' : '' }}>In Progress</option>
-                                            <option value="done" {{ $repair->status == 'done' ? 'selected' : '' }}>Completed</option>
-                                        </select>
+                                            <div class="relative">
+                                            <select name="status" onchange="this.form.submit()"
+                                                    class="text-xs font-bold pl-3 pr-8 py-1 rounded-full border-0 focus:ring-0 cursor-pointer text-center appearance-none
+                                                    {{ $repair->status == 'pending' ? 'bg-amber-100 text-amber-800' : '' }}
+                                                    {{ $repair->status == 'ongoing' ? 'bg-indigo-100 text-indigo-800' : '' }}
+                                                    {{ $repair->status == 'done' ? 'bg-emerald-100 text-emerald-800' : '' }}">
+                                                <option value="pending" {{ $repair->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                                <option value="ongoing" {{ $repair->status == 'ongoing' ? 'selected' : '' }}>In Progress</option>
+                                                <option value="done" {{ $repair->status == 'done' ? 'selected' : '' }}>Completed</option>
+                                            </select>
+                                        </div>
                                     </form>
                                 </td>
                                 <td class="p-4 align-top font-bold text-gray-900 dark:text-white">₱{{ number_format($repair->cost ?? 0, 2) }}</td>
@@ -107,10 +109,7 @@
                                             </button>
                                         </form>
                                     @else
-                                        <span class="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 rounded-full">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                            PAID
-                                        </span>
+                                        <x-status-badge status="paid" />
                                     @endif
                                 </td>
                                 <td class="p-4 align-top text-right">

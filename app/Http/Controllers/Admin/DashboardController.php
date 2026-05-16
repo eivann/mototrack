@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
 use App\Models\Repair;
 use App\Models\Sale;
@@ -24,13 +25,12 @@ class DashboardController extends Controller
 
             $recentActivities = auth()->user()->notifications()->latest()->take(5)->get();
 
-            // Data for other tabs
             $inventorySummary = InventoryItem::latest()->take(10)->get();
             $recentSales = Sale::with('item', 'customer')->latest()->take(10)->get();
             $activeServiceJobs = Repair::whereIn('status', ['pending', 'ongoing'])->latest()->take(10)->get();
             $recentPreorders = \App\Models\PreOrder::latest()->take(10)->get();
 
-            return view('dashboard', compact('stats', 'recentActivities', 'inventorySummary', 'recentSales', 'activeServiceJobs', 'recentPreorders'));
+            return view('admin.dashboard', compact('stats', 'recentActivities', 'inventorySummary', 'recentSales', 'activeServiceJobs', 'recentPreorders'));
         }
 
         return redirect()->route('customer.dashboard');

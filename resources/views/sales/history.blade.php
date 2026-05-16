@@ -187,10 +187,10 @@
                                         <td class="p-5 text-center font-bold text-gray-900 dark:text-white">{{ $item->quantity }}</td>
                                         <td class="p-5 text-right font-bold text-gray-900 dark:text-white">₱{{ number_format($item->price, 2) }}</td>
                                         <td class="p-5 text-center">
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest
-                                                {{ $item->quantity <= 0 ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300' : ($item->quantity <= ($item->low_stock_threshold ?? 5) ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300') }}">
+                                            <x-status-badge :status="$item->quantity <= 0 ? 'low' : ($item->quantity <= ($item->low_stock_threshold ?? 5) ? 'low' : 'ok')" 
+                                                class="text-[10px] uppercase tracking-widest">
                                                 {{ $item->quantity <= 0 ? 'Out of Stock' : ($item->quantity <= ($item->low_stock_threshold ?? 5) ? 'Low Stock' : 'In Stock') }}
-                                            </span>
+                                            </x-status-badge>
                                         </td>
                                     </tr>
                                 @endforeach

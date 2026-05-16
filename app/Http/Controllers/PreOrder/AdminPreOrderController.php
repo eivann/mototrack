@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\PreOrder;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PreOrder;
 use App\Models\InventoryItem;
 
-class PreOrderController extends Controller
+class AdminPreOrderController extends Controller
 {
    public function index()
 {
     $preorders  = PreOrder::latest()->paginate(10);
-    return view('preorders', compact('preorders'));
+    return view('preorders.admin_index', compact('preorders'));
 }
 
     public function complete(PreOrder $preorder)

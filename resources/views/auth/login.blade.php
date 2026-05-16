@@ -69,9 +69,8 @@
             transform: translateY(-2px);
             box-shadow: 0 12px 24px rgba(37,99,235,0.3);
         }
-        .btn-primary:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
         .input-field {
@@ -100,14 +99,32 @@
         .dark .input-field:focus {
             background: #1e293b;
         }
-        
-        .input-group:focus-within i {
-            color: #4f46e5;
+
+        .input-field.error {
+            border-color: #ef4444;
+            background: #fef2f2;
         }
+
+        .dark .input-field.error {
+            background: #451a1a;
+            border-color: #991b1b;
+        }
+        
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="flex items-center justify-center p-6 py-12 relative">
+<body class="flex items-center justify-center p-6 py-12 relative overflow-x-hidden">
     
     <!-- Background accents -->
     <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200/40 rounded-full blur-3xl pointer-events-none"></div>
@@ -117,7 +134,7 @@
         
         <div class="text-center mb-8">
             <a href="/" class="inline-flex flex-col items-center gap-2 mb-6 hover:opacity-80 transition-opacity">
-                <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-24 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
+                <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-24 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
                 <div class="text-center">
                     <h1 class="font-bold text-xl text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
                     <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
@@ -127,9 +144,21 @@
             <p class="text-gray-500 dark:text-gray-400 mt-2">Sign in to manage your account and orders</p>
         </div>
 
-        <div class="card p-8 sm:p-10">
+        <div class="card p-8 sm:p-10 {{ $errors->any() ? 'shake' : '' }}">
             
             <x-auth-session-status class="mb-4 bg-green-50 text-green-600 p-3 rounded-xl text-sm border border-green-100" :status="session('status')" />
+
+            @if($errors->any())
+                <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400">
+                    <div class="bg-red-100 dark:bg-red-900/40 p-2 rounded-lg">
+                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold">Authentication Failed</p>
+                        <p class="text-xs opacity-80">Please check your email and password.</p>
+                    </div>
+                </div>
+            @endif
 
             <form method="POST" action="{{ route('login') }}" x-data="{ showPassword: false, isSubmitting: false }" @submit="isSubmitting = true">
                 @csrf
@@ -140,9 +169,8 @@
                     <div class="relative">
                         <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" 
-                            class="input-field" placeholder="you@example.com">
+                            class="input-field {{ $errors->has('email') ? 'error' : '' }}" placeholder="you@example.com">
                     </div>
-                    <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-500 text-sm" />
                 </div>
 
                 <!-- Password -->
@@ -158,14 +186,13 @@
                     <div class="relative">
                         <i data-lucide="lock" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
                         <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="current-password" 
-                            class="input-field pr-12" placeholder="••••••••">
+                            class="input-field pr-12 {{ $errors->has('email') || $errors->has('password') ? 'error' : '' }}" placeholder="••••••••">
                         
                         <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 focus:outline-none">
                             <i x-show="!showPassword" data-lucide="eye" class="w-5 h-5"></i>
                             <i x-show="showPassword" x-cloak data-lucide="eye-off" class="w-5 h-5"></i>
                         </button>
                     </div>
-                    <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500 text-sm" />
                 </div>
 
                 <!-- Remember Me -->

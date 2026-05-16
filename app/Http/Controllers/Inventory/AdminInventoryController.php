@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\InventoryItem;
 use Illuminate\Support\Facades\Auth;
 
-class InventoryController extends Controller
+class AdminInventoryController extends Controller
 {
 
 
@@ -19,7 +19,7 @@ public function index(Request $request)
         ->paginate(12)
         ->withQueryString();
 
-    return view('inventory', compact('items', 'search'));
+    return view('inventory.index', compact('items', 'search'));
 }
 
 public function store(Request $request)
@@ -70,7 +70,7 @@ public function destroy(InventoryItem $item)
 }
 public function edit(InventoryItem $item)
 {
-    return view('edit', compact('item'));
+    return view('inventory.edit', compact('item'));
 }
 
 public function lowStock()
@@ -78,7 +78,7 @@ public function lowStock()
 
     // Fetch items where quantity is less than or equal to low_stock_threshold
     $lowStockItems = InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->paginate(10);
-    return view('low_stock', compact('lowStockItems'));
+    return view('inventory.low_stock', compact('lowStockItems'));
 }
 
 }

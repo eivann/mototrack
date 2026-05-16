@@ -33,7 +33,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'ends_with:@gmail.com', 'unique:'.User::class],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'regex:/^(09|\+639)\d{9}$/'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'my_extra_field' => 'prohibited',
             'g-recaptcha-response' => [
@@ -55,6 +55,7 @@ class RegisteredUserController extends Controller
             ],
         ], [
             'email.ends_with' => 'Only @gmail.com email addresses are allowed to register.',
+            'phone.regex' => 'The phone number must start with 09 or +639 followed by 9 digits.',
             'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',
         ]);
 

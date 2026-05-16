@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Repair;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -10,7 +10,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\StatusUpdated;
 use Illuminate\Support\Facades\DB;
-
 
 class RepairController extends Controller
 {
@@ -29,72 +28,71 @@ class RepairController extends Controller
         $repairs = $query->latest()->paginate(10)->withQueryString();
         $customers = \App\Models\Customer::orderBy('name')->get();
 
-        return view('repair', compact('repairs', 'customers'));
+        return view('repairs.index', compact('repairs', 'customers'));
     }
 
-public function store(Request $request)
-{
-    $request->validate([
-        'customer_id'   => 'nullable|exists:customers,id',
-        'customer_name' => 'required_without:customer_id|nullable|string|max:255',
-        'bike_model'    => 'required|string|max:255',
-        'issue'         => 'required|string|max:1000',
-        'cost'          => 'required|numeric|min:0',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'customer_id'   => 'nullable|exists:customers,id',
+            'customer_name' => 'required_without:customer_id|nullable|string|max:255',
+            'bike_model'    => 'required|string|max:255',
+            'issue'         => 'required|string|max:1000',
+            'cost'          => 'required|numeric|min:0',
+        ]);
 
-    $customerName = $request->customer_name;
-    if ($request->customer_id) {
-        $customerName = \App\Models\Customer::find($request->customer_id)->name;
+        $customerName = $request->customer_name;
+        if ($request->customer_id) {
+            $customerName = \App\Models\Customer::find($request->customer_id)->name;
+        }
+
+        Repair::create([
+            'customer_id'   => $request->customer_id,
+            'customer_name' => ucwords($customerName),
+            'bike_model'    => ucwords($request->bike_model),
+            'issue'         => ucfirst($request->issue),
+            'cost'          => $request->cost,
+            'status'        => 'pending',
+            'is_paid'       => false,
+        ]);
+
+        return back()->with('success', 'Repair job created successfully!');
     }
-
-    Repair::create([
-        'customer_id'   => $request->customer_id,
-        'customer_name' => ucwords($customerName),
-        'bike_model'    => ucwords($request->bike_model),
-        'issue'         => ucfirst($request->issue),
-        'cost'          => $request->cost,
-        'status'        => 'pending',
-        'is_paid'       => false,
-    ]);
-
-    return back()->with('success', 'Repair job created successfully!');
-}
 
     public function update(Request $request, Repair $repair)
     {
         $request->validate([
-            'status' => 'required|string|in:pending,ongoing,done,completed', // added completed just in case
+            'status' => 'required|string|in:pending,ongoing,done,completed',
         ]);
 
         $repair->status = $request->status;
         $repair->save();
 
-        // Notify customer via dashboard
         if ($repair->customer && $repair->customer->user) {
             $repair->customer->user->notify(new \App\Notifications\StatusUpdated(
                 'Repair Status Updated',
                 "Your repair job for {$repair->bike_model} is now: " . strtoupper($request->status),
-                '/customer-dashboard'
+                '/customer/dashboard'
             ));
         }
 
         return redirect('/repairs')->with('success', 'Status updated!');
     }
 
-public function destroy(Repair $repair)
-{
-    $repair->delete();
-    return back()->with('success', 'Repair job deleted.');
-}
+    public function destroy(Repair $repair)
+    {
+        $repair->delete();
+        return back()->with('success', 'Repair job deleted.');
+    }
+
     public function markPaid(Repair $repair)
     {
         DB::transaction(function () use ($repair) {
             $repair->is_paid = true;
             $repair->save();
 
-            // Record this as a sale for the reports
             \App\Models\Sale::create([
-                'inventory_item_id' => null, // Service/Labor
+                'inventory_item_id' => null,
                 'quantity' => 1,
                 'total_price' => $repair->cost,
                 'customer_id' => $repair->customer_id,
@@ -102,7 +100,6 @@ public function destroy(Repair $repair)
             ]);
         });
 
-        // Notify Owner
         $owners = User::where('role', 'owner')->get();
         Notification::send($owners, new StatusUpdated(
             'Repair Payment Received',
@@ -110,22 +107,19 @@ public function destroy(Repair $repair)
             "/repairs"
         ));
 
-        // Notify Customer
         if ($repair->customer && $repair->customer->user) {
             $repair->customer->user->notify(new StatusUpdated(
                 'Payment Confirmed',
                 "Your payment of ₱" . number_format($repair->cost, 2) . " for {$repair->bike_model} has been received. Thank you!",
-                '/customer-dashboard'
+                '/customer/dashboard'
             ));
         }
 
         return back()->with('success', 'Payment recorded and added to sales history!');
     }
 
-public function receipt(Repair $repair)
-{
-    return view('receipt', compact('repair'));
-}
-
-
+    public function receipt(Repair $repair)
+    {
+        return view('repairs.receipt', compact('repair'));
+    }
 }

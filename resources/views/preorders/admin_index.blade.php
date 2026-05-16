@@ -37,12 +37,7 @@
                                 </td>
                                 <td class="p-4 align-top text-center font-bold text-gray-900 dark:text-white">₱{{ number_format($order->down_payment, 2) }}</td>
                                 <td class="p-4 align-top text-center">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold
-                                        {{ $order->status == 'pending' ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300' : '' }}
-                                        {{ $order->status == 'completed' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300' : '' }}
-                                        {{ $order->status == 'cancelled' ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300' : '' }}">
-                                        {{ ucfirst($order->status) }}
-                                    </span>
+                                    <x-status-badge :status="$order->status" />
                                 </td>
                                 <td class="p-4 align-top text-right">
                                     <div class="flex items-center justify-end gap-2">
