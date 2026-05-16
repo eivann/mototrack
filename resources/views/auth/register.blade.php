@@ -212,6 +212,9 @@
                         </button>
                     </div>
                     <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500 text-xs italic" />
+                    <p class="mt-2 text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                        Must be at least 8 characters with upper/lower case, numbers, and symbols.
+                    </p>
                 </div>
 
                 <div class="mb-6 relative input-group">
