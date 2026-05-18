@@ -125,6 +125,21 @@ class CheckoutController extends Controller
             }
         }
 
+        if ($paymentMethod === 'rcpay') {
+            try {
+                $paymentAmount = $request->input('amount_tendered') ?: $grandTotal;
+                $bankCode = $request->input('bank_code', 'PMP');
+                $redirectUrl = $this->paymentService->createRcpayUrl(
+                    $transactionReference,
+                    $paymentAmount,
+                    $bankCode
+                );
+                return redirect($redirectUrl);
+            } catch (\Exception $e) {
+                return redirect('/shop/receipt')->with('error', 'Order saved but RCPAY payment failed: ' . $e->getMessage());
+            }
+        }
+
         return redirect('/shop/receipt')->with('success', 'Order placed successfully!');
     }
 

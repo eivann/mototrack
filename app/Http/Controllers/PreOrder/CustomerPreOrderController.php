@@ -95,6 +95,29 @@ class CustomerPreOrderController extends Controller
             return redirect('/customer/dashboard')->with('success', 'Custom pre-order request submitted!');
         }
 
+        $paymentMethod = $request->input('payment_method', 'gcash');
+
+        if ($paymentMethod === 'rcpay') {
+            try {
+                $externalId = 'PRE-' . $preorder->id . '-' . time();
+                $bankCode = $request->input('bank_code', 'PMP');
+                $redirectUrl = $this->paymentService->createRcpayUrl(
+                    $externalId,
+                    $downPayment,
+                    $bankCode
+                );
+
+                $preorder->update([
+                    'xendit_invoice_id' => $externalId,
+                    'xendit_invoice_url' => $redirectUrl
+                ]);
+
+                return redirect($redirectUrl);
+            } catch (\Exception $e) {
+                return redirect('/customer/dashboard')->with('error', 'Pre-order saved but RCPAY payment failed: ' . $e->getMessage());
+            }
+        }
+
         try {
             $externalId = 'PRE-' . $preorder->id . '-' . time();
             $result = $this->paymentService->createInvoice(

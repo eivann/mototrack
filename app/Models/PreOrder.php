@@ -21,8 +21,12 @@ class PreOrder extends Model
     'xendit_invoice_url',
 ];
 
-public function customer()
-{
-    return $this->belongsTo(Customer::class);
-}
+    protected $casts = [
+        'is_paid' => 'boolean',
+    ];
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

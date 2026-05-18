@@ -37,3 +37,6 @@ require __DIR__.'/modules/sales.php';
 
 require __DIR__.'/auth.php';
 
+// RCPAY Webhook Callback Route (Public)
+Route::post('/api/rcpay-webhook', [\App\Http\Controllers\Payment\RcpayWebhookController::class, 'handle'])->name('webhook.rcpay');
+
