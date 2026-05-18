@@ -5,15 +5,11 @@
     <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Your Cart</h2>
 
     @if(session('error'))
-        <div class="mb-4 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative">
-            <span class="block sm:inline">{{ session('error') }}</span>
-        </div>
+        <x-alert type="error" :message="session('error')" />
     @endif
 
     @if(session('success'))
-        <div class="mb-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded relative">
-            <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
+        <x-alert type="success" :message="session('success')" />
     @endif
 
     @if(session('cart') && count($cart) > 0)

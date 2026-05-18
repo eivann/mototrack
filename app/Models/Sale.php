@@ -9,6 +9,8 @@ class Sale extends Model
 {
     use SoftDeletes;
 
+    protected $with = ['item', 'customer'];
+
 public function item()
 {
     return $this->belongsTo(InventoryItem::class, 'inventory_item_id');

@@ -3,6 +3,14 @@
 
     <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Checkout</h2>
 
+    @if(session('error'))
+        <x-alert type="error" :message="session('error')" />
+    @endif
+
+    @if(session('success'))
+        <x-alert type="success" :message="session('success')" />
+    @endif
+
     @if(session('cart') && count($cart) > 0)
     <div class="space-y-8">
         <!-- ORDER SUMMARY -->

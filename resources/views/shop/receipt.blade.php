@@ -3,10 +3,7 @@
         
         <!-- Error Alert -->
         @if(session('error'))
-            <div class="bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-400 p-4 mb-4 shadow w-full max-w-md" role="alert">
-                <p class="font-bold">Error</p>
-                <p>{{ session('error') }}</p>
-            </div>
+            <x-alert type="error" :message="session('error')" class="w-full max-w-md" />
         @endif
 
         <!-- Receipt Container -->

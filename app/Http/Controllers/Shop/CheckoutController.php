@@ -55,37 +55,13 @@ class CheckoutController extends Controller
         }
 
         try {
-            $grandTotal = DB::transaction(function () use ($cart, $transactionReference, $request, $customerId) {
-                $grandTotal = 0;
-                $isFirstItem = true;
-
-                foreach ($cart as $id => $item) {
-                    $inventory = InventoryItem::lockForUpdate()->find($id);
-
-                    if (!$inventory || $inventory->quantity < $item['quantity']) {
-                        throw new \Exception('Stock issue detected for: ' . ($inventory ? $inventory->part_name : 'Unknown item'));
-                    }
-
-                    $total = $inventory->price * $item['quantity'];
-                    $grandTotal += $total;
-
-                    Sale::create([
-                        'inventory_item_id' => $id,
-                        'customer_id' => $customerId,
-                        'quantity' => $item['quantity'],
-                        'price' => $inventory->price,
-                        'total_price' => $total,
-                        'transaction_reference' => $transactionReference,
-                        'amount_tendered' => $isFirstItem ? ($request->input('amount_tendered') ?: $grandTotal) : 0,
-                        'change' => $isFirstItem ? (max(0, ($request->input('amount_tendered') ?? 0) - $grandTotal)) : 0,
-                    ]);
-
-                    $inventory->decrement('quantity', $item['quantity']);
-                    $isFirstItem = false;
-                }
-
-                return $grandTotal;
-            });
+            $checkoutService = app(\App\Services\CheckoutService::class);
+            $grandTotal = $checkoutService->processTransaction(
+                $cart,
+                $transactionReference,
+                $customerId,
+                $request->input('amount_tendered')
+            );
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

@@ -84,30 +84,8 @@ class RcpayWebhookController extends Controller
             return response()->json(['message' => 'OK'], 200);
         }
 
-        // Update pre-order payment status
-        $preorder->is_paid = true;
-        $preorder->save();
-
-        Log::info("RCPAY PLUS Webhook: Pre-order {$preorderId} successfully marked as PAID.");
-
-        // Notifications
-        $owners = User::where('role', 'owner')->get();
-        $customerUser = $preorder->customer ? $preorder->customer->user : null;
-        $customerName = $customerUser ? $customerUser->name : $preorder->customer_name;
-
-        Notification::send($owners, new StatusUpdated(
-            'Pre-order Payment Received (RCPAY)',
-            "Customer {$customerName} has completed the down payment of ₱" . number_format($preorder->down_payment, 2) . " for {$preorder->part_name}.",
-            "/preorders"
-        ));
-
-        if ($customerUser) {
-            $customerUser->notify(new StatusUpdated(
-                'Pre-order Down Payment Confirmed',
-                "Your down payment of ₱" . number_format($preorder->down_payment, 2) . " for {$preorder->part_name} has been successfully verified! We'll start sourcing your part.",
-                "/customer/dashboard"
-            ));
-        }
+        // Fire Domain Event to decouple Database and Notification processing
+        \App\Events\PaymentReceived::dispatch('preorder', $orderId, $amount);
 
         return response()->json(['message' => 'OK'], 200);
     }
@@ -124,29 +102,8 @@ class RcpayWebhookController extends Controller
             return response()->json(['message' => 'Transaction not found'], 404);
         }
 
-        Log::info("RCPAY PLUS Webhook: Shop transaction {$orderId} successfully completed.");
-
-        // Notifications
-        $owners = User::where('role', 'owner')->get();
-        $firstSale = $sales->first();
-        $customerUser = $firstSale->customer ? $firstSale->customer->user : null;
-        $customerName = $customerUser ? $customerUser->name : 'Customer';
-        
-        $totalAmount = $sales->sum('total_price');
-
-        Notification::send($owners, new StatusUpdated(
-            'Shop Order Payment Confirmed (RCPAY)',
-            "Payment of ₱" . number_format($totalAmount, 2) . " for Order #{$orderId} from {$customerName} has been successfully verified.",
-            "/sales/{$orderId}/receipt"
-        ));
-
-        if ($customerUser) {
-            $customerUser->notify(new StatusUpdated(
-                'Shop Order Payment Confirmed',
-                "Your payment of ₱" . number_format($totalAmount, 2) . " for Order #{$orderId} has been successfully verified! Thank you for your purchase.",
-                "/shop/receipt?trx={$orderId}"
-            ));
-        }
+        // Fire Domain Event to decouple Notification processing
+        \App\Events\PaymentReceived::dispatch('shop', $orderId, $amount);
 
         return response()->json(['message' => 'OK'], 200);
     }

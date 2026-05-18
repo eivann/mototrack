@@ -25,6 +25,8 @@ class PreOrder extends Model
         'is_paid' => 'boolean',
     ];
 
+    protected $with = ['customer'];
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);
