@@ -55,6 +55,19 @@ return [
         'notify_number' => env('SMS_NOTIFY_NUMBER'),
     ],
 
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'auth_token' => env('TWILIO_AUTH_TOKEN'),
+        'number' => env('TWILIO_NUMBER'),
+    ],
+
+    'movider' => [
+        'api_key' => env('MOVIDER_API_KEY'),
+        'api_secret' => env('MOVIDER_API_SECRET'),
+        'notify_number' => env('SMS_NOTIFY_NUMBER'),
+    ],
+
+
     'google_maps' => [
         'key' => env('GOOGLE_MAPS_API_KEY'),
     ],

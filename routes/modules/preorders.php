@@ -6,8 +6,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
     // Customer Pre-orders
-    Route::get('/preorder/parts', [CustomerPreOrderController::class, 'parts'])->name('preorder.parts');
-    Route::get('/preorder/custom', [CustomerPreOrderController::class, 'customForm'])->name('preorder.custom');
+    Route::get('/preorder-parts', [CustomerPreOrderController::class, 'parts'])->name('preorder.parts');
+    Route::get('/preorder/parts', [CustomerPreOrderController::class, 'parts']); // Keep slash alias
+    Route::get('/preorder-custom', [CustomerPreOrderController::class, 'customForm'])->name('preorder.custom');
+    Route::get('/preorder/custom', [CustomerPreOrderController::class, 'customForm']); // Keep slash alias
     Route::get('/preorder/{id}', [CustomerPreOrderController::class, 'form'])->name('preorder.form');
     Route::post('/preorder/store', [CustomerPreOrderController::class, 'store'])->name('preorder.store');
     Route::get('/preorder/verify/{id}', [CustomerPreOrderController::class, 'verify'])->name('preorder.verify');

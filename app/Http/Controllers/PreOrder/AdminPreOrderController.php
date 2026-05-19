@@ -32,7 +32,7 @@ class AdminPreOrderController extends Controller
             $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
                 'Pre-order Ready!',
                 "Your pre-order for {$preorder->part_name} has arrived and is ready for pickup at the store!",
-                '/customer-dashboard'
+                '/customer/dashboard'
             ));
         }
 
@@ -49,7 +49,7 @@ class AdminPreOrderController extends Controller
             $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
                 'Pre-order Cancelled',
                 "Your pre-order for {$preorder->part_name} has been cancelled.",
-                '/customer-dashboard'
+                '/customer/dashboard'
             ));
         }
 
@@ -73,7 +73,7 @@ public function markPaid(PreOrder $preorder)
         $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
             'Down Payment Received',
             "Your down payment for {$preorder->part_name} has been confirmed. We are now sourcing your part!",
-            '/customer-dashboard'
+            '/customer/dashboard'
         ));
     }
 

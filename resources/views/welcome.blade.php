@@ -203,7 +203,13 @@
     </section>
 
     {{-- COMPATIBILITY --}}
+    <style>
+        .highlight { background-color: #fef08a; padding: 0 2px; border-radius: 4px; font-weight: 700; color: #1f2937; }
+    </style>
     <section id="compat" class="py-16 relative overflow-hidden bg-white dark:bg-gray-900 border-y border-gray-100 dark:border-gray-800">
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="text-center mb-10">
                 <div class="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm uppercase tracking-widest mb-4">
@@ -216,27 +222,30 @@
             <div class="relative group mt-8">
                 <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
                 <div class="relative bg-white dark:bg-gray-800 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
-                    <form method="GET" action="/compatibility" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <form id="compatForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="flex flex-col">
                             <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Make</label>
-                            <input type="text" name="make" placeholder="E.g., Honda" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
+                            <input type="text" id="compatMake" placeholder="E.g., Honda" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
                         </div>
                         <div class="flex flex-col">
                             <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Model</label>
-                            <input type="text" name="model" placeholder="E.g., TMX 125" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
+                            <input type="text" id="compatModel" placeholder="E.g., TMX 125" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
                         </div>
                         <div class="flex flex-col">
                             <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Year/Part</label>
-                            <input type="text" name="part" placeholder="E.g., 2024 or Brake" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
+                            <input type="text" id="compatPart" placeholder="E.g., 2024 or Brake" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
                         </div>
                         <div class="flex items-end">
-                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-3.5 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-3.5 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
                                 <i data-lucide="search" class="w-5 h-5"></i> Search
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
+
+            <!-- RESULTS GRID -->
+            <div id="compatResultsBox" class="mt-8 transition-all duration-300 relative z-10"></div>
         </div>
     </section>
 
@@ -417,6 +426,182 @@
                 localStorage.setItem('theme', 'dark');
             }
         }
+
+        // Inline Compatibility Checker AJAX Engine
+        (function() {
+            const form = document.getElementById('compatForm');
+            const makeInput = document.getElementById('compatMake');
+            const modelInput = document.getElementById('compatModel');
+            const partInput = document.getElementById('compatPart');
+            const resultsBox = document.getElementById('compatResultsBox');
+            const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
+            const toastContainer = document.getElementById('toast-container');
+
+            if (!form) return;
+
+            // Toast Notification System
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                const colors = type === 'success' ? 'bg-gray-900 dark:bg-gray-800 text-white' : 'bg-red-500 text-white';
+                const icon = type === 'success' 
+                    ? '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
+                    : '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+                
+                toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg transition-all duration-300 pointer-events-auto ${colors}`;
+                toast.innerHTML = `${icon} <span class="font-medium text-sm">${message}</span>`;
+                
+                toastContainer.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // Add to Cart Logic
+            async function addToCart(id) {
+                if (!isAuthenticated) {
+                    window.location.href = "{{ route('login') }}";
+                    return;
+                }
+
+                const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+                const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
+
+                try {
+                    const response = await fetch(`/cart/add/${id}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showToast(data.success || 'Item added to cart successfully!');
+                    } else {
+                        showToast(data.error || 'Failed to add item', 'error');
+                    }
+                } catch (error) {
+                    console.error('Cart Error:', error);
+                    showToast('Network error or session expired', 'error');
+                }
+            }
+
+            // Event Delegation for buttons
+            resultsBox.addEventListener('click', (e) => {
+                const btn = e.target.closest('.add-to-cart-btn');
+                if (btn) {
+                    e.preventDefault();
+                    const id = btn.dataset.id;
+                    addToCart(id);
+                }
+            });
+
+            // Highlight matching text
+            function highlightText(text, query) {
+                if (!query || !text) return text;
+                const terms = query.trim().split(/\s+/).filter(t => t.length > 0);
+                if (terms.length === 0) return text;
+                const regex = new RegExp(`(${terms.join('|')})`, 'gi');
+                return String(text).replace(regex, '<span class="highlight">$1</span>');
+            }
+
+            function triggerSearch(e) {
+                if (e) e.preventDefault();
+
+                const make = makeInput.value.trim();
+                const model = modelInput.value.trim();
+                const part = partInput.value.trim();
+                const query = `${make} ${model} ${part}`.trim();
+
+                if (query.length < 2) {
+                    showToast('Please enter at least 2 characters to search.', 'error');
+                    return;
+                }
+
+                resultsBox.innerHTML = `
+                    <div class="flex items-center justify-center p-12">
+                        <svg class="animate-spin h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                `;
+
+                fetch(`/search-parts?model=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        resultsBox.innerHTML = '';
+
+                        if (data.length === 0) {
+                            resultsBox.innerHTML = `
+                                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+                                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <p class="font-bold text-xl text-gray-800 dark:text-white mb-2">No matching parts found</p>
+                                    <p class="text-gray-500 dark:text-gray-400 font-medium">No parts found for this specific motorcycle model.</p>
+                                </div>
+                            `;
+                        } else {
+                            const grid = document.createElement('div');
+                            grid.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4';
+                            
+                            data.forEach(item => {
+                                const card = document.createElement('div');
+                                card.className = 'bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg border border-gray-100 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300 flex flex-col group';
+                                
+                                const stockBadge = item.quantity > 0
+                                    ? `<span class="text-[11px] font-medium text-gray-500">${item.quantity} in stock</span>`
+                                    : `<span class="text-[11px] font-medium text-red-500">Out of Stock</span>`;
+
+                                let actionBtn = '';
+                                if (isAuthenticated) {
+                                    actionBtn = item.quantity > 0
+                                        ? `<button data-id="${item.id}" class="add-to-cart-btn mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer">Add to Cart</button>`
+                                        : `<a href="/preorder/${item.id}" class="mt-3 block text-center w-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95">Pre-order</a>`;
+                                } else {
+                                    actionBtn = `<a href="{{ route('login') }}" class="mt-3 block text-center w-full bg-gray-100 text-gray-600 text-sm font-semibold py-2 rounded-lg hover:bg-gray-200">Login to Order</a>`;
+                                }
+
+                                const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${item.brand}</p>` : '';
+                                const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
+
+                                card.innerHTML = `
+                                    <div class="aspect-square bg-gray-50 dark:bg-gray-700 flex items-center justify-center p-4 relative overflow-hidden group-hover:bg-gray-100 dark:group-hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-700">
+                                        <svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                        ${item.quantity <= 0 ? '<div class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">Sold Out</div>' : ''}
+                                    </div>
+                                    <div class="p-4 flex-1 flex flex-col text-left">
+                                        ${brandText}
+                                        <h3 class="text-sm font-medium text-gray-800 dark:text-white line-clamp-2 leading-snug flex-1" title="${item.part_name}">
+                                            ${highlightText(item.part_name, query)}
+                                        </h3>
+                                        ${modelBadge}
+                                        <div class="flex items-end justify-between mt-3">
+                                            <div class="leading-none">
+                                                <span class="text-xs font-semibold text-orange-500 align-top">₱</span><span class="text-lg font-bold text-orange-500">${parseFloat(item.price).toFixed(2)}</span>
+                                            </div>
+                                            ${stockBadge}
+                                        </div>
+                                        ${actionBtn}
+                                    </div>
+                                `;
+                                grid.appendChild(card);
+                            });
+                            resultsBox.appendChild(grid);
+                        }
+                    }).catch((err) => {
+                        console.error(err);
+                        resultsBox.innerHTML = '';
+                        showToast('Failed to fetch compatibility results.', 'error');
+                    });
+            }
+
+            form.addEventListener('submit', triggerSearch);
+        })();
     </script>
 </body>
 </html>

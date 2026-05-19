@@ -45,7 +45,7 @@ class StatusUpdated extends Notification implements ShouldQueue
         return [
             'title' => $this->title,
             'message' => $this->message,
-            'link' => $this->link ?? '/customer-dashboard',
+            'link' => $this->link ?? '/customer/dashboard',
         ];
     }
 }

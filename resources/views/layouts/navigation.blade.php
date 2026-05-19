@@ -59,8 +59,18 @@
                         @if(auth()->user()->role !== 'owner')
                             <a href="{{ route('customer.dashboard') }}" class="{{ $linkClasses }} {{ request()->routeIs('customer.dashboard') ? $activeClasses : $inactiveClasses }}">
                                 <i data-lucide="layout-dashboard" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
-                                <span>{{ auth()->user()->role === 'owner' ? 'My Orders' : 'Dashboard' }}</span>
+                                <span>Dashboard</span>
                                 @if(request()->routeIs('customer.dashboard'))
+                                    <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
+                                @else
+                                    <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
+                                @endif
+                            </a>
+
+                            <a href="{{ route('preorder.parts') }}" class="{{ $linkClasses }} {{ request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*') ? $activeClasses : $inactiveClasses }}">
+                                <i data-lucide="clipboard-list" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
+                                <span>Pre-orders</span>
+                                @if(request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*'))
                                     <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
                                 @else
                                     <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
@@ -282,6 +292,10 @@
                     <a href="{{ route('customer.dashboard') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->routeIs('customer.dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
                         <i data-lucide="layout-dashboard" class="w-5 h-5 mr-4"></i>
                         Customer Dashboard
+                    </a>
+                    <a href="{{ route('preorder.parts') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
+                        <i data-lucide="clipboard-list" class="w-5 h-5 mr-4"></i>
+                        Pre-orders
                     </a>
                 @else
                     <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
