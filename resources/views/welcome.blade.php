@@ -224,19 +224,19 @@
                 <div class="relative bg-white dark:bg-gray-800 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
                     <form id="compatForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="flex flex-col">
-                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Make</label>
-                            <input type="text" id="compatMake" placeholder="E.g., Honda" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
+                            <label for="compatMake" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Make</label>
+                            <input type="text" id="compatMake" placeholder="E.g., Honda" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
                         </div>
                         <div class="flex flex-col">
-                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Model</label>
-                            <input type="text" id="compatModel" placeholder="E.g., TMX 125" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
+                            <label for="compatModel" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Model</label>
+                            <input type="text" id="compatModel" placeholder="E.g., TMX 125" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
                         </div>
                         <div class="flex flex-col">
-                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Year/Part</label>
-                            <input type="text" id="compatPart" placeholder="E.g., 2024 or Brake" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold">
+                            <label for="compatPart" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Year/Part</label>
+                            <input type="text" id="compatPart" placeholder="E.g., 2024 or Brake" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
                         </div>
                         <div class="flex items-end">
-                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-3.5 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-3.5 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                                 <i data-lucide="search" class="w-5 h-5"></i> Search
                             </button>
                         </div>

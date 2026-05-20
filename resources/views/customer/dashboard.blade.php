@@ -32,15 +32,15 @@
                             <h3 class="text-4xl font-black tracking-tighter mb-4">Welcome back, {{ explode(' ', Auth::user()->name)[0] }}!</h3>
                             <p class="text-indigo-100 text-lg max-w-md font-medium leading-relaxed mb-8">Ready to upgrade your ride? Track your active repairs, view pre-orders, and browse our massive catalog of premium parts.</p>
                             <div class="flex flex-wrap gap-4">
-                                <a href="/browse" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-xl inline-block">Shop Now</a>
-                                <a href="/compatibility" class="px-8 py-4 bg-indigo-500/50 text-white border border-white/20 rounded-2xl font-black text-sm hover:bg-indigo-400 transition-all inline-block">Check Compatibility</a>
+                                <a href="/browse" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-xl inline-block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Shop Now</a>
+                                <a href="/compatibility" class="px-8 py-4 bg-indigo-500/50 text-white border border-white/20 rounded-2xl font-black text-sm hover:bg-indigo-400 transition-all inline-block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Check Compatibility</a>
                             </div>
                         </div>
                     </div>
 
                     <!-- Quick Actions Grid -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <a href="/browse" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6">
+                        <a href="/browse" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                             <div class="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shrink-0">
                                 <i data-lucide="shopping-bag" class="w-8 h-8"></i>
                             </div>
@@ -49,7 +49,7 @@
                                 <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">View catalog</p>
                             </div>
                         </a>
-                        <a href="/compatibility" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6">
+                        <a href="/compatibility" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                             <div class="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform shrink-0">
                                 <i data-lucide="search" class="w-8 h-8"></i>
                             </div>
@@ -58,7 +58,7 @@
                                 <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Find your fit</p>
                             </div>
                         </a>
-                        <a href="/preorder-parts" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6">
+                        <a href="/preorder-parts" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
                             <div class="w-16 h-16 rounded-2xl bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center text-cyan-600 group-hover:scale-110 transition-transform shrink-0">
                                 <i data-lucide="clipboard-list" class="w-8 h-8"></i>
                             </div>
@@ -67,7 +67,7 @@
                                 <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Request parts</p>
                             </div>
                         </a>
-                        <a href="/cart" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6">
+                        <a href="/cart" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
                             <div class="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
                                 <i data-lucide="shopping-cart" class="w-8 h-8"></i>
                             </div>
@@ -183,7 +183,7 @@
                                     </div>
                                     <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="mt-2 text-right">
                                         @csrf
-                                        <button type="submit" @click="hapticPulse()" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline py-3 px-4 -mr-4 inline-block">Mark Read</button>
+                                        <button type="submit" @click="hapticPulse()" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline py-3 px-4 -mr-4 inline-block focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded">Mark Read</button>
                                     </form>
                                     @if(!$loop->last)
                                         <hr class="border-gray-100 dark:border-gray-800">

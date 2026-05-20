@@ -22,7 +22,7 @@
         @endif
 
         <!-- FORM -->
-        <form method="POST" action="/preorder/store">
+        <form method="POST" action="/preorder/store" x-data="{ loading: false }" @submit="loading = true">
             @csrf
             <input type="hidden" name="part_name" value="{{ $item->part_name }}">
             <input type="hidden" name="model" value="{{ $item->model }}">
@@ -30,14 +30,14 @@
 
             <!-- Quantity -->
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Quantity</label>
+                <label for="quantity" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Quantity</label>
                 <input type="number" id="quantity" name="quantity" min="1" value="1" required
-                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 outline-none transition-all">
             </div>
 
             <!-- Down Payment (Auto Calculated) -->
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <label for="down_payment" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300 flex items-center gap-2">
                     Required Down Payment (50%)
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 uppercase">Auto-calculated</span>
                 </label>
@@ -46,7 +46,7 @@
                         <span class="text-gray-500 font-bold">₱</span>
                     </div>
                     <input type="number" id="down_payment" name="down_payment" step="0.01" readonly
-                        class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-8 pr-4 py-2 bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-bold outline-none cursor-not-allowed">
+                        class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-8 pr-4 py-2 bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-bold outline-none cursor-not-allowed focus:outline-none">
                 </div>
             </div>
 
@@ -104,7 +104,7 @@
             <!-- METHOD EXPLANATION BOX -->
             <div id="payment-explanation" class="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-2xl p-5 flex gap-4 transition-all duration-300">
                 <div id="explanation-icon" class="bg-blue-600 p-2.5 rounded-xl h-fit text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
                 <div>
                     <h4 id="explanation-title" class="font-black text-blue-900 dark:text-blue-300 uppercase tracking-tight text-xs">Secure GCash Payment</h4>
@@ -112,8 +112,15 @@
                 </div>
             </div>
 
-            <script>
-                function selectPaymentMethod(method, bankCode) {
+            <button type="submit" :disabled="loading" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-75 disabled:cursor-not-allowed">
+                <svg x-show="loading" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                <svg x-show="!loading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                Submit Pre-order
+            </button>
+        </form>
+
+        <script>
+            function selectPaymentMethod(method, bankCode) {
                     // Update hidden input for bank code
                     const bankCodeInput = document.getElementById('rcpay_bank_code');
                     if (bankCodeInput) {

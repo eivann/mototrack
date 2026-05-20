@@ -14,20 +14,22 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
-                        <input type="text" name="search" class="pl-10 pr-4 py-2 border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-xl focus:border-indigo-500 focus:ring-indigo-500 shadow-sm w-64" placeholder="Search parts..." value="{{ $search }}">
+                        <label for="inventory-search" class="sr-only">Search inventory</label>
+                        <input id="inventory-search" type="text" name="search" class="pl-10 pr-4 py-2 border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 shadow-sm w-64" placeholder="Search parts..." value="{{ $search }}">
                     </div>
-                    <button class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition-colors">Search</button>
+                    <button class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Search</button>
                     @if($search)
-                        <a href="/inventory" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Clear</a>
+                        <a href="/inventory" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">Clear</a>
                     @endif
                 </form>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8 relative overflow-hidden" 
-                 x-data="{ 
-                    category: '', 
-                    brand: '', 
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8 relative overflow-hidden"
+                 x-data="{
+                    category: '',
+                    brand: '',
                     sku: '',
+                    loading: false,
                     generateSKU() {
                         if(!this.category || !this.brand) {
                             alert('Please enter Category and Brand first');
@@ -44,25 +46,51 @@
                     <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Add New Item
                 </h2>
-                <form method="POST" action="/inventory">
+                <form method="POST" action="/inventory" @submit="loading = true">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="relative group">
-                            <input name="sku" x-model="sku" placeholder="SKU (e.g. ENG-HON-001)" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 pr-10">
-                            <button type="button" @click="generateSKU()" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-indigo-500 transition-colors" title="Generate SKU">
+                            <label for="item-sku" class="sr-only">SKU</label>
+                            <input id="item-sku" name="sku" x-model="sku" placeholder="SKU (e.g. ENG-HON-001)" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 pr-10">
+                            <button type="button" @click="generateSKU()" aria-label="Auto-generate SKU" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded" title="Generate SKU">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                             </button>
                         </div>
-                        <input name="category" x-model="category" placeholder="Category (e.g. Engine)" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="part_name" placeholder="Part Name" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="brand" x-model="brand" placeholder="Brand" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="model" placeholder="Motorcycle Model" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="quantity" type="number" placeholder="Quantity" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="price" type="number" step="0.01" placeholder="Price (₱)" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="notes" placeholder="Notes (Optional)" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500">
+                        <div>
+                            <label for="item-category" class="sr-only">Category</label>
+                            <input id="item-category" name="category" x-model="category" placeholder="Category (e.g. Engine)" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="item-part-name" class="sr-only">Part Name</label>
+                            <input id="item-part-name" name="part_name" placeholder="Part Name" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="item-brand" class="sr-only">Brand</label>
+                            <input id="item-brand" name="brand" x-model="brand" placeholder="Brand" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="item-model" class="sr-only">Motorcycle Model</label>
+                            <input id="item-model" name="model" placeholder="Motorcycle Model" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="item-quantity" class="sr-only">Quantity</label>
+                            <input id="item-quantity" name="quantity" type="number" placeholder="Quantity" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="item-price" class="sr-only">Price in Pesos</label>
+                            <input id="item-price" name="price" type="number" step="0.01" placeholder="Price (₱)" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="item-notes" class="sr-only">Notes (Optional)</label>
+                            <input id="item-notes" name="notes" placeholder="Notes (Optional)" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button class="bg-gray-900 dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 dark:hover:bg-indigo-700 transition-colors active:scale-[0.98]">Save Item to Catalog</button>
+                        <button :disabled="loading"
+                                class="inline-flex items-center gap-2 bg-gray-900 dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 dark:hover:bg-indigo-700 transition-colors active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-75 disabled:cursor-not-allowed">
+                            <svg x-show="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            Save Item to Catalog
+                        </button>
                     </div>
                 </form>
             </div>
@@ -95,10 +123,10 @@
                             </div>
                         </div>
                         <div class="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
-                            <a href="/inventory/{{ $item->id }}/edit" class="flex-1 text-center bg-gray-50 dark:bg-gray-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold py-2 rounded-xl transition-colors text-sm">Edit</a>
+                            <a href="/inventory/{{ $item->id }}/edit" class="flex-1 text-center bg-gray-50 dark:bg-gray-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold py-2 rounded-xl transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">Edit</a>
                             <form method="POST" action="/inventory/{{ $item->id }}" class="flex-1" onsubmit="return confirm('Delete this item?');">
                                 @csrf @method('DELETE')
-                                <button class="w-full text-center bg-gray-50 dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 font-semibold py-2 rounded-xl transition-colors text-sm">Delete</button>
+                                <button class="w-full text-center bg-gray-50 dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 font-semibold py-2 rounded-xl transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-red-400">Delete</button>
                             </form>
                         </div>
                     </div>

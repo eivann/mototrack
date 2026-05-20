@@ -20,10 +20,10 @@
                 <!-- Navigation Tabs -->
                 <div class="flex gap-2 overflow-x-auto no-scrollbar pb-0 mt-2">
                     @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'preorders' => 'Pre-orders', 'reports' => 'Reports'] as $id => $label)
-                        <button 
+                        <button
                             @click="activeTab = '{{ $id }}'"
                             :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'"
-                            class="whitespace-nowrap py-3 px-6 rounded-xl font-black text-xs uppercase tracking-widest transition-all mb-4"
+                            class="whitespace-nowrap py-3 px-6 rounded-xl font-black text-xs uppercase tracking-widest transition-all mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
                             {{ $label }}
                         </button>
@@ -59,8 +59,8 @@
                                 <h3 class="text-4xl font-black tracking-tighter mb-4 italic">Operation Center</h3>
                                 <p class="text-indigo-100 text-lg max-w-md font-medium leading-relaxed mb-8">System is tracking <span class="text-white font-black underline">{{ $stats['activeRepairs'] }} service jobs</span>. Stock levels for {{ $stats['lowStockCount'] }} parts are currently critical.</p>
                                 <div class="flex flex-wrap gap-4">
-                                    <button @click="activeTab = 'repairs'" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-xl">Manage Jobs</button>
-                                    <button @click="activeTab = 'inventory'" class="px-8 py-4 bg-indigo-500/50 text-white border border-white/20 rounded-2xl font-black text-sm hover:bg-indigo-400 transition-all">Quick Audit</button>
+                                    <button @click="activeTab = 'repairs'" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Manage Jobs</button>
+                                    <button @click="activeTab = 'inventory'" class="px-8 py-4 bg-indigo-500/50 text-white border border-white/20 rounded-2xl font-black text-sm hover:bg-indigo-400 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Quick Audit</button>
                                 </div>
                             </div>
                         </div>
@@ -223,7 +223,7 @@
                                 Shop is operating at peak efficiency. No immediate restocks required.
                             @endif
                         </p>
-                        <button @click="activeTab = 'inventory'" class="w-full py-4 bg-white text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all">Audit Inventory</button>
+                        <button @click="activeTab = 'inventory'" class="w-full py-4 bg-white text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700">Audit Inventory</button>
                     </div>
 
                     <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800">

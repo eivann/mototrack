@@ -97,8 +97,10 @@
                 {{-- Notification Bell --}}
                 @auth
                 <div class="relative group" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
-                    <button @click="open = !open; hasNew = false" 
-                        class="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 relative">
+                    <button @click="open = !open; hasNew = false"
+                        :aria-expanded="open"
+                        aria-label="Toggle notifications"
+                        class="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 relative focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         <i data-lucide="bell" class="w-4 h-4" :class="hasNew ? 'animate-bounce' : ''"></i>
                         <template x-if="hasNew">
                             <span class="absolute top-0 right-0 flex h-3 w-3">
@@ -152,7 +154,7 @@
                                     @if($notification->unread())
                                     <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                         @csrf
-                                        <button type="submit" class="p-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-indigo-600 dark:text-indigo-400" title="Mark as read">
+                                        <button type="submit" aria-label="Mark notification as read" class="p-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-indigo-600 dark:text-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                             <i data-lucide="check" class="w-4 h-4"></i>
                                         </button>
                                     </form>
@@ -192,8 +194,8 @@
                 @endauth
 
                 {{-- Global Theme Toggle --}}
-                <button id="globalThemeToggle" title="Toggle Light/Dark Mode"
-                    class="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
+                <button id="globalThemeToggle" aria-label="Toggle light/dark mode" title="Toggle Light/Dark Mode"
+                    class="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                     <i id="globalThemeIcon" data-lucide="moon" class="w-4 h-4"></i>
                 </button>
                 @auth
@@ -253,7 +255,7 @@
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-3 rounded-2xl text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:outline-none transition-all duration-300">
+                <button @click="open = ! open" :aria-expanded="open" aria-label="Toggle navigation menu" aria-controls="mobile-nav" class="inline-flex items-center justify-center p-3 rounded-2xl text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
                     <i :class="{'hidden': open, 'block': ! open }" data-lucide="menu" class="w-6 h-6"></i>
                     <i :class="{'hidden': ! open, 'block': open }" data-lucide="x" class="w-6 h-6"></i>
                 </button>
@@ -262,7 +264,7 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div x-show="open" 
+    <div id="mobile-nav" x-show="open"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 -translate-y-4"
          x-transition:enter-end="opacity-100 translate-y-0"
@@ -316,8 +318,8 @@
                 </div>
             @endauth
             {{-- Mobile Theme Toggle --}}
-            <button id="mobileThemeToggle"
-                class="flex items-center w-full px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+            <button id="mobileThemeToggle" aria-label="Toggle light/dark mode"
+                class="flex items-center w-full px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-2xl">
                 <i id="mobileThemeIcon" data-lucide="moon" class="w-5 h-5 mr-4"></i>
                 <span id="mobileThemeLabel">Dark Mode</span>
             </button>

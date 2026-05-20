@@ -23,6 +23,7 @@
                     category: '{{ $item->category }}', 
                     brand: '{{ $item->brand }}', 
                     sku: '{{ $item->sku }}',
+                    loading: false,
                     generateSKU() {
                         if(!this.category || !this.brand) {
                             alert('Please enter Category and Brand first');
@@ -36,17 +37,17 @@
                  }">
                 <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
                 
-                <form method="POST" action="/inventory/{{ $item->id }}">
+                <form method="POST" action="/inventory/{{ $item->id }}" @submit="loading = true">
                     @csrf
                     @method('PUT')
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <!-- SKU -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">SKU (Stock Keeping Unit)</label>
+                            <label for="item-sku" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">SKU (Stock Keeping Unit)</label>
                             <div class="relative">
-                                <input type="text" name="sku" x-model="sku" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow pr-10" placeholder="e.g. ENG-HON-001">
-                                <button type="button" @click="generateSKU()" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-indigo-500 transition-colors" title="Generate SKU">
+                                <input id="item-sku" type="text" name="sku" x-model="sku" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow pr-10" placeholder="e.g. ENG-HON-001">
+                                <button type="button" @click="generateSKU()" aria-label="Auto-generate SKU" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded" title="Generate SKU">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                                 </button>
                             </div>
@@ -54,55 +55,55 @@
 
                         <!-- Category -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Category</label>
-                            <input type="text" name="category" x-model="category" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required>
+                            <label for="item-category" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                            <input id="item-category" type="text" name="category" x-model="category" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required>
                         </div>
 
                         <!-- Part Name -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Part Name</label>
-                            <input type="text" name="part_name" value="{{ $item->part_name }}" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required>
+                            <label for="item-part-name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Part Name</label>
+                            <input id="item-part-name" type="text" name="part_name" value="{{ $item->part_name }}" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required>
                         </div>
 
                         <!-- Brand -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Brand</label>
-                            <input type="text" name="brand" x-model="brand" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required>
+                            <label for="item-brand" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Brand</label>
+                            <input id="item-brand" type="text" name="brand" x-model="brand" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required>
                         </div>
 
                         <!-- Model -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Motorcycle Model</label>
-                            <input type="text" name="model" value="{{ $item->model }}" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required>
+                            <label for="item-model" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Motorcycle Model</label>
+                            <input id="item-model" type="text" name="model" value="{{ $item->model }}" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required>
                         </div>
 
                         <!-- Quantity -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Quantity in Stock</label>
-                            <input type="number" name="quantity" value="{{ $item->quantity }}" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required min="0">
+                            <label for="item-quantity" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Quantity in Stock</label>
+                            <input id="item-quantity" type="number" name="quantity" value="{{ $item->quantity }}" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required min="0">
                         </div>
 
                         <!-- Price -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Price (₱)</label>
-                            <input type="number" name="price" value="{{ $item->price }}" step="0.01" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required min="0">
+                            <label for="item-price" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Price (₱)</label>
+                            <input id="item-price" type="number" name="price" value="{{ $item->price }}" step="0.01" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required min="0">
                         </div>
                     </div>
 
                     <!-- Notes -->
                     <div class="mb-8">
-                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Notes (Optional)</label>
-                        <textarea name="notes" rows="3" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">{{ $item->notes }}</textarea>
+                        <label for="item-notes" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Notes (Optional)</label>
+                        <textarea id="item-notes" name="notes" rows="3" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">{{ $item->notes }}</textarea>
                     </div>
 
                     <!-- Actions -->
                     <div class="flex items-center justify-end gap-4 pt-6 border-t border-gray-100 dark:border-gray-700">
-                        <a href="/inventory" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors">
+                        <a href="/inventory" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 rounded">
                             Cancel
                         </a>
-                        <button type="submit" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-[0.98] flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            Save Changes
+                        <button type="submit" :disabled="loading" class="bg-gray-900 dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 dark:hover:bg-indigo-700 transition-colors active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            <svg x-show="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            Update Item
                         </button>
                     </div>
                 </form>

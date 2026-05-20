@@ -4,7 +4,7 @@
 
         <div class="mb-6 flex items-center justify-between">
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Pre-order Unavailable Parts</h2>
-            <a href="/preorder-custom" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm">
+            <a href="/preorder-custom" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Request Custom Part
             </a>
@@ -17,7 +17,7 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $item->model ?? 'No Model' }}</p>
                     <span class="inline-block mt-2 text-xs font-semibold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">Out of Stock</span>
                     <div class="mt-4">
-                        <a href="/preorder/{{ $item->id }}" class="inline-flex items-center gap-2 w-full justify-center bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 rounded-lg transition-colors text-sm">
+                        <a href="/preorder/{{ $item->id }}" class="inline-flex items-center gap-2 w-full justify-center bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 rounded-lg transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                             Pre-order
                         </a>

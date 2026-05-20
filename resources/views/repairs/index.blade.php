@@ -10,7 +10,8 @@
                     <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Manage service jobs, update repair statuses, and collect payments.</p>
                 </div>
                 <form method="GET" class="flex flex-wrap gap-3">
-                    <select name="status" onchange="this.form.submit()" class="appearance-none pl-4 pr-10 py-2.5 border-gray-200 dark:border-gray-600 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800">
+                    <label for="repair-status-filter" class="sr-only">Filter by status</label>
+                    <select id="repair-status-filter" name="status" onchange="this.form.submit()" class="appearance-none pl-4 pr-10 py-2.5 border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800">
                         <option value="">All Statuses</option>
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>In Progress</option>
@@ -32,27 +33,42 @@
                         <ul class="list-disc list-inside">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
                     </div>
                 @endif
-                <form method="POST" action="/repairs">
+                <form method="POST" action="/repairs" x-data="{ loading: false }" @submit="loading = true">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                         <div class="lg:col-span-1">
-                            <select name="customer_id" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="repair-customer" class="sr-only">Customer</label>
+                            <select id="repair-customer" name="customer_id" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">Walk-in / Other</option>
                                 @foreach($customers as $customer)
                                     <option value="{{ $customer->id }}">{{ $customer->name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <input name="customer_name" placeholder="Manual Name (if walk-in)" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500">
-                        <input name="bike_model" placeholder="Bike Model" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500" required>
-                        <input name="issue" placeholder="Reported Issue" class="border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 lg:col-span-2" required>
+                        <div>
+                            <label for="repair-customer-name" class="sr-only">Manual Name (if walk-in)</label>
+                            <input id="repair-customer-name" name="customer_name" placeholder="Manual Name (if walk-in)" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="repair-bike-model" class="sr-only">Bike Model</label>
+                            <input id="repair-bike-model" name="bike_model" placeholder="Bike Model" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                        <div class="lg:col-span-2">
+                            <label for="repair-issue" class="sr-only">Reported Issue</label>
+                            <input id="repair-issue" name="issue" placeholder="Reported Issue" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-gray-500 dark:text-gray-400 font-medium">₱</span></div>
-                            <input name="cost" type="number" step="0.01" placeholder="Est. Cost" class="pl-8 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 w-full" required>
+                            <label for="repair-cost" class="sr-only">Estimated Cost</label>
+                            <input id="repair-cost" name="cost" type="number" step="0.01" placeholder="Est. Cost" class="pl-8 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full" required>
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button type="submit" class="bg-gray-900 dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 dark:hover:bg-indigo-700 transition-colors active:scale-[0.98]">Add Repair Job</button>
+                        <button type="submit" :disabled="loading"
+                                class="inline-flex items-center gap-2 bg-gray-900 dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-gray-800 dark:hover:bg-indigo-700 transition-colors active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-75 disabled:cursor-not-allowed">
+                            <svg x-show="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            Add Repair Job
+                        </button>
                     </div>
                 </form>
             </div>
@@ -103,7 +119,7 @@
                                     @if(!$repair->is_paid)
                                         <form method="POST" action="/repairs/{{ $repair->id }}/pay" onsubmit="return confirm('Confirm payment received?');">
                                             @csrf @method('PUT')
-                                            <button class="inline-flex items-center gap-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-3 py-1 rounded-full text-xs font-bold transition-colors">
+                                            <button class="inline-flex items-center gap-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-3 py-1 rounded-full text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 Collect
                                             </button>
@@ -114,12 +130,12 @@
                                 </td>
                                 <td class="p-4 align-top text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <a href="/repairs/{{ $repair->id }}/receipt" title="Print Receipt" class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors">
+                                        <a href="/repairs/{{ $repair->id }}/receipt" aria-label="Print receipt for {{ $repair->customer_name }}" title="Print Receipt" class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                         </a>
                                         <form method="POST" action="/repairs/{{ $repair->id }}" class="inline" onsubmit="return confirm('Delete this repair record?');">
                                             @csrf @method('DELETE')
-                                            <button title="Delete Record" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                            <button title="Delete Record" aria-label="Delete repair record" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </form>

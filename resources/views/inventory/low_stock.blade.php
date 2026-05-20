@@ -41,7 +41,7 @@
                                     </td>
                                     <td class="p-5 text-center text-gray-500 dark:text-gray-400">Alerts at {{ $item->low_stock_threshold }}</td>
                                     <td class="p-5 text-center">
-                                        <a href="/inventory/{{ $item->id }}/edit" class="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-700 dark:hover:text-indigo-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                                        <a href="/inventory/{{ $item->id }}/edit" class="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-700 dark:hover:text-indigo-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                             Restock Item
                                         </a>

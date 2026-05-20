@@ -1,9 +1,9 @@
-<section x-data="{ showCurrent: false, showNew: false, showConfirm: false }">
+<section x-data="{ showCurrent: false, showNew: false, showConfirm: false, loading: false }">
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="space-y-5">
+    <form method="post" action="{{ route('profile.update') }}" class="space-y-5" @submit="loading = true">
         @csrf
         @method('patch')
 
@@ -70,7 +70,8 @@
 
 
         <div class="flex items-center gap-4 pt-2">
-            <button type="submit" class="px-6 py-2.5 text-white text-sm font-black rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest" style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);">
+            <button type="submit" :disabled="loading" class="px-6 py-2.5 text-white text-sm font-black rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-75 disabled:cursor-not-allowed" style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);">
+                <svg x-show="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                 Save Changes
             </button>
             @if (session('status') === 'profile-updated')

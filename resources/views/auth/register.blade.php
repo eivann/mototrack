@@ -156,7 +156,7 @@
         <div class="card p-8 sm:p-10 {{ $errors->any() || session('error') ? 'shake' : '' }}">
             
             @if($errors->any() || session('error'))
-                <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400 error-banner">
+                <div role="alert" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400 error-banner">
                     <div class="bg-red-100 dark:bg-red-900/40 p-2 rounded-lg shrink-0">
                         <i data-lucide="alert-circle" class="w-5 h-5"></i>
                     </div>
@@ -217,7 +217,9 @@
                         <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="new-password" 
                             class="input-field pr-12 {{ $errors->has('password') ? 'error' : '' }}" placeholder="••••••••">
                         
-                        <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                        <button type="button" @click="showPassword = !showPassword"
+                                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded">
                             <i x-show="!showPassword" data-lucide="eye" class="w-5 h-5"></i>
                             <i x-show="showPassword" x-cloak data-lucide="eye-off" class="w-5 h-5"></i>
                         </button>
@@ -235,7 +237,9 @@
                         <input id="password_confirmation" :type="showPassword ? 'text' : 'password'" name="password_confirmation" required autocomplete="new-password" 
                             class="input-field pr-12 {{ $errors->has('password_confirmation') ? 'error' : '' }}" placeholder="••••••••">
                         
-                        <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                        <button type="button" @click="showPassword = !showPassword"
+                                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded">
                             <i x-show="!showPassword" data-lucide="eye" class="w-5 h-5"></i>
                             <i x-show="showPassword" x-cloak data-lucide="eye-off" class="w-5 h-5"></i>
                         </button>
@@ -257,7 +261,7 @@
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full h-12 text-base shadow-md">
+                <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full h-12 text-base shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <span x-show="!isSubmitting">Create Account</span>
                     <span x-show="isSubmitting" x-cloak class="flex items-center gap-2">
                         <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>

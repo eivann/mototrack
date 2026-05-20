@@ -44,7 +44,7 @@
                                         @if(!$order->is_paid)
                                             <form method="POST" action="/preorders/{{ $order->id }}/pay" onsubmit="return confirm('Confirm payment received?');">
                                                 @csrf
-                                                <button title="Collect Payment" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors">
+                                                <button title="Collect Payment" aria-label="Collect payment for pre-order" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 </button>
                                             </form>
@@ -57,13 +57,13 @@
                                         @if($order->status == 'pending')
                                             <form method="POST" action="/preorders/{{ $order->id }}/complete" onsubmit="return confirm('Mark this pre-order as completed?');">
                                                 @csrf
-                                                <button title="Mark Completed" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors">
+                                                <button title="Mark Completed" aria-label="Mark pre-order as completed" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                 </button>
                                             </form>
                                             <form method="POST" action="/preorders/{{ $order->id }}/cancel" onsubmit="return confirm('Cancel this pre-order?');">
                                                 @csrf
-                                                <button title="Cancel Order" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                                <button title="Cancel Order" aria-label="Cancel pre-order" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                                 </button>
                                             </form>
@@ -71,7 +71,7 @@
                                         
                                         <form method="POST" action="/preorders/{{ $order->id }}" class="inline" onsubmit="return confirm('Delete this pre-order?');">
                                             @csrf @method('DELETE')
-                                            <button title="Delete Record" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                            <button title="Delete Record" aria-label="Delete pre-order record" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </form>

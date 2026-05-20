@@ -7,8 +7,8 @@
                     <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Analyze sales performance and monitor inventory levels.</p>
                 </div>
                 <div class="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-                    <button @click="activeTab = 'sales'" :class="activeTab === 'sales' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'" class="px-6 py-2 text-sm font-bold rounded-lg transition-all">Sales History</button>
-                    <button @click="activeTab = 'stock'" :class="activeTab === 'stock' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'" class="px-6 py-2 text-sm font-bold rounded-lg transition-all">Stock Levels</button>
+                    <button @click="activeTab = 'sales'" :class="activeTab === 'sales' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'" class="px-6 py-2 text-sm font-bold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500">Sales History</button>
+                    <button @click="activeTab = 'stock'" :class="activeTab === 'stock' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'" class="px-6 py-2 text-sm font-bold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500">Stock Levels</button>
                 </div>
             </div>
 
@@ -46,27 +46,28 @@
                         <div>
                             <span class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Quick Filters</span>
                             <div class="flex flex-wrap items-center gap-2">
-                                <a href="{{ url()->current() }}?filter=today" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('filter') == 'today' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">Today</a>
-                                <a href="{{ url()->current() }}?filter=week" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('filter') == 'week' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">This Week</a>
-                                <a href="{{ url()->current() }}?filter=month" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('filter') == 'month' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">This Month</a>
-                                <a href="{{ url()->current() }}" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all {{ !request('filter') && !request('from') ? 'bg-gray-900 dark:bg-gray-600 text-white shadow-lg shadow-gray-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">All Time</a>
+                                <a href="{{ url()->current() }}?filter=today" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ request('filter') == 'today' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">Today</a>
+                                <a href="{{ url()->current() }}?filter=week" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ request('filter') == 'week' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">This Week</a>
+                                <a href="{{ url()->current() }}?filter=month" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ request('filter') == 'month' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">This Month</a>
+                                <a href="{{ url()->current() }}" class="px-4 py-2.5 text-xs font-bold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ !request('filter') && !request('from') ? 'bg-gray-900 dark:bg-gray-600 text-white shadow-lg shadow-gray-200 dark:shadow-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">All Time</a>
                             </div>
                         </div>
-                        <form method="GET" class="w-full lg:w-auto">
+                        <form method="GET" class="w-full lg:w-auto" x-data="{ loading: false }" @submit="loading = true">
                             <span class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Custom Range</span>
                             <div class="flex flex-col sm:flex-row items-end gap-3">
                                 <div class="grid grid-cols-2 gap-3 w-full sm:w-auto">
                                     <div class="flex flex-col">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">From</label>
-                                        <input type="date" name="from" value="{{ request('from') }}" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl text-sm px-4 py-2.5 focus:ring-blue-500">
+                                        <label for="filter-from" class="text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">From</label>
+                                        <input id="filter-from" type="date" name="from" value="{{ request('from') }}" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     </div>
                                     <div class="flex flex-col">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">To</label>
-                                        <input type="date" name="to" value="{{ request('to') }}" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl text-sm px-4 py-2.5 focus:ring-blue-500">
+                                        <label for="filter-to" class="text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">To</label>
+                                        <input id="filter-to" type="date" name="to" value="{{ request('to') }}" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     </div>
                                 </div>
-                                <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] h-[46px] flex items-center justify-center gap-2">
-                                    <i data-lucide="filter" class="w-4 h-4"></i>
+                                <button type="submit" :disabled="loading" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] h-[46px] flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-75 disabled:cursor-not-allowed">
+                                    <svg x-show="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                    <i x-show="!loading" data-lucide="filter" class="w-4 h-4"></i>
                                     Apply
                                 </button>
                             </div>
@@ -102,7 +103,7 @@
                                             <div class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ $sale->created_at->format('h:i A') }}</div>
                                         </td>
                                         <td class="p-5 text-center">
-                                            <a href="/sales/{{ $sale->id }}/receipt" class="inline-flex items-center gap-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                                            <a href="/sales/{{ $sale->id }}/receipt" aria-label="View receipt for {{ $sale->item->part_name ?? 'sale' }}" class="inline-flex items-center gap-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-green-400">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                                 Receipt
                                             </a>

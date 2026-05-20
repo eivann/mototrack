@@ -7,7 +7,7 @@
 
     <button
         @click="confirmingDeletion = true"
-        class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-black text-sm rounded-2xl border border-red-200 dark:border-red-800 transition-all uppercase tracking-widest group">
+        class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-black text-sm rounded-2xl border border-red-200 dark:border-red-800 transition-all uppercase tracking-widest group focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
         <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         Delete Account
     </button>
@@ -39,7 +39,7 @@
                 </div>
             </div>
 
-            <form method="post" action="{{ route('profile.destroy') }}" class="p-6 space-y-5">
+            <form method="post" action="{{ route('profile.destroy') }}" class="p-6 space-y-5" x-data="{ loading: false }" @submit="loading = true">
                 @csrf
                 @method('delete')
 
@@ -62,11 +62,12 @@
 
                 <div class="flex gap-3 justify-end pt-2">
                     <button type="button" @click="confirmingDeletion = false"
-                        class="px-5 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-black rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all uppercase tracking-widest">
+                        class="px-5 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-black rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
                         Cancel
                     </button>
-                    <button type="submit"
-                        class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-black rounded-2xl shadow-lg shadow-red-500/25 hover:scale-105 active:scale-95 transition-all uppercase tracking-widest">
+                    <button type="submit" :disabled="loading"
+                        class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-black rounded-2xl shadow-lg shadow-red-500/25 hover:scale-105 active:scale-95 transition-all uppercase tracking-widest flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-75 disabled:cursor-not-allowed">
+                        <svg x-show="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                         Yes, Delete
                     </button>
                 </div>

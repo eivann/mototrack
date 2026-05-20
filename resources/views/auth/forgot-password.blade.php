@@ -149,7 +149,7 @@
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full h-12 text-base shadow-md">
+                <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full h-12 text-base shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <span x-show="!isSubmitting">Email Reset Link</span>
                     <span x-show="isSubmitting" x-cloak class="flex items-center gap-2">
                         <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>

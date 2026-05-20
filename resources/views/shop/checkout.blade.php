@@ -71,7 +71,7 @@
         <!-- PAYMENT FORM -->
         <div class="flex flex-col lg:flex-row gap-8">
             <div class="lg:w-1/3">
-                <a href="/cart" class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                <a href="/cart" class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 rounded">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Modify Cart
                 </a>
@@ -79,7 +79,7 @@
 
             <div class="flex-1">
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
-                    <form method="POST" action="/checkout" class="space-y-6">
+                    <form method="POST" action="/checkout" class="space-y-6" x-data="{ loading: false }" @submit="loading = true">
                         @csrf
                         
                         <!-- PAYMENT METHOD SELECTOR -->
@@ -163,8 +163,11 @@
                             </p>
                         </div>
 
-                        <button id="submit-pay-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] flex items-center justify-center gap-3">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <button id="submit-pay-btn"
+                                :disabled="loading"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <svg x-show="loading" class="animate-spin w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            <svg x-show="!loading" class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                             <span id="btn-text">Pay with GCash</span>
                         </button>
                     </form>
@@ -219,7 +222,7 @@
                                 // Color classes
                                 explanationBox.className = "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-2xl p-5 flex gap-4 transition-all duration-300";
                                 iconBox.className = "bg-blue-600 p-2.5 rounded-xl h-fit text-white";
-                                btn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] flex items-center justify-center gap-3";
+                                btn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2";
                             } else if (method === 'rcpay' && bankCode === 'PMP') {
                                 title.innerText = 'Maya E-Wallet (via RCPAY)';
                                 desc.innerText = 'You will be securely redirected to RCPAY PLUS gateway to complete your payment instantly using Maya (PayMaya).';
@@ -228,7 +231,7 @@
                                 // Color classes (Indigo for Maya/RCPAY)
                                 explanationBox.className = "bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-2xl p-5 flex gap-4 transition-all duration-300";
                                 iconBox.className = "bg-indigo-600 p-2.5 rounded-xl h-fit text-white";
-                                btn.className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-indigo-200 dark:shadow-none transition-all active:scale-[0.98] flex items-center justify-center gap-3";
+                                btn.className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-indigo-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
                             } else if (method === 'rcpay' && bankCode === 'QRPH') {
                                 title.innerText = 'QRPH Universal Scan (via RCPAY)';
                                 desc.innerText = 'A dynamic QRPH code will be generated via RCPAY PLUS. Scan with GCash, Maya, or any major banking app to instantly pay.';
@@ -237,7 +240,7 @@
                                 // Color classes (Amber for QRPH)
                                 explanationBox.className = "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-2xl p-5 flex gap-4 transition-all duration-300";
                                 iconBox.className = "bg-amber-600 p-2.5 rounded-xl h-fit text-white";
-                                btn.className = "w-full bg-amber-600 hover:bg-amber-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-amber-200 dark:shadow-none transition-all active:scale-[0.98] flex items-center justify-center gap-3";
+                                btn.className = "w-full bg-amber-600 hover:bg-amber-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-amber-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2";
                             }
                         }
                     </script>

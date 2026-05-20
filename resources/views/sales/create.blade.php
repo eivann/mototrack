@@ -12,13 +12,14 @@
                 <!-- Left Side: Product Search -->
                 <div class="lg:col-span-2 flex flex-col gap-6">
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Search & Add to Cart</label>
+                        <label for="pos-search" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Search & Add to Cart</label>
                         <div class="relative">
-                            <input 
-                                type="text" 
+                            <input
+                                id="pos-search"
+                                type="text"
                                 x-model="searchQuery"
-                                placeholder="Scan SKU/Barcode or type part name, brand, model..." 
-                                class="w-full pl-12 pr-4 py-4 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-lg shadow-sm transition-shadow"
+                                placeholder="Scan SKU/Barcode or type part name, brand, model..."
+                                class="w-full pl-12 pr-4 py-4 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-lg shadow-sm transition-shadow"
                             >
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <svg class="h-6 w-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -73,9 +74,9 @@
                                     <div class="flex flex-col items-end gap-2">
                                         <div class="font-bold text-gray-900 dark:text-white">₱<span x-text="formatMoney(cartItem.price * cartItem.quantity)"></span></div>
                                         <div class="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm">
-                                            <button type="button" @click="updateQuantity(index, -1)" class="px-2 py-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg></button>
-                                            <span class="w-8 text-center text-sm font-bold bg-gray-50 dark:bg-gray-900 py-1 text-gray-900 dark:text-white" x-text="cartItem.quantity"></span>
-                                            <button type="button" @click="updateQuantity(index, 1)" class="px-2 py-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></button>
+                                            <button type="button" @click="updateQuantity(index, -1)" aria-label="Decrease quantity" class="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg></button>
+                                            <span class="w-10 text-center text-sm font-bold bg-gray-50 dark:bg-gray-900 py-1 text-gray-900 dark:text-white" x-text="cartItem.quantity"></span>
+                                            <button type="button" @click="updateQuantity(index, 1)" aria-label="Increase quantity" class="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></button>
                                         </div>
                                     </div>
                                 </div>
@@ -98,12 +99,12 @@
                             </div>
 
                             <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl mb-6 border border-gray-100 dark:border-gray-700">
-                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Amount Tendered (Cash)</label>
+                                <label for="amount-tendered" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Amount Tendered (Cash)</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <span class="text-gray-500 dark:text-gray-400 font-bold sm:text-lg">₱</span>
                                     </div>
-                                    <input type="number" x-model.number="amountTendered" class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 text-gray-900 dark:text-white font-bold text-lg" placeholder="0.00">
+                                    <input id="amount-tendered" type="number" x-model.number="amountTendered" class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 text-gray-900 dark:text-white font-bold text-lg" placeholder="0.00">
                                 </div>
                                 <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-200 dark:border-gray-600" x-show="amountTendered > 0">
                                     <span class="text-gray-600 dark:text-gray-400 font-semibold">Change</span>
@@ -115,10 +116,11 @@
                                 @csrf
                                 <input type="hidden" name="cart_data" :value="JSON.stringify(cart)">
                                 <input type="hidden" name="amount_tendered" :value="amountTendered">
-                                <button type="button" @click="submitCheckout()" 
-                                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                        :disabled="cart.length === 0 || amountTendered < cartTotal">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <button type="button" @click="submitCheckout()"
+                                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                        :disabled="cart.length === 0 || amountTendered < cartTotal || checkoutLoading">
+                                    <svg x-show="checkoutLoading" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                    <svg x-show="!checkoutLoading" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     Complete Checkout
                                 </button>
                             </form>
@@ -133,7 +135,7 @@
 
     <!-- Error/Success Toasts can go here if needed -->
     @if(session('error'))
-        <div class="fixed bottom-5 right-5 bg-red-500 text-white p-4 rounded-xl shadow-xl z-50">
+        <div role="alert" class="fixed bottom-5 right-5 bg-red-500 text-white p-4 rounded-xl shadow-xl z-50">
             {{ session('error') }}
         </div>
     @endif
@@ -145,6 +147,7 @@
                 inventory: @json($items),
                 cart: [],
                 amountTendered: null,
+                checkoutLoading: false,
 
                 get filteredItems() {
                     if (this.searchQuery === '') {
@@ -219,6 +222,7 @@
                         alert("Amount tendered is less than the total.");
                         return;
                     }
+                    this.checkoutLoading = true;
                     document.getElementById('checkoutForm').submit();
                 }
             }
