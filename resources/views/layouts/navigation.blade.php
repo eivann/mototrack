@@ -3,10 +3,10 @@
         <div class="flex justify-between h-16 md:h-20 lg:h-24">
             <div class="flex items-center">
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-8">
+                <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 xl:mr-8">
                     <a href="{{ auth()->check() ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard')) : url('/') }}" class="flex items-center gap-4">
                         <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-12 md:h-16 lg:h-20 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
-                        <div class="flex flex-col leading-none hidden lg:flex">
+                        <div class="flex flex-col leading-none hidden xl:flex">
                             <span class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
                             <span class="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mt-0.5">Parts and Accessories</span>
                         </div>
@@ -14,9 +14,9 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-1 sm:-my-px sm:flex h-full">
+                <div class="hidden lg:flex lg:space-x-2 xl:space-x-4 h-full">
                     @php
-                        $linkClasses = "inline-flex items-center px-4 h-full text-sm font-bold transition-all duration-300 group relative";
+                        $linkClasses = "inline-flex items-center px-3 xl:px-4 h-full text-xs xl:text-sm font-bold transition-all duration-300 group relative whitespace-nowrap";
                         $activeClasses = "text-blue-600";
                         $inactiveClasses = "text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-white";
                     @endphp
@@ -93,7 +93,7 @@
                 </div>
             </div>
 
-            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-2">
+            <div class="hidden lg:flex lg:items-center lg:ms-6 gap-2">
                 {{-- Notification Bell --}}
                 @auth
                 <div class="relative group" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
@@ -254,7 +254,7 @@
             </div>
 
             <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
+            <div class="-me-2 flex items-center lg:hidden">
                 <button @click="open = ! open" :aria-expanded="open" aria-label="Toggle navigation menu" aria-controls="mobile-nav" class="inline-flex items-center justify-center p-3 rounded-2xl text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
                     <i :class="{'hidden': open, 'block': ! open }" data-lucide="menu" class="w-6 h-6"></i>
                     <i :class="{'hidden': ! open, 'block': open }" data-lucide="x" class="w-6 h-6"></i>
@@ -268,7 +268,7 @@
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 -translate-y-4"
          x-transition:enter-end="opacity-100 translate-y-0"
-         class="sm:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl">
+         class="lg:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl">
         <div class="pt-4 pb-6 space-y-2 px-4">
             <a href="/" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->is('/') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
                 <i data-lucide="home" class="w-5 h-5 mr-4"></i>
