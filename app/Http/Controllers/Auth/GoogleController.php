@@ -49,6 +49,14 @@ class GoogleController extends Controller
             ]);
         }
 
+        // CR-1: Ensure a Customer profile exists for every authenticated user.
+        // Covers both new Google signups and returning users who may lack a
+        // profile (e.g., created before the customer system was introduced).
+        \App\Models\Customer::firstOrCreate(
+            ['user_id' => $user->id],
+            ['name' => $user->name, 'email' => $user->email]
+        );
+
         Auth::login($user, true);
 
         // Redirect based on role

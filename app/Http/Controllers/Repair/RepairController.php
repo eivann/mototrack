@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Repair;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\HandlesExceptions;
+use App\Http\Requests\Repair\StoreRepairRequest;
+use App\Http\Requests\Repair\UpdateRepairRequest;
 use Illuminate\Http\Request;
 use App\Models\Repair;
 use Illuminate\Support\Str;
@@ -13,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 class RepairController extends Controller
 {
+    use HandlesExceptions;
     public function index(Request $request)
     {
         $query = Repair::query();
@@ -31,16 +35,8 @@ class RepairController extends Controller
         return view('repairs.index', compact('repairs', 'customers'));
     }
 
-    public function store(Request $request)
+    public function store(StoreRepairRequest $request)
     {
-        $request->validate([
-            'customer_id'   => 'nullable|exists:customers,id',
-            'customer_name' => 'required_without:customer_id|nullable|string|max:255',
-            'bike_model'    => 'required|string|max:255',
-            'issue'         => 'required|string|max:1000',
-            'cost'          => 'required|numeric|min:0',
-        ]);
-
         $customerName = $request->customer_name;
         if ($request->customer_id) {
             $customerName = \App\Models\Customer::find($request->customer_id)->name;
@@ -59,12 +55,8 @@ class RepairController extends Controller
         return back()->with('success', 'Repair job created successfully!');
     }
 
-    public function update(Request $request, Repair $repair)
+    public function update(UpdateRepairRequest $request, Repair $repair)
     {
-        $request->validate([
-            'status' => 'required|string|in:pending,ongoing,done,completed',
-        ]);
-
         $repair->status = $request->status;
         $repair->save();
 
@@ -81,41 +73,47 @@ class RepairController extends Controller
 
     public function destroy(Repair $repair)
     {
+        $this->authorize('delete', $repair);
+
         $repair->delete();
         return back()->with('success', 'Repair job deleted.');
     }
 
     public function markPaid(Repair $repair)
     {
-        DB::transaction(function () use ($repair) {
-            $repair->is_paid = true;
-            $repair->save();
+        $this->authorize('markPaid', $repair);
 
-            \App\Models\Sale::create([
-                'inventory_item_id' => null,
-                'quantity' => 1,
-                'total_price' => $repair->cost,
-                'customer_id' => $repair->customer_id,
-                'transaction_reference' => 'REPAIR-' . strtoupper(Str::random(8)),
-            ]);
-        });
+        return $this->attempt(function () use ($repair) {
+            DB::transaction(function () use ($repair) {
+                $repair->is_paid = true;
+                $repair->save();
 
-        $owners = User::where('role', 'owner')->get();
-        Notification::send($owners, new StatusUpdated(
-            'Repair Payment Received',
-            "Payment of ₱" . number_format($repair->cost, 2) . " received for {$repair->bike_model} ({$repair->customer_name}).",
-            "/repairs"
-        ));
+                \App\Models\Sale::create([
+                    'inventory_item_id' => null,
+                    'quantity' => 1,
+                    'total_price' => $repair->cost,
+                    'customer_id' => $repair->customer_id,
+                    'transaction_reference' => 'REPAIR-' . strtoupper(Str::random(8)),
+                ]);
+            });
 
-        if ($repair->customer && $repair->customer->user) {
-            $repair->customer->user->notify(new StatusUpdated(
-                'Payment Confirmed',
-                "Your payment of ₱" . number_format($repair->cost, 2) . " for {$repair->bike_model} has been received. Thank you!",
-                '/customer/dashboard'
+            $owners = User::where('role', 'owner')->get();
+            Notification::send($owners, new StatusUpdated(
+                'Repair Payment Received',
+                "Payment of ₱" . number_format($repair->cost, 2) . " received for {$repair->bike_model} ({$repair->customer_name}).",
+                "/repairs"
             ));
-        }
 
-        return back()->with('success', 'Payment recorded and added to sales history!');
+            if ($repair->customer && $repair->customer->user) {
+                $repair->customer->user->notify(new StatusUpdated(
+                    'Payment Confirmed',
+                    "Your payment of ₱" . number_format($repair->cost, 2) . " for {$repair->bike_model} has been received. Thank you!",
+                    '/customer/dashboard'
+                ));
+            }
+
+            return back()->with('success', 'Payment recorded and added to sales history!');
+        }, 'Payment recording failed. Please try again.');
     }
 
     public function receipt(Repair $repair)

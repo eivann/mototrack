@@ -29,6 +29,10 @@ protected $fillable = [
     'total_price',
     'transaction_reference',
     'amount_tendered',
-    'change'
+    'change',
+];
+
+protected $casts = [
+    'payment_confirmed_at' => 'datetime',
 ];
 }

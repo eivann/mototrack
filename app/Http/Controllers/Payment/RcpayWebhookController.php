@@ -95,11 +95,24 @@ class RcpayWebhookController extends Controller
      */
     protected function handleShopOrderPayment($orderId, $amount)
     {
-        $sales = Sale::where('transaction_reference', $orderId)->get();
-
-        if ($sales->isEmpty()) {
+        // F-1: Lightweight existence check without eager-loading relations.
+        if (!Sale::where('transaction_reference', $orderId)->exists()) {
             Log::error("RCPAY PLUS Webhook: Shop sales not found for Transaction Reference {$orderId}.");
             return response()->json(['message' => 'Transaction not found'], 404);
+        }
+
+        // F-1: Atomic idempotency guard — the UPDATE acts as both the lock
+        // and the check in a single operation. Only the first thread to
+        // reach this statement will affect rows; concurrent retries will
+        // see affectedRows === 0 and short-circuit without dispatching
+        // duplicate events or notifications.
+        $affectedRows = Sale::where('transaction_reference', $orderId)
+            ->whereNull('payment_confirmed_at')
+            ->update(['payment_confirmed_at' => now()]);
+
+        if ($affectedRows === 0) {
+            Log::info("RCPAY PLUS Webhook: Shop transaction {$orderId} already confirmed. Skipping.");
+            return response()->json(['message' => 'OK'], 200);
         }
 
         // Fire Domain Event to decouple Notification processing

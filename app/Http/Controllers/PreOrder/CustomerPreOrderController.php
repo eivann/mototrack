@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\PreOrder;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\HandlesExceptions;
+use App\Http\Requests\PreOrder\StorePreOrderRequest;
 use App\Models\InventoryItem;
 use App\Models\PreOrder;
 use App\Models\User;
@@ -10,11 +12,12 @@ use App\Models\Customer;
 use App\Notifications\StatusUpdated;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 
 class CustomerPreOrderController extends Controller
 {
+    use HandlesExceptions;
+
     protected $paymentService;
 
     public function __construct(PaymentService $paymentService)
@@ -39,34 +42,14 @@ class CustomerPreOrderController extends Controller
         return view('preorders.form', compact('item'));
     }
 
-    public function store(Request $request)
+    public function store(StorePreOrderRequest $request)
     {
-        $request->validate([
-            'part_name' => 'required|string|max:255',
-            'model' => 'nullable|string|max:255',
-            'quantity' => 'required|integer|min:1',
-            'down_payment' => 'nullable|numeric|min:0',
-            'g-recaptcha-response' => [(app()->runningUnitTests() || request()->ip() === config('services.recaptcha.skip_ip')) ? 'nullable' : 'required', function ($attribute, $value, $fail) {
-                if (app()->runningUnitTests() || request()->ip() === config('services.recaptcha.skip_ip')) {
-                    return;
-                }
-                $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-                    'secret' => config('services.recaptcha.secret_key'),
-                    'response' => $value,
-                    'remoteip' => request()->ip(),
-                ]);
-                if (!$response->json('success')) {
-                    $fail('The reCAPTCHA validation failed.');
-                }
-            }],
-        ]);
 
         $user = auth()->user();
-        $customer = $user->customer ?: Customer::create([
-            'user_id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-        ]);
+        $customer = Customer::firstOrCreate(
+            ['user_id' => $user->id],
+            ['name' => $user->name, 'email' => $user->email]
+        );
 
         $price = $request->price ?? 0;
         $total = $price * $request->quantity;
@@ -98,27 +81,21 @@ class CustomerPreOrderController extends Controller
         $paymentMethod = $request->input('payment_method', 'gcash');
 
         if ($paymentMethod === 'rcpay') {
-            try {
+            return $this->attempt(function () use ($preorder, $downPayment, $request) {
                 $externalId = 'PRE-' . $preorder->id . '-' . time();
                 $bankCode = $request->input('bank_code', 'PMP');
-                $redirectUrl = $this->paymentService->createRcpayUrl(
-                    $externalId,
-                    $downPayment,
-                    $bankCode
-                );
+                $redirectUrl = $this->paymentService->createRcpayUrl($externalId, $downPayment, $bankCode);
 
                 $preorder->update([
                     'xendit_invoice_id' => $externalId,
-                    'xendit_invoice_url' => $redirectUrl
+                    'xendit_invoice_url' => $redirectUrl,
                 ]);
 
                 return redirect($redirectUrl);
-            } catch (\Exception $e) {
-                return redirect('/customer/dashboard')->with('error', 'Pre-order saved but RCPAY payment failed: ' . $e->getMessage());
-            }
+            }, 'Pre-order saved but RCPAY payment could not be initiated. Please contact support.');
         }
 
-        try {
+        return $this->attempt(function () use ($preorder, $downPayment, $request) {
             $externalId = 'PRE-' . $preorder->id . '-' . time();
             $result = $this->paymentService->createInvoice(
                 $externalId,
@@ -130,24 +107,30 @@ class CustomerPreOrderController extends Controller
 
             $preorder->update([
                 'xendit_invoice_id' => $result['id'],
-                'xendit_invoice_url' => $result['invoice_url']
+                'xendit_invoice_url' => $result['invoice_url'],
             ]);
 
             return redirect($result['invoice_url']);
-        } catch (\Exception $e) {
-            return redirect('/customer/dashboard')->with('error', 'Pre-order saved but payment failed: ' . $e->getMessage());
-        }
+        }, 'Pre-order saved but payment could not be initiated. Please contact support.');
     }
 
     public function verify($id)
     {
         $preorder = PreOrder::findOrFail($id);
 
+        // F-7: Ownership gate — only the customer who placed this pre-order
+        // may trigger payment verification. Without this check, any
+        // authenticated user could verify (and mark as paid) another
+        // user's pre-order by guessing the ID.
+        if ($preorder->customer?->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
         if ($preorder->is_paid) {
             return redirect()->route('customer.dashboard')->with('success', 'Payment already confirmed.');
         }
 
-        try {
+        return $this->attempt(function () use ($preorder) {
             $invoice = $this->paymentService->getInvoiceStatus($preorder->xendit_invoice_id);
 
             if ($invoice['status'] === 'SETTLED' || $invoice['status'] === 'PAID') {
@@ -164,8 +147,6 @@ class CustomerPreOrderController extends Controller
             }
 
             return redirect()->route('customer.dashboard')->with('info', 'Payment status: ' . $invoice['status']);
-        } catch (\Exception $e) {
-            return redirect()->route('customer.dashboard')->with('error', 'Verification failed: ' . $e->getMessage());
-        }
+        }, 'Payment verification failed. Please try again or contact support.');
     }
 }

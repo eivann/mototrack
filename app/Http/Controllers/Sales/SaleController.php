@@ -3,26 +3,26 @@
 namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
+use App\Http\Concerns\HandlesExceptions;
+use App\Http\Requests\Sales\StoreSaleRequest;
 use App\Models\Sale;
 use App\Models\InventoryItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SaleController extends Controller
 {
+    use HandlesExceptions;
     public function recordSaleForm()
     {
         $items = InventoryItem::all();
         return view('sales.create', compact('items'));
     }
 
-    public function storeSale(Request $request)
+    public function storeSale(StoreSaleRequest $request)
     {
-        $request->validate([
-            'cart_data' => 'required|json',
-            'amount_tendered' => 'required|numeric|min:0',
-        ]);
-
         $cartItems = json_decode($request->cart_data, true);
 
         if (empty($cartItems) || !is_array($cartItems)) {
@@ -38,9 +38,10 @@ class SaleController extends Controller
             }
         }
 
-        $transactionReference = 'TRX-' . strtoupper(uniqid());
+        // H-6: Use ULID for collision-resistant, non-guessable transaction IDs
+        $transactionReference = 'TRX-' . Str::ulid();
 
-        try {
+        return $this->attempt(function () use ($cartItems, $transactionReference, $request) {
             DB::transaction(function () use ($cartItems, $transactionReference, $request) {
                 $totalAmount = 0;
                 $itemsToProcess = [];
@@ -78,36 +79,34 @@ class SaleController extends Controller
                     \App\Services\SmsService::checkLowStockAlert($item);
                 }
             });
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
 
-        return redirect("/sales/{$transactionReference}/receipt")->with('success', 'Transaction completed successfully!');
+            return redirect("/sales/{$transactionReference}/receipt")->with('success', 'Transaction completed successfully!');
+        }, 'Transaction failed. Please check stock levels and try again.');
     }
 
     public function history(Request $request)
     {
-        $query = Sale::with('item');
+        $baseQuery = Sale::query();
 
         if ($request->from && $request->to) {
-            $query->whereBetween('created_at', [$request->from, $request->to]);
+            $baseQuery->whereBetween('created_at', [$request->from, $request->to]);
         }
 
         if ($request->filter == 'today') {
-            $query->whereDate('created_at', today());
+            $baseQuery->whereDate('created_at', today());
         } elseif ($request->filter == 'week') {
-            $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+            $baseQuery->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
         } elseif ($request->filter == 'month') {
-            $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+            $baseQuery->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
         }
 
-        $salesQuery = $query->latest();
-        $allSalesForTotals = $salesQuery->get();
-        $totalSales = $allSalesForTotals->sum('total_price');
-        $totalTransactions = $allSalesForTotals->whereNotNull('transaction_reference')->unique('transaction_reference')->count()
-                            + $allSalesForTotals->whereNull('transaction_reference')->count();
+        // Use DB aggregates to avoid loading all rows into memory for totals
+        $totalsQuery = clone $baseQuery;
+        $totalSales = $totalsQuery->sum('total_price');
+        $totalTransactions = (clone $totalsQuery)->whereNotNull('transaction_reference')->distinct('transaction_reference')->count('transaction_reference')
+                           + (clone $totalsQuery)->whereNull('transaction_reference')->count();
 
-        $sales = $salesQuery->paginate(10)->withQueryString();
+        $sales = $baseQuery->with('item')->latest()->paginate(10)->withQueryString();
         $inventoryItems = InventoryItem::orderBy('quantity', 'asc')->paginate(12, ['*'], 'stock_page')->withQueryString();
 
         return view('sales.history', compact(

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Inventory;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PublicBrowseController extends Controller
 {
@@ -30,7 +31,11 @@ class PublicBrowseController extends Controller
 
         $items = $query->paginate(12)->withQueryString();
 
-        return view('inventory.browse', compact('items'));
+        $categories = Cache::remember('inventory_categories', now()->addHours(6), function () {
+            return InventoryItem::select('category')->distinct()->orderBy('category')->pluck('category');
+        });
+
+        return view('inventory.browse', compact('items', 'categories'));
     }
 
     public function searchParts(Request $request)

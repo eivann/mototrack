@@ -13,19 +13,19 @@ class CustomerDashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $customer = $user->customer ?: Customer::create([
-            'user_id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-        ]);
+        $customer = Customer::firstOrCreate(
+            ['user_id' => $user->id],
+            ['name' => $user->name, 'email' => $user->email]
+        );
 
+        // H-2 Security: Query by customer_id only. Matching by
+        // customer_name leaks data when two users share the same display
+        // name. All records must be linked via the foreign key.
         $repairs = Repair::where('customer_id', $customer->id)
-            ->orWhere('customer_name', $user->name)
             ->latest()
             ->get();
 
         $preorders = PreOrder::where('customer_id', $customer->id)
-            ->orWhere('customer_name', $user->name)
             ->latest()
             ->get();
 

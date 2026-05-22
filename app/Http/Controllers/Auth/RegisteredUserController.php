@@ -66,13 +66,11 @@ class RegisteredUserController extends Controller
             'role' => 'customer',
         ]);
 
-        // Create the linked Customer profile
-        \App\Models\Customer::create([
-            'user_id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $request->phone,
-        ]);
+        // Create the linked Customer profile (atomic — safe against double-submit)
+        \App\Models\Customer::firstOrCreate(
+            ['user_id' => $user->id],
+            ['name' => $user->name, 'email' => $user->email, 'phone' => $request->phone]
+        );
 
         event(new Registered($user));
 
