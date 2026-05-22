@@ -6,7 +6,7 @@
                 <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 xl:mr-8">
                     <a href="{{ auth()->check() ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard')) : url('/') }}" class="flex items-center gap-4">
                         <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-12 md:h-16 lg:h-20 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
-                        <div class="flex flex-col leading-none hidden xl:flex">
+                        <div class="flex flex-col leading-none hidden 2xl:flex">
                             <span class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
                             <span class="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mt-0.5">Parts and Accessories</span>
                         </div>
@@ -14,7 +14,7 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden lg:flex lg:space-x-2 xl:space-x-4 h-full">
+                <div class="hidden lg:flex lg:space-x-2 xl:space-x-4 h-full shrink-0">
                     @php
                         $linkClasses = "inline-flex items-center px-3 xl:px-4 h-full text-xs xl:text-sm font-bold transition-all duration-300 group relative whitespace-nowrap";
                         $activeClasses = "text-blue-600";
@@ -93,7 +93,7 @@
                 </div>
             </div>
 
-            <div class="hidden lg:flex lg:items-center lg:ms-6 gap-2">
+            <div class="hidden lg:flex lg:items-center lg:ms-6 gap-2 shrink-0">
                 {{-- Notification Bell --}}
                 @auth
                 <div class="relative group" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
