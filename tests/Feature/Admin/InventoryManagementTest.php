@@ -12,6 +12,7 @@ test('owners can create new inventory items', function () {
 
     // Act: Attempt to create a new part via the admin endpoint
     $response = $this->actingAs($owner)->post('/inventory', [
+        'category' => 'Brakes',
         'part_name' => 'Brembo Brake Pads',
         'brand' => 'Brembo',
         'model' => 'M50',

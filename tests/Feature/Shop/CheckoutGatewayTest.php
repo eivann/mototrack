@@ -20,7 +20,9 @@ beforeEach(function () {
 test('checkout rejects empty carts and redirects backward', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->post('/checkout');
+    $response = $this->actingAs($user)->post('/checkout', [
+        'payment_method' => 'gcash',
+    ]);
 
     $response->assertRedirect();
     $response->assertSessionHas('error', 'Cart is empty!');
@@ -78,7 +80,7 @@ test('checkout processes multi-item cart, locks stock, and assigns tendered amou
 
     // Assert: Notifications
     Notification::assertSentTo($user, StatusUpdated::class);
-    Notification::assertSentTo($owner, StatusUpdated::class);
+    Notification::assertNotSentTo($owner, StatusUpdated::class); // Deferred for online payment
     
     // Assert: Session cleared
     expect(Session::get('cart'))->toBeNull();

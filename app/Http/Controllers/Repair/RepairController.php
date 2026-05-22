@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\StatusUpdated;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class RepairController extends Controller
 {
@@ -73,7 +74,7 @@ class RepairController extends Controller
 
     public function destroy(Repair $repair)
     {
-        $this->authorize('delete', $repair);
+        Gate::authorize('delete', $repair);
 
         $repair->delete();
         return back()->with('success', 'Repair job deleted.');
@@ -81,7 +82,7 @@ class RepairController extends Controller
 
     public function markPaid(Repair $repair)
     {
-        $this->authorize('markPaid', $repair);
+        Gate::authorize('markPaid', $repair);
 
         return $this->attempt(function () use ($repair) {
             DB::transaction(function () use ($repair) {

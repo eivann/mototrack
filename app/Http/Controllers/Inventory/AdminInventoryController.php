@@ -8,6 +8,7 @@ use App\Http\Requests\Inventory\UpdateInventoryRequest;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
 use App\Models\InventoryItem;
+use Illuminate\Support\Facades\Gate;
 
 class AdminInventoryController extends Controller
 {
@@ -40,14 +41,14 @@ public function update(UpdateInventoryRequest $request, InventoryItem $item)
 
 public function edit(InventoryItem $item)
 {
-    $this->authorize('update', $item);
+    Gate::authorize('update', $item);
 
     return view('inventory.edit', compact('item'));
 }
 
 public function destroy(InventoryItem $item)
 {
-    $this->authorize('delete', $item);
+    Gate::authorize('delete', $item);
 
     $this->inventoryService->destroy($item);
 
@@ -56,7 +57,7 @@ public function destroy(InventoryItem $item)
 
 public function lowStock()
 {
-    $this->authorize('viewAny', InventoryItem::class);
+    Gate::authorize('viewAny', InventoryItem::class);
 
     $lowStockItems = InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->paginate(10);
     return view('inventory.low_stock', compact('lowStockItems'));

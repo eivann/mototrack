@@ -81,7 +81,9 @@ test('checkout preserves order and redirects to receipt if gateway crashes', fun
 
     // Assert: Handled gracefully without 500 error screen
     $response->assertRedirect('/shop/receipt');
-    $response->assertSessionHas('error', 'Order saved but RCPAY payment failed: RCPAY Connection Timeout 504');
+    $response->assertSessionHas('warning');
+    $warningMsg = session('warning');
+    expect($warningMsg)->toContain('has been saved, but the payment gateway is temporarily unavailable');
 
     // Assert: Verify intentional design - Order IS saved even if gateway fails
     expect(Sale::count())->toBe(1);
