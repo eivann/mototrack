@@ -14,14 +14,14 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden lg:flex lg:space-x-2 xl:space-x-4 h-full shrink-0">
+                <div class="hidden lg:flex lg:space-x-2 xl:space-x-4 h-full shrink-0" style="flex-shrink: 0 !important;">
                     @php
                         $linkClasses = "inline-flex items-center px-3 xl:px-4 h-full text-xs xl:text-sm font-bold transition-all duration-300 group relative whitespace-nowrap";
                         $activeClasses = "text-blue-600";
                         $inactiveClasses = "text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-white";
                     @endphp
 
-                    <a href="/" class="{{ $linkClasses }} {{ request()->is('/') ? $activeClasses : $inactiveClasses }}">
+                    <a href="/" class="{{ $linkClasses }} {{ request()->is('/') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
                         <i data-lucide="home" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
                         <span>Home</span>
                         @if(request()->is('/'))
@@ -32,7 +32,7 @@
                     </a>
                     
                     @if(!auth()->check() || auth()->user()->role !== 'owner')
-                        <a href="{{ route('browse') }}" class="{{ $linkClasses }} {{ request()->routeIs('browse') ? $activeClasses : $inactiveClasses }}">
+                        <a href="{{ route('browse') }}" class="{{ $linkClasses }} {{ request()->routeIs('browse') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
                             <i data-lucide="shopping-bag" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
                             <span>Browse</span>
                             @if(request()->routeIs('browse'))
@@ -42,7 +42,7 @@
                             @endif
                         </a>
 
-                        <a href="{{ route('compatibility.view') }}" class="{{ $linkClasses }} {{ request()->routeIs('compatibility.view') ? $activeClasses : $inactiveClasses }}">
+                        <a href="{{ route('compatibility.view') }}" class="{{ $linkClasses }} {{ request()->routeIs('compatibility.view') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
                             <i data-lucide="search" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
                             <span>Compatibility</span>
                             @if(request()->routeIs('compatibility.view'))
@@ -57,7 +57,7 @@
 
                     @auth
                         @if(auth()->user()->role !== 'owner')
-                            <a href="{{ route('customer.dashboard') }}" class="{{ $linkClasses }} {{ request()->routeIs('customer.dashboard') ? $activeClasses : $inactiveClasses }}">
+                            <a href="{{ route('customer.dashboard') }}" class="{{ $linkClasses }} {{ request()->routeIs('customer.dashboard') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
                                 <i data-lucide="layout-dashboard" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
                                 <span>Dashboard</span>
                                 @if(request()->routeIs('customer.dashboard'))
@@ -67,7 +67,7 @@
                                 @endif
                             </a>
 
-                            <a href="{{ route('preorder.parts') }}" class="{{ $linkClasses }} {{ request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*') ? $activeClasses : $inactiveClasses }}">
+                            <a href="{{ route('preorder.parts') }}" class="{{ $linkClasses }} {{ request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
                                 <i data-lucide="clipboard-list" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
                                 <span>Pre-orders</span>
                                 @if(request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*'))
@@ -79,7 +79,7 @@
                         @endif
 
                         @if(auth()->user()->role === 'owner')
-                            <a href="{{ route('dashboard') }}" class="{{ $linkClasses }} {{ request()->routeIs('dashboard') ? $activeClasses : $inactiveClasses }}">
+                            <a href="{{ route('dashboard') }}" class="{{ $linkClasses }} {{ request()->routeIs('dashboard') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
                                 <i data-lucide="activity" class="w-5 h-5 mr-2.5 transition-transform group-hover:-translate-y-0.5"></i>
                                 <span>Admin Panel</span>
                                 @if(request()->routeIs('dashboard'))
@@ -93,7 +93,7 @@
                 </div>
             </div>
 
-            <div class="hidden lg:flex lg:items-center lg:ms-6 gap-2 shrink-0">
+            <div class="hidden lg:flex lg:items-center lg:ms-6 gap-2 shrink-0" style="flex-shrink: 0 !important;">
                 {{-- Notification Bell --}}
                 @auth
                 <div class="relative group" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
