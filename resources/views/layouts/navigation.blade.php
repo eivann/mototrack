@@ -6,7 +6,7 @@
                 <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 xl:mr-8">
                     <a href="{{ auth()->check() ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard')) : url('/') }}" class="flex items-center gap-4">
                         <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-12 md:h-16 lg:h-20 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
-                        <div class="flex flex-col leading-none hidden 2xl:flex">
+                        <div class="flex flex-col leading-none {{ auth()->check() ? 'hidden' : 'hidden xl:flex' }}">
                             <span class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
                             <span class="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mt-0.5">Parts and Accessories</span>
                         </div>
