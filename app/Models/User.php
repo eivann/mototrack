@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 
 #[Fillable(['name', 'email', 'password', 'role', 'google_id'])]
 #[Hidden(['password', 'remember_token'])]
@@ -23,6 +24,18 @@ class User extends Authenticatable
     public function customer(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Customer::class);
+    }
+
+    /**
+     * Get all users with the 'owner' role, cached for 5 minutes.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, static>
+     */
+    public static function owners()
+    {
+        return Cache::remember('users_role_owner', 300, function () {
+            return static::where('role', 'owner')->get();
+        });
     }
 
     /**

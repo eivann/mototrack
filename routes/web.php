@@ -39,4 +39,3 @@ require __DIR__.'/auth.php';
 
 // RCPAY Webhook Callback Route (Public)
 Route::post('/api/rcpay-webhook', [\App\Http\Controllers\Payment\RcpayWebhookController::class, 'handle'])->middleware('throttle:60,1')->name('webhook.rcpay');
-

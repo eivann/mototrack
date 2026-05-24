@@ -114,7 +114,7 @@ class PaymentService
         $merchantId = config('services.rcpay.merchant_id');
         $apiKey = config('services.rcpay.api_key');
 
-        $response = \Illuminate\Support\Facades\Http::post('https://rcpayplus.com/web/transfer.php', [
+        $response = \Illuminate\Support\Facades\Http::timeout(10)->post('https://rcpayplus.com/web/transfer.php', [
             'merchant_id' => $merchantId,
             'api_key' => $apiKey,
             'amount' => floatval($amount),

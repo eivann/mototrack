@@ -69,7 +69,7 @@ class CustomerPreOrderController extends Controller
         ]);
 
         if ($downPayment <= 0) {
-            $owners = User::where('role', 'owner')->get();
+            $owners = User::owners();
             Notification::send($owners, new StatusUpdated(
                 'New Custom Pre-order Request',
                 "Customer {$user->name} has requested a custom pre-order for {$request->part_name}.",
@@ -136,7 +136,7 @@ class CustomerPreOrderController extends Controller
             if ($invoice['status'] === 'SETTLED' || $invoice['status'] === 'PAID') {
                 $preorder->update(['is_paid' => true]);
 
-                $owners = User::where('role', 'owner')->get();
+                $owners = User::owners();
                 Notification::send($owners, new StatusUpdated(
                     'Pre-order Payment Received',
                     "Customer " . auth()->user()->name . " has completed the down payment for {$preorder->part_name}.",

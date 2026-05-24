@@ -30,8 +30,8 @@ class RepairController extends Controller
             $query->where('is_paid', $request->paid);
         }
 
-        $repairs = $query->latest()->paginate(10)->withQueryString();
-        $customers = \App\Models\Customer::orderBy('name')->get();
+        $repairs = $query->with('customer')->latest()->paginate(10)->withQueryString();
+        $customers = \App\Models\Customer::select('id', 'name')->orderBy('name')->get();
 
         return view('repairs.index', compact('repairs', 'customers'));
     }
@@ -98,7 +98,7 @@ class RepairController extends Controller
                 ]);
             });
 
-            $owners = User::where('role', 'owner')->get();
+            $owners = User::owners();
             Notification::send($owners, new StatusUpdated(
                 'Repair Payment Received',
                 "Payment of ₱" . number_format($repair->cost, 2) . " received for {$repair->bike_model} ({$repair->customer_name}).",

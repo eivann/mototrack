@@ -89,7 +89,7 @@ class CheckoutController extends Controller
             // listener fires upon webhook confirmation — notifying owners at
             // the right time, after payment is actually received.
             if ($paymentMethod === 'cash') {
-                $owners = User::where('role', 'owner')->get();
+                $owners = User::owners();
                 Notification::send($owners, new StatusUpdated(
                     'New Order Received',
                     "Customer " . auth()->user()->name . " has placed a new order #{$transactionReference}.",

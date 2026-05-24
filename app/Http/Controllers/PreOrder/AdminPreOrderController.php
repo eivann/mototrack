@@ -11,7 +11,7 @@ class AdminPreOrderController extends Controller
 {
    public function index()
 {
-    $preorders  = PreOrder::latest()->paginate(10);
+    $preorders  = PreOrder::with('customer')->latest()->paginate(10);
     return view('preorders.admin_index', compact('preorders'));
 }
 

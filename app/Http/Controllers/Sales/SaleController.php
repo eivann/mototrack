@@ -17,7 +17,9 @@ class SaleController extends Controller
     use HandlesExceptions;
     public function recordSaleForm()
     {
-        $items = InventoryItem::all();
+        $items = InventoryItem::select('id', 'sku', 'part_name', 'brand', 'model', 'price', 'quantity')
+            ->orderBy('part_name')
+            ->get();
         return view('sales.create', compact('items'));
     }
 
@@ -76,7 +78,7 @@ class SaleController extends Controller
                     ]);
 
                     $item->decrement('quantity', $quantity);
-                    \App\Services\SmsService::checkLowStockAlert($item);
+                    \App\Jobs\CheckLowStockAlertJob::dispatch($item->id);
                 }
             });
 
@@ -119,17 +121,21 @@ class SaleController extends Controller
 
     public function destroy($id)
     {
-        $sale = Sale::findOrFail($id);
-        $item = $sale->item;
+        DB::transaction(function () use ($id) {
+            $sale = Sale::lockForUpdate()->findOrFail($id);
+            $item = $sale->inventory_item_id
+                ? InventoryItem::lockForUpdate()->find($sale->inventory_item_id)
+                : null;
 
-        if ($item) {
-            $item->quantity += $sale->quantity;
-            if ($item->quantity > $item->low_stock_threshold) {
-                $item->low_stock_notified = false;
+            if ($item) {
+                $item->increment('quantity', $sale->quantity);
+                if ($item->quantity > $item->low_stock_threshold) {
+                    $item->update(['low_stock_notified' => false]);
+                }
             }
-            $item->save();
-        }
-        $sale->delete();
+
+            $sale->delete();
+        });
 
         return redirect()->back()->with('success', 'Sale archived and stock restored!');
     }

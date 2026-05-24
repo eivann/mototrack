@@ -17,7 +17,7 @@ class SendPaymentNotification implements ShouldQueue
      */
     public function handle(PaymentReceived $event): void
     {
-        $owners = User::where('role', 'owner')->get();
+        $owners = User::owners();
 
         if ($event->type === 'preorder') {
             $parts = explode('-', $event->orderId);
