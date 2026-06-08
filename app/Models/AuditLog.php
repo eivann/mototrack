@@ -35,7 +35,9 @@ class AuditLog extends Model
     {
         parent::boot();
         static::creating(function ($model) {
-            $model->created_at = $model->freshTimestamp();
+            if (!$model->created_at) {
+                $model->created_at = $model->freshTimestamp();
+            }
         });
     }
 

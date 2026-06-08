@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Request;
 
 trait HasAuditTrail
 {
+    public ?array $audit_temp_changes = null;
+
     public static function bootHasAuditTrail(): void
     {
         static::created(function ($model) {
