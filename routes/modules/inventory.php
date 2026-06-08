@@ -13,11 +13,11 @@ Route::post('/compatibility', [PublicBrowseController::class, 'checkCompatibilit
 
 // Admin Routes
 Route::middleware(['auth', 'owner'])->group(function () {
-    Route::resource('inventory', AdminInventoryController::class)->parameters(['inventory' => 'item']);
-    Route::get('/low-stock', [AdminInventoryController::class, 'lowStock'])->name('low-stock.index');
-
     // Inventory Adjustments (Damaged & Returns)
     Route::get('/inventory/adjustments', [InventoryAdjustmentController::class, 'index'])->name('inventory.adjustments.index');
     Route::post('/inventory/adjustments/damaged', [InventoryAdjustmentController::class, 'storeDamaged'])->name('inventory.adjustments.store_damaged');
     Route::post('/inventory/adjustments/returns', [InventoryAdjustmentController::class, 'storeReturn'])->name('inventory.adjustments.store_return');
+
+    Route::resource('inventory', AdminInventoryController::class)->parameters(['inventory' => 'item']);
+    Route::get('/low-stock', [AdminInventoryController::class, 'lowStock'])->name('low-stock.index');
 });

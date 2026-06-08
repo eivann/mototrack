@@ -29,7 +29,9 @@ class InventoryAdjustmentController extends Controller
             $item = InventoryItem::lockForUpdate()->findOrFail($request->inventory_item_id);
             
             if ($item->quantity < $request->quantity) {
-                throw new \InvalidArgumentException('Quantity to mark as damaged exceeds available stock.');
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'quantity' => 'Quantity to mark as damaged exceeds available stock.'
+                ]);
             }
 
             DamagedItem::create($request->validated());

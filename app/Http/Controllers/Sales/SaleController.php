@@ -148,4 +148,19 @@ class SaleController extends Controller
         }
         return view('sales.receipt', compact('sales'));
     }
+
+    public function downloadReceipt($id)
+    {
+        $sales = Sale::with('item')->where('transaction_reference', $id)->get();
+        if ($sales->isEmpty()) {
+            $sales = collect([Sale::with('item')->findOrFail($id)]);
+        }
+
+        $transactionId = $sales->first()->transaction_reference ?? 'SALE-' . $sales->first()->id;
+        $date = $sales->first()->created_at->format('F d, Y h:i A');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('sales.pdf_receipt', compact('sales', 'transactionId', 'date'));
+        
+        return $pdf->download("Receipt_{$transactionId}.pdf");
+    }
 }

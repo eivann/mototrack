@@ -10,4 +10,5 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::delete('/sales/{id}', [SaleController::class, 'destroy'])->name('sales.destroy');
     Route::get('/sales/report/receipt', [SaleController::class, 'reportReceipt'])->name('sales.report_receipt');
     Route::get('/sales/{id}/receipt', [SaleController::class, 'receipt'])->name('sales.receipt');
+    Route::get('/sales/{transaction}/download', [SaleController::class, 'downloadReceipt'])->name('sales.download');
 });
