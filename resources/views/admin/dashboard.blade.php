@@ -71,7 +71,10 @@
                         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                             <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                                 <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Stock Summary</h3>
-                                <a href="/inventory" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">View All &rarr;</a>
+                                <div class="flex gap-4 items-center">
+                                    <a href="/inventory/adjustments" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline mr-4">Damaged & Returns</a>
+                                    <a href="/inventory" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">View All &rarr;</a>
+                                </div>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left">
