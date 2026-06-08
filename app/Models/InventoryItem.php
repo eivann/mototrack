@@ -35,6 +35,16 @@ class InventoryItem extends Model
                     ->withTimestamps();
     }
 
+    public function damagedItems()
+    {
+        return $this->hasMany(DamagedItem::class);
+    }
+
+    public function productReturns()
+    {
+        return $this->hasMany(ProductReturn::class);
+    }
+
     protected $casts = [
         'price' => 'decimal:2',
         'quantity' => 'integer',
