@@ -120,3 +120,41 @@ test('owner can record discarded product returns which does not increment quanti
 
     expect($item->fresh()->quantity)->toBe(5); // Remains unchanged
 });
+
+test('damaged items validation fails with invalid inputs', function () {
+    $owner = User::factory()->create(['role' => 'owner']);
+    $item = InventoryItem::create(['part_name' => 'Brake Pad', 'price' => 500.00, 'quantity' => 10]);
+
+    $response = $this->actingAs($owner)->post('/inventory/adjustments/damaged', [
+        'inventory_item_id' => 9999, // Invalid ID
+        'quantity' => -5, // Invalid quantity
+    ]);
+
+    $response->assertSessionHasErrors(['inventory_item_id', 'quantity']);
+});
+
+test('pagination states are preserved on the index page', function () {
+    $owner = User::factory()->create(['role' => 'owner']);
+    $response = $this->actingAs($owner)->get('/inventory/adjustments?damaged_page=2&returns_page=3');
+    
+    $response->assertStatus(200);
+    $response->assertSee('returns_page=3');
+    $response->assertSee('damaged_page=2');
+});
+
+test('cannot delete inventory item if it has log history due to restrict constraint', function () {
+    $owner = User::factory()->create(['role' => 'owner']);
+    $item = InventoryItem::create([
+        'part_name' => 'Brake Pad',
+        'price' => 500.00,
+        'quantity' => 10,
+    ]);
+
+    DamagedItem::create([
+        'inventory_item_id' => $item->id,
+        'quantity'          => 2,
+    ]);
+
+    $this->expectException(\Illuminate\Database\QueryException::class);
+    $item->delete();
+});

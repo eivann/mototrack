@@ -8,7 +8,7 @@ class StoreProductReturnRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role === 'owner';
+        return true;
     }
 
     public function rules(): array

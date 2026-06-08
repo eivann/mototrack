@@ -153,7 +153,7 @@ class SaleController extends Controller
     {
         $sales = Sale::with('item')->where('transaction_reference', $id)->get();
         if ($sales->isEmpty()) {
-            $sales = collect([Sale::with('item')->findOrFail($id)]);
+            abort(404, 'Receipt not found.');
         }
 
         $transactionId = $sales->first()->transaction_reference ?? 'SALE-' . $sales->first()->id;

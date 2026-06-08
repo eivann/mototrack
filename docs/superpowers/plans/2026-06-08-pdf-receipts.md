@@ -1,6 +1,6 @@
 # PDF Receipts & Export Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Provide shop owners and customers with the ability to download permanent, offline PDF copies of their POS transactions and sales receipts.
 
@@ -15,12 +15,12 @@
 **Files:**
 - Modify: `composer.json` (Automatically via CLI)
 
-- [ ] **Step 1: Install the DOMPDF package**
+- [x] **Step 1: Install the DOMPDF package**
 
 Run: `composer require barryvdh/laravel-dompdf`
 Expected: Package installs successfully and auto-discovers the service provider.
 
-- [ ] **Step 2: Commit dependency addition**
+- [x] **Step 2: Commit dependency addition**
 
 ```bash
 git add composer.json composer.lock
@@ -34,7 +34,7 @@ git commit -m "chore: install barryvdh/laravel-dompdf for receipt generation"
 **Files:**
 - Create: `resources/views/sales/pdf_receipt.blade.php`
 
-- [ ] **Step 1: Create the printable receipt view**
+- [x] **Step 1: Create the printable receipt view**
 
 Create `resources/views/sales/pdf_receipt.blade.php` containing inline, simple CSS styling optimized for the DOMPDF engine (avoiding complex Tailwind utilities that don't translate well to PDF):
 ```html
@@ -118,7 +118,7 @@ Create `resources/views/sales/pdf_receipt.blade.php` containing inline, simple C
 </html>
 ```
 
-- [ ] **Step 2: Commit view file**
+- [x] **Step 2: Commit view file**
 
 ```bash
 git add resources/views/sales/pdf_receipt.blade.php
@@ -133,14 +133,14 @@ git commit -m "feat: create pdf receipt layout"
 - Modify: `routes/modules/sales.php`
 - Modify: `app/Http/Controllers/Sales/SaleController.php`
 
-- [ ] **Step 1: Add PDF download route**
+- [x] **Step 1: Add PDF download route**
 
 Open `routes/modules/sales.php` (or `web.php` if `sales.php` does not exist, but let's check `routes/web.php` since the receipt route is already there). Add the download route right below the receipt route:
 ```php
 Route::get('/sales/{transaction}/download', [\App\Http\Controllers\Sales\SaleController::class, 'downloadReceipt'])->name('sales.download');
 ```
 
-- [ ] **Step 2: Implement the download logic**
+- [x] **Step 2: Implement the download logic**
 
 Open `app/Http/Controllers/Sales/SaleController.php` and add the new `downloadReceipt` method:
 ```php
@@ -160,7 +160,7 @@ Open `app/Http/Controllers/Sales/SaleController.php` and add the new `downloadRe
     }
 ```
 
-- [ ] **Step 3: Commit controller and routes**
+- [x] **Step 3: Commit controller and routes**
 
 ```bash
 git add routes app/Http/Controllers/Sales/SaleController.php
@@ -174,7 +174,7 @@ git commit -m "feat: implement pdf generation logic and download route"
 **Files:**
 - Modify: `resources/views/sales/receipt.blade.php`
 
-- [ ] **Step 1: Add Download Button to Web Receipt**
+- [x] **Step 1: Add Download Button to Web Receipt**
 
 Open `resources/views/sales/receipt.blade.php` and locate the action buttons at the bottom of the receipt view. Add a secondary button to trigger the PDF download alongside the existing "Print" or "Back" buttons:
 ```html
@@ -184,7 +184,7 @@ Open `resources/views/sales/receipt.blade.php` and locate the action buttons at 
 </a>
 ```
 
-- [ ] **Step 2: Commit UI updates**
+- [x] **Step 2: Commit UI updates**
 
 ```bash
 git add resources/views/sales/receipt.blade.php
@@ -198,7 +198,7 @@ git commit -m "feat: add download pdf button to web receipt"
 **Files:**
 - Create: `tests/Feature/Sales/PdfExportTest.php`
 
-- [ ] **Step 1: Write integration tests verifying PDF generation**
+- [x] **Step 1: Write integration tests verifying PDF generation**
 
 Create `tests/Feature/Sales/PdfExportTest.php`:
 ```php
@@ -236,12 +236,12 @@ test('authenticated user can download a pdf receipt', function () {
 });
 ```
 
-- [ ] **Step 2: Run tests**
+- [x] **Step 2: Run tests**
 
 Run: `php artisan test --filter=PdfExportTest`
 Expected: PASS
 
-- [ ] **Step 3: Commit tests**
+- [x] **Step 3: Commit tests**
 
 ```bash
 git add tests/Feature/Sales/PdfExportTest.php

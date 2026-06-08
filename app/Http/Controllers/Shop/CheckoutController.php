@@ -176,4 +176,32 @@ class CheckoutController extends Controller
 
         return view('shop.receipt', compact('orders', 'trx'));
     }
+
+    public function downloadReceipt(Request $request, $trx)
+    {
+        $query = Sale::with('item')->where('transaction_reference', $trx);
+
+        if (auth()->user()->role !== 'owner') {
+            $customerId = auth()->user()->customer?->id;
+
+            if ($customerId === null) {
+                abort(404, 'Receipt not found.');
+            }
+
+            $query->where('customer_id', $customerId);
+        }
+
+        $sales = $query->get();
+
+        if ($sales->isEmpty()) {
+            abort(404, 'Receipt not found.');
+        }
+
+        $transactionId = $sales->first()->transaction_reference ?? 'SALE-' . $sales->first()->id;
+        $date = $sales->first()->created_at->format('F d, Y h:i A');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('sales.pdf_receipt', compact('sales', 'transactionId', 'date'));
+        
+        return $pdf->download("Receipt_{$transactionId}.pdf");
+    }
 }

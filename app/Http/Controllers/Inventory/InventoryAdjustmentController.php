@@ -15,8 +15,8 @@ class InventoryAdjustmentController extends Controller
 {
     public function index()
     {
-        $damagedItems = DamagedItem::with('item')->latest()->paginate(10, ['*'], 'damaged_page');
-        $productReturns = ProductReturn::with('item', 'customer')->latest()->paginate(10, ['*'], 'returns_page');
+        $damagedItems = DamagedItem::with('item')->latest()->paginate(10, ['*'], 'damaged_page')->withQueryString();
+        $productReturns = ProductReturn::with('item', 'customer')->latest()->paginate(10, ['*'], 'returns_page')->withQueryString();
         $inventoryItems = InventoryItem::orderBy('part_name')->get();
         $customers = Customer::orderBy('name')->get();
 

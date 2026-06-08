@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('damaged_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('inventory_item_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('inventory_item_id')->constrained()->restrictOnDelete();
             $table->integer('quantity');
             $table->text('notes')->nullable();
             $table->timestamps();

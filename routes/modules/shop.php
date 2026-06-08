@@ -20,5 +20,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [CheckoutController::class, 'index'])->name('view');
         Route::post('/', [CheckoutController::class, 'process'])->name('process');
         Route::get('/receipt', [CheckoutController::class, 'receipt'])->name('receipt');
+        Route::get('/receipt/{transaction}/download', [CheckoutController::class, 'downloadReceipt'])->name('receipt.download');
     });
 });

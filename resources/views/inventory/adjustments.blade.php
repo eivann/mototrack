@@ -1,5 +1,9 @@
 <x-app-layout>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-950 py-10 px-4" x-data="{ activeTab: 'damaged', showDamageModal: false, showReturnModal: false }">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-950 py-10 px-4" x-data="{ 
+    activeTab: 'damaged', 
+    showDamageModal: {{ $errors->any() && old('action_taken') === null ? 'true' : 'false' }}, 
+    showReturnModal: {{ $errors->any() && old('action_taken') !== null ? 'true' : 'false' }} 
+}">
     <div class="max-w-7xl mx-auto space-y-8">
         
         <!-- Header -->
@@ -127,17 +131,26 @@
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Select Item</label>
                         <select name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
                             @foreach($inventoryItems as $item)
-                                <option value="{{ $item->id }}">{{ $item->part_name }} (Stock: {{ $item->quantity }})</option>
+                                <option value="{{ $item->id }}" {{ old('inventory_item_id') == $item->id && old('action_taken') === null ? 'selected' : '' }}>{{ $item->part_name }} (Stock: {{ $item->quantity }})</option>
                             @endforeach
                         </select>
+                        @if($errors->any() && old('action_taken') === null)
+                            @error('inventory_item_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Quantity</label>
-                        <input type="number" name="quantity" min="1" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
+                        <input type="number" name="quantity" min="1" value="{{ old('action_taken') === null ? old('quantity') : '' }}" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
+                        @if($errors->any() && old('action_taken') === null)
+                            @error('quantity') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Notes / Reason</label>
-                        <textarea name="notes" rows="3" class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none"></textarea>
+                        <textarea name="notes" rows="3" class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">{{ old('action_taken') === null ? old('notes') : '' }}</textarea>
+                        @if($errors->any() && old('action_taken') === null)
+                            @error('notes') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        @endif
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 mt-8">
@@ -159,33 +172,48 @@
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Select Item</label>
                         <select name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
                             @foreach($inventoryItems as $item)
-                                <option value="{{ $item->id }}">{{ $item->part_name }}</option>
+                                <option value="{{ $item->id }}" {{ old('inventory_item_id') == $item->id && old('action_taken') !== null ? 'selected' : '' }}>{{ $item->part_name }}</option>
                             @endforeach
                         </select>
+                        @if($errors->any() && old('action_taken') !== null)
+                            @error('inventory_item_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Customer (Optional)</label>
                         <select name="customer_id" class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
                             <option value="">Walk-in</option>
                             @foreach($customers as $c)
-                                <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                <option value="{{ $c->id }}" {{ old('customer_id') == $c->id && old('action_taken') !== null ? 'selected' : '' }}>{{ $c->name }}</option>
                             @endforeach
                         </select>
+                        @if($errors->any() && old('action_taken') !== null)
+                            @error('customer_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Quantity</label>
-                        <input type="number" name="quantity" min="1" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
+                        <input type="number" name="quantity" min="1" value="{{ old('action_taken') !== null ? old('quantity') : '' }}" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
+                        @if($errors->any() && old('action_taken') !== null)
+                            @error('quantity') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Action Taken</label>
                         <select name="action_taken" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
-                            <option value="restocked">Put back in Inventory (Restock)</option>
-                            <option value="discarded">Mark Damaged/Discard (Do not Restock)</option>
+                            <option value="restocked" {{ old('action_taken') == 'restocked' ? 'selected' : '' }}>Put back in Inventory (Restock)</option>
+                            <option value="discarded" {{ old('action_taken') == 'discarded' ? 'selected' : '' }}>Mark Damaged/Discard (Do not Restock)</option>
                         </select>
+                        @if($errors->any() && old('action_taken') !== null)
+                            @error('action_taken') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Notes / Reason</label>
-                        <textarea name="notes" rows="3" class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none"></textarea>
+                        <textarea name="notes" rows="3" class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">{{ old('action_taken') !== null ? old('notes') : '' }}</textarea>
+                        @if($errors->any() && old('action_taken') !== null)
+                            @error('notes') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        @endif
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 mt-8">
