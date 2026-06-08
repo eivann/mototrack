@@ -34,6 +34,7 @@ require __DIR__.'/modules/customer.php';
 require __DIR__.'/modules/preorders.php';
 require __DIR__.'/modules/repairs.php';
 require __DIR__.'/modules/sales.php';
+require __DIR__.'/modules/audit.php';
 
 require __DIR__.'/auth.php';
 
