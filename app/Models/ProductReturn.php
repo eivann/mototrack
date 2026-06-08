@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\HasAuditTrail;
 
 class ProductReturn extends Model
 {
+    use HasAuditTrail;
+
     protected $fillable = ['inventory_item_id', 'customer_id', 'quantity', 'action_taken', 'notes'];
 
     public function item(): BelongsTo

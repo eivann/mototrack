@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasAuditTrail;
 
 class InventoryItem extends Model
 {
+    use HasAuditTrail;
+
     protected $table = 'inventory_items';
 
     public $timestamps = false; // IMPORTANT (no created_at, updated_at)

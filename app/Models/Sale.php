@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\HasAuditTrail;
 
 class Sale extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasAuditTrail;
 
     protected $with = ['item', 'customer'];
 
