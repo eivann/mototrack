@@ -37,7 +37,7 @@
                  }">
                 <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
                 
-                <form method="POST" action="/inventory/{{ $item->id }}" @submit="loading = true">
+                <form method="POST" action="/inventory/{{ $item->id }}" @submit="loading = true" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     
@@ -87,6 +87,19 @@
                         <div>
                             <label for="item-price" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Price (₱)</label>
                             <input id="item-price" type="number" name="price" value="{{ $item->price }}" step="0.01" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required min="0">
+                        </div>
+
+                        <!-- Product Image -->
+                        <div class="md:col-span-2">
+                            <label for="item-image" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Product Image (Optional)</label>
+                            @if($item->image_path)
+                                <div class="mb-3">
+                                    <p class="text-xs text-gray-500 mb-1">Current Image:</p>
+                                    <img src="{{ $item->image_url }}" alt="Current image" class="h-20 w-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700">
+                                </div>
+                            @endif
+                            <input id="item-image" type="file" name="image" accept="image/jpeg, image/png, image/webp" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/50 dark:file:text-indigo-400 dark:hover:file:bg-indigo-900/70 transition-colors cursor-pointer">
+                            <p class="text-[10px] text-gray-500 mt-1">Supported formats: JPG, PNG, WEBP. Max size: 2MB.</p>
                         </div>
                     </div>
 

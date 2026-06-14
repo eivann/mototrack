@@ -27,14 +27,30 @@ class AdminInventoryController extends Controller
 
 public function store(StoreInventoryRequest $request)
 {
-    $this->inventoryService->store($request->validated());
+    $data = $request->validated();
+    
+    if ($request->hasFile('image')) {
+        $data['image_path'] = $request->file('image')->store('products', 'public');
+    }
+
+    $this->inventoryService->store($data);
 
     return redirect()->route('inventory.index')->with('success', 'Item added successfully!');
 }
 
 public function update(UpdateInventoryRequest $request, InventoryItem $item)
 {
-    $this->inventoryService->update($item, $request->validated());
+    $data = $request->validated();
+
+    if ($request->hasFile('image')) {
+        // Delete old image if it exists
+        if ($item->image_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($item->image_path);
+        }
+        $data['image_path'] = $request->file('image')->store('products', 'public');
+    }
+
+    $this->inventoryService->update($item, $data);
 
     return redirect()->route('inventory.index')->with('success', 'Item updated successfully!');
 }

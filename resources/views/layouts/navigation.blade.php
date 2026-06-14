@@ -185,7 +185,7 @@
                         <!-- Dropdown Footer Actions -->
                         <div class="p-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                             <div class="flex items-center gap-4">
-                                <a href="{{ auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard') }}" class="flex items-center gap-1.5 text-[11px] font-bold text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                <a href="{{ route('notifications.index') }}" class="flex items-center gap-1.5 text-[11px] font-bold text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                                     <i data-lucide="list" class="w-3.5 h-3.5"></i>
                                     See all
                                 </a>
