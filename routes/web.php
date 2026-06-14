@@ -41,3 +41,10 @@ require __DIR__.'/auth.php';
 
 // RCPAY Webhook Callback Route (Public)
 Route::post('/api/rcpay-webhook', [\App\Http\Controllers\Payment\RcpayWebhookController::class, 'handle'])->middleware('throttle:60,1')->name('webhook.rcpay');
+
+Route::get('/diag/logs', function () {
+    $logFile = storage_path('logs/laravel.log');
+    if (!file_exists($logFile)) return 'No log file found.';
+    $lines = file($logFile);
+    return response('<pre>' . htmlspecialchars(implode("", array_slice($lines, -200))) . '</pre>');
+});
