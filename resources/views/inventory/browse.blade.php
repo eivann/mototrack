@@ -111,7 +111,7 @@
                     <p class="text-gray-500 dark:text-gray-400 text-sm">{{ $item->brand }} • {{ $item->model }}</p>
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Category: {{ $item->category }}</p>
                     <p class="text-xs text-gray-400 dark:text-gray-500">Stock: {{ $item->quantity }}</p>
-                    <p class="text-green-600 dark:text-green-400 font-bold mt-2 text-lg">₱{{ number_format($item->price, 2) }}</p>
+                    <p class="text-green-600 dark:text-green-400 font-bold mt-2 text-lg">₱{{ number_format((float)($item->price ?? 0), 2) }}</p>
 
                     <div class="mt-auto pt-3">
                         @auth
