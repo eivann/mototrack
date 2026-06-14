@@ -8,7 +8,7 @@
     <script>
         (function() {
             var theme = localStorage.getItem('theme');
-            if (theme === 'dark' || (!theme)) {
+            if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
@@ -45,8 +45,8 @@
                 <!-- Desktop Links -->
                 <div class="hidden md:flex items-center gap-8">
                     <a href="#home" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Home</a>
-                    <a href="#about" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">About</a>
                     <a href="#services" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Services</a>
+                    <a href="#about" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">About</a>
                     <a href="#compat" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Compatibility</a>
                     <a href="#preorder" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Pre-Order</a>
                     <a href="#contact" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</a>
@@ -353,7 +353,7 @@
                     </div>
                     <div class="bg-gray-50 dark:bg-gray-950 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 flex items-center gap-4">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="mail" class="w-6 h-6"></i></div>
-                        <div><h4 class="font-black text-gray-900 dark:text-white">Email</h4><p class="text-sm font-medium text-gray-500 dark:text-gray-400">edmarmotorshop@gmail.com</p></div>
+                        <div><h4 class="font-black text-gray-900 dark:text-white">Email</h4><p class="text-sm font-medium text-gray-500 dark:text-gray-400"><a href="mailto:edmarmotorshop@gmail.com" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">edmarmotorshop@gmail.com</a></p></div>
                     </div>
                     <div class="bg-gray-50 dark:bg-gray-950 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 flex items-center gap-4">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="clock" class="w-6 h-6"></i></div>
@@ -382,7 +382,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div class="md:col-span-2">
                     <div class="flex items-center gap-3 mb-6">
-                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-10 w-auto grayscale opacity-80">
+                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-10 w-auto">
                         <h2 class="text-xl font-black tracking-tighter text-gray-900 dark:text-white">MOTOTRACK</h2>
                     </div>
                     <p class="text-gray-500 dark:text-gray-400 font-medium max-w-sm">Your trusted partner for quality motorcycle parts and expert repair services in Pandi, Bulacan since 2009.</p>
@@ -538,11 +538,21 @@
                         resultsBox.innerHTML = '';
 
                         if (data.length === 0) {
+                            // Add error ring to input boxes
+                            const inputs = [makeInput, modelInput, partInput];
+                            inputs.forEach(inp => {
+                                inp.classList.add('ring-2', 'ring-red-400', 'border-red-400');
+                            });
+                            setTimeout(() => {
+                                inputs.forEach(inp => {
+                                    inp.classList.remove('ring-2', 'ring-red-400', 'border-red-400');
+                                });
+                            }, 3000);
+
                             resultsBox.innerHTML = `
-                                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-                                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    <p class="font-bold text-xl text-gray-800 dark:text-white mb-2">No matching parts found</p>
-                                    <p class="text-gray-500 dark:text-gray-400 font-medium">No parts found for this specific motorcycle model.</p>
+                                <div class="bg-red-50 dark:bg-red-900/10 rounded-2xl shadow-sm border border-red-200 dark:border-red-800 p-8 text-center max-w-2xl mx-auto">
+                                    <p class="font-bold text-lg text-red-600 dark:text-red-400 mb-2">No matching parts found</p>
+                                    <p class="text-red-500/80 dark:text-red-400/70 font-medium text-sm">Try adjusting your search terms or check a different motorcycle model.</p>
                                 </div>
                             `;
                         } else {

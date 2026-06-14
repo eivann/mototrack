@@ -69,11 +69,9 @@
                     <select id="filter-category" name="category"
                             class="w-full border-gray-200 dark:border-gray-600 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">All Categories</option>
-                        <option value="engine" {{ request('category')=='engine'?'selected':'' }}>Engine</option>
-                        <option value="brakes" {{ request('category')=='brakes'?'selected':'' }}>Brakes</option>
-                        <option value="electrical" {{ request('category')=='electrical'?'selected':'' }}>Electrical</option>
-                        <option value="drivetrain" {{ request('category')=='drivetrain'?'selected':'' }}>Drivetrain</option>
-                        <option value="accessories" {{ request('category')=='accessories'?'selected':'' }}>Accessories</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                        @endforeach
                     </select>
                 </div>
 
