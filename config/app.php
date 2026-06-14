@@ -39,7 +39,7 @@ return [
     |
     */
 
-    'debug' => true, // Temporarily force true to read the 500 error
+    'debug' => (bool) env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------
