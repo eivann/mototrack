@@ -70,7 +70,12 @@
                             class="w-full border-gray-200 dark:border-gray-600 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">All Categories</option>
                         @foreach($categories as $cat)
-                            <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                            @php 
+                                $catName = is_array($cat) ? ($cat['category'] ?? json_encode($cat)) : (is_object($cat) ? ($cat->category ?? '') : $cat); 
+                            @endphp
+                            @if($catName && is_string($catName))
+                                <option value="{{ $catName }}" {{ request('category') == $catName ? 'selected' : '' }}>{{ $catName }}</option>
+                            @endif
                         @endforeach
                     </select>
                 </div>
