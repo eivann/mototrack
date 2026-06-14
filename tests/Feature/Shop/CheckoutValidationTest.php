@@ -80,7 +80,7 @@ test('checkout preserves order and redirects to receipt if gateway crashes', fun
     ]);
 
     // Assert: Handled gracefully without 500 error screen
-    $response->assertRedirect('/shop/receipt');
+    $response->assertRedirect('/checkout/receipt');
     $response->assertSessionHas('warning');
     $warningMsg = session('warning');
     expect($warningMsg)->toContain('has been saved, but the payment gateway is temporarily unavailable');

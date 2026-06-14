@@ -100,7 +100,7 @@ class CheckoutController extends Controller
 
         // For cash/walk-in payments, no external API is needed.
         if ($paymentMethod !== 'gcash' && $paymentMethod !== 'rcpay') {
-            return redirect('/shop/receipt')->with('success', 'Order placed successfully!');
+            return redirect('/checkout/receipt')->with('success', 'Order placed successfully!');
         }
 
         // ── Step 2: Initiate external payment gateway ─────────────────
@@ -115,7 +115,7 @@ class CheckoutController extends Controller
                     $transactionReference,
                     $paymentAmount,
                     'MotoTrack Order ' . $transactionReference,
-                    url('/shop/receipt?trx=' . $transactionReference),
+                    url('/checkout/receipt?trx=' . $transactionReference),
                     url('/shop/cart')
                 );
                 return redirect($result['invoice_url']);
@@ -135,7 +135,7 @@ class CheckoutController extends Controller
 
             // Order exists and stock is reserved. Direct the user
             // to the receipt with actionable recovery guidance.
-            return redirect('/shop/receipt')->with('warning',
+            return redirect('/checkout/receipt')->with('warning',
                 'Your order #' . $transactionReference . ' has been saved, but the payment gateway is temporarily unavailable. '
                 . 'Please try again from your dashboard or contact support.'
             );

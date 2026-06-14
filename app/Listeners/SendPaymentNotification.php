@@ -63,7 +63,7 @@ class SendPaymentNotification implements ShouldQueue
                 $customerUser->notify(new StatusUpdated(
                     'Shop Order Payment Confirmed',
                     "Your payment of ₱" . number_format($totalAmount, 2) . " for Order #{$event->orderId} has been successfully verified! Thank you for your purchase.",
-                    "/shop/receipt?trx={$event->orderId}"
+                    "/checkout/receipt?trx={$event->orderId}"
                 ));
             }
         }
