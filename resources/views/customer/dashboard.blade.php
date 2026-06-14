@@ -90,13 +90,13 @@
                                         @foreach($repairs as $repair)
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
                                                 <td class="p-6 font-bold text-gray-900 dark:text-white">{{ $repair->bike_model }}</td>
-                                                <td class="p-6 text-sm text-gray-500">{{ Str::limit($repair->issue, 30) }}</td>
+                                                <td class="p-6 text-sm text-gray-500">{{ Str::limit($repair->issue ?? '', 30) }}</td>
                                                 <td class="p-6">
-                                                    <span class="px-3 py-1 rounded-lg {{ strtolower($repair->status) === 'pending' ? 'bg-yellow-50 text-yellow-600' : (in_array(strtolower($repair->status), ['completed','done','ready']) ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600') }} font-black text-[10px] uppercase tracking-widest">
-                                                        {{ $repair->status }}
+                                                    <span class="px-3 py-1 rounded-lg {{ strtolower($repair->status ?? 'pending') === 'pending' ? 'bg-yellow-50 text-yellow-600' : (in_array(strtolower($repair->status ?? 'pending'), ['completed','done','ready']) ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600') }} font-black text-[10px] uppercase tracking-widest">
+                                                        {{ $repair->status ?? 'pending' }}
                                                     </span>
                                                 </td>
-                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">₱{{ number_format($repair->cost, 2) }}</td>
+                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">₱{{ number_format((float)($repair->cost ?? 0), 2) }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -127,11 +127,11 @@
                                                 <td class="p-6 font-bold text-gray-900 dark:text-white">{{ $order->part_name }}</td>
                                                 <td class="p-6 font-black text-gray-900 dark:text-white text-center">x{{ $order->quantity }}</td>
                                                 <td class="p-6">
-                                                    <span class="px-3 py-1 rounded-lg {{ strtolower($order->status) === 'pending' ? 'bg-yellow-50 text-yellow-600' : (in_array(strtolower($order->status), ['completed','done','ready']) ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600') }} font-black text-[10px] uppercase tracking-widest">
-                                                        {{ $order->status }}
+                                                    <span class="px-3 py-1 rounded-lg {{ strtolower($order->status ?? 'pending') === 'pending' ? 'bg-yellow-50 text-yellow-600' : (in_array(strtolower($order->status ?? 'pending'), ['completed','done','ready']) ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600') }} font-black text-[10px] uppercase tracking-widest">
+                                                        {{ $order->status ?? 'pending' }}
                                                     </span>
                                                 </td>
-                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">₱{{ number_format($order->down_payment, 2) }}</td>
+                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">₱{{ number_format((float)($order->down_payment ?? 0), 2) }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
