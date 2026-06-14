@@ -29,6 +29,12 @@ class CustomerDashboardController extends Controller
             ->latest()
             ->get();
 
-        return view('customer.dashboard', compact('repairs', 'preorders'));
+        $purchases = \App\Models\Sale::with('item')
+            ->where('customer_id', $customer->id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('transaction_reference');
+
+        return view('customer.dashboard', compact('repairs', 'preorders', 'purchases'));
     }
 }

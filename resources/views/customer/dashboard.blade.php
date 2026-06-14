@@ -147,6 +147,46 @@
                             </div>
                         @endif
                     </div>
+
+                    <!-- Purchase History Table -->
+                    <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                        <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
+                            <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Purchase History</h3>
+                        </div>
+                        @if(isset($purchases) && $purchases->count() > 0)
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                                        @foreach($purchases as $trx => $items)
+                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                                <td class="p-6">
+                                                    <div class="font-bold text-gray-900 dark:text-white">{{ $trx }}</div>
+                                                    <div class="text-[10px] text-gray-400 font-bold uppercase mt-1">{{ $items->first()->created_at->format('M d, Y') }}</div>
+                                                </td>
+                                                <td class="p-6 text-sm text-gray-500">
+                                                    {{ $items->count() }} item(s)
+                                                </td>
+                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">
+                                                    ₱{{ number_format($items->sum('total_price'), 2) }}
+                                                </td>
+                                                <td class="p-6 text-right">
+                                                    <a href="{{ url('/checkout/receipt?trx=' . $trx) }}" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">View Receipt</a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="p-12 text-center">
+                                <div class="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-400">
+                                    <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+                                </div>
+                                <p class="text-gray-900 dark:text-white font-bold text-lg mb-1">No past purchases</p>
+                                <p class="text-gray-400 text-sm font-medium">Your completed orders will appear here.</p>
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
                 <!-- Sidebar (Right) -->
