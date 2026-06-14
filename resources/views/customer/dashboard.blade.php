@@ -173,11 +173,11 @@
                                 @foreach(auth()->user()->unreadNotifications->take(5) as $notification)
                                     <div class="flex gap-4 group">
                                         <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 p-2 rounded-xl h-fit shrink-0">
-                                            <i data-lucide="{{ str_contains(strtolower($notification->data['title']), 'repair') ? 'wrench' : 'package' }}" class="w-4 h-4"></i>
+                                            <i data-lucide="{{ str_contains(strtolower($notification->data['title'] ?? ''), 'repair') ? 'wrench' : 'package' }}" class="w-4 h-4"></i>
                                         </div>
                                         <div class="min-w-0 flex-1">
-                                            <div class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tight leading-tight">{{ $notification->data['title'] }}</div>
-                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 leading-tight">{{ $notification->data['message'] }}</div>
+                                            <div class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tight leading-tight">{{ $notification->data['title'] ?? 'Notification' }}</div>
+                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 leading-tight">{{ $notification->data['message'] ?? '' }}</div>
                                             <div class="text-[9px] font-bold text-gray-400 mt-2">{{ $notification->created_at->diffForHumans() }}</div>
                                         </div>
                                     </div>

@@ -142,14 +142,14 @@
                                     <!-- Left: Icon/Avatar -->
                                     <div class="shrink-0">
                                         <div class="w-10 h-10 rounded-full {{ $notification->unread() ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-400' }} flex items-center justify-center">
-                                            <i data-lucide="{{ str_contains(strtolower($notification->data['title']), 'repair') ? 'wrench' : 'package' }}" class="w-5 h-5"></i>
+                                            <i data-lucide="{{ str_contains(strtolower($notification->data['title'] ?? ''), 'repair') ? 'wrench' : 'package' }}" class="w-5 h-5"></i>
                                         </div>
                                     </div>
                                     
                                     <!-- Center: Content -->
                                     <div class="flex-1 min-w-0 pr-6">
                                         <h4 class="text-xs font-bold {{ $notification->unread() ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400' }} truncate">
-                                            {{ $notification->data['title'] }}
+                                            {{ $notification->data['title'] ?? 'Notification' }}
                                         </h4>
                                         <p class="text-[11px] {{ $notification->unread() ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400 dark:text-gray-500' }} line-clamp-1 mt-0.5">
                                             {{ $notification->data['message'] }}

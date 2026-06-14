@@ -37,7 +37,7 @@
                                 <!-- Icon -->
                                 <div class="shrink-0 mt-1">
                                     <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $notification->unread() ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-400' }}">
-                                        <i data-lucide="{{ str_contains(strtolower($notification->data['title']), 'repair') ? 'wrench' : 'package' }}" class="w-5 h-5"></i>
+                                        <i data-lucide="{{ str_contains(strtolower($notification->data['title'] ?? ''), 'repair') ? 'wrench' : 'package' }}" class="w-5 h-5"></i>
                                     </div>
                                 </div>
                                 
@@ -46,13 +46,13 @@
                                     <div class="flex justify-between items-start gap-4">
                                         <div>
                                             <h4 class="text-sm font-bold {{ $notification->unread() ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400' }}">
-                                                {{ $notification->data['title'] }}
+                                                {{ $notification->data['title'] ?? 'Notification' }}
                                                 @if($notification->unread())
                                                     <span class="inline-block w-2 h-2 rounded-full bg-indigo-500 ml-2"></span>
                                                 @endif
                                             </h4>
                                             <p class="text-sm mt-1 {{ $notification->unread() ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500' }}">
-                                                {{ $notification->data['message'] }}
+                                                {{ $notification->data['message'] ?? '' }}
                                             </p>
                                         </div>
                                         <div class="shrink-0 text-right">
