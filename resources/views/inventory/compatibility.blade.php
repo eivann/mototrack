@@ -8,7 +8,7 @@
         <div class="max-w-3xl mx-auto mt-10">
             <!-- Header -->
             <div class="text-center mb-10">
-                            <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight sm:text-5xl">
+                <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight sm:text-5xl">
                     Compatibility Checker
                 </h2>
                 <p class="mt-4 text-lg text-gray-500 dark:text-gray-400">
@@ -25,16 +25,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="flex flex-col">
                             <label for="makeInput" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Make</label>
-                            <input type="text" id="makeInput" value="{{ request('make') }}" placeholder="E.g., Honda" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" id="makeInput" value="{{ request('make') }}" placeholder="E.g., Honda" list="makeSuggestions" autocomplete="off" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <datalist id="makeSuggestions"></datalist>
                         </div>
                         <div class="flex flex-col">
                             <label for="modelInput" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Model</label>
-                            <input type="text" id="modelInput" value="{{ request('model') }}" placeholder="E.g., TMX 125" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" id="modelInput" value="{{ request('model') }}" placeholder="E.g., TMX 125" list="modelSuggestions" autocomplete="off" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <datalist id="modelSuggestions"></datalist>
                         </div>
                         <div class="flex flex-col relative">
-                            <label for="yearInput" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Year/Part</label>
+                            <label for="yearInput" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Part</label>
                             <div class="flex items-center gap-2">
-                                <input type="text" id="yearInput" value="{{ request('part') }}" placeholder="E.g., 2024 or Brake" class="w-full bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <input type="text" id="yearInput" value="{{ request('part') }}" placeholder="E.g., Brake Pad" list="partSuggestions" autocomplete="off" class="w-full bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <datalist id="partSuggestions"></datalist>
                                 <!-- Loading Spinner -->
                                 <div id="loadingSpinner" class="hidden absolute right-3 top-[34px]">
                                     <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -76,6 +79,34 @@
         const toastContainer = document.getElementById('toast-container');
         const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
         let timeout = null;
+        const suggestionTimers = {};
+
+        function loadSuggestions(field, value, datalistId) {
+            clearTimeout(suggestionTimers[datalistId]);
+            const datalist = document.getElementById(datalistId);
+            const query = (value || '').trim();
+
+            if (!datalist || query.length < 1) {
+                if (datalist) datalist.innerHTML = '';
+                return;
+            }
+
+            suggestionTimers[datalistId] = setTimeout(() => {
+                fetch(`{{ route('inventory.suggestions') }}?field=${encodeURIComponent(field)}&q=${encodeURIComponent(query)}`, {
+                    headers: { 'Accept': 'application/json' }
+                })
+                    .then(response => response.ok ? response.json() : [])
+                    .then(data => {
+                        datalist.innerHTML = '';
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.value;
+                            datalist.appendChild(option);
+                        });
+                    })
+                    .catch(() => { datalist.innerHTML = ''; });
+            }, 180);
+        }
 
         // Toast Notification System
         function showToast(message, type = 'success') {
@@ -227,6 +258,10 @@
                     });
             }, 400);
         }
+
+        makeInput.addEventListener('input', () => loadSuggestions('brand', makeInput.value, 'makeSuggestions'));
+        modelInput.addEventListener('input', () => loadSuggestions('model', modelInput.value, 'modelSuggestions'));
+        yearInput.addEventListener('input', () => loadSuggestions('part_name', yearInput.value, 'partSuggestions'));
 
         [makeInput, modelInput, yearInput].forEach(el => {
             el.addEventListener('keyup', triggerSearch);

@@ -56,7 +56,12 @@
                         <!-- Category -->
                         <div>
                             <label for="item-category" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Category</label>
-                            <input id="item-category" type="text" name="category" x-model="category" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required>
+                            <input id="item-category" type="text" name="category" x-model="category" list="inventory-category-suggestions" autocomplete="off" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow" required>
+                            <datalist id="inventory-category-suggestions">
+                                @foreach($categories as $category)
+                                    <option value="{{ $category }}"></option>
+                                @endforeach
+                            </datalist>
                         </div>
 
                         <!-- Part Name -->

@@ -1,16 +1,16 @@
 <x-app-layout>
     <div class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
-        <!-- Premium Header -->
-        <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-30 shadow-sm">
+        <!-- Section Header -->
+        <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-indigo-900 rounded-2xl flex items-center justify-center shadow-lg">
-                            <span class="text-white text-2xl font-black">C</span>
+                        <div class="w-11 h-11 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-300">
+                            <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
                         </div>
                         <div>
-                            <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">MOTOTRACK</h2>
-                            <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">Customer Dashboard</p>
+                            <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">Customer Dashboard</h2>
+                            <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">Orders and service tracking</p>
                         </div>
                     </div>
                     

@@ -45,6 +45,8 @@ class NotificationCenterTest extends TestCase
                     'link' => '#'
                 ],
                 'read_at' => null,
+                'created_at' => now()->subMinutes($i),
+                'updated_at' => now()->subMinutes($i),
             ]);
         }
 
@@ -54,5 +56,9 @@ class NotificationCenterTest extends TestCase
         // Should only show 15 per page (as defined in controller)
         $response->assertSee('Notification 0');
         $response->assertDontSee('Notification 19'); // On page 2
+
+        $notifications = $response->viewData('notifications');
+        $this->assertSame(15, $notifications->perPage());
+        $this->assertSame(20, $notifications->total());
     }
 }

@@ -7,6 +7,11 @@
     <title>{{ config('app.name', 'MotoTrack') }} - Login</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (window.tailwind) {
+            tailwind.config = { darkMode: 'class' };
+        }
+    </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -28,13 +33,28 @@
             font-family: 'Inter', sans-serif;
             background: radial-gradient(circle at top, #eef2ff, #f8fafc);
             color: #0f172a;
-            min-height: 100vh;
+            min-height: 100svh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 1rem;
+            overflow-x: hidden;
             transition: background 0.3s ease;
+            color-scheme: light;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
         }
         
         .dark body {
             background: radial-gradient(circle at top, #1e1b4b, #0f172a);
             color: white;
+            color-scheme: dark;
         }
         
         .card {
@@ -52,7 +72,7 @@
         
         .btn {
             border-radius: 14px;
-            padding: 12px 22px;
+            padding: 10px 20px;
             font-weight: 500;
             transition: 0.25s;
             display: inline-flex;
@@ -77,7 +97,7 @@
             border-radius: 12px;
             border: 1px solid #e2e8f0;
             transition: all 0.2s;
-            padding: 12px 16px;
+            padding: 10px 14px;
             padding-left: 44px;
             width: 100%;
             background: #f8fafc;
@@ -125,35 +145,204 @@
             animation: slideDown 0.4s ease-out forwards;
         }
 
+        .hidden {
+            display: none !important;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 28rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .login-header a {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.375rem;
+            margin-bottom: 1rem;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .login-header img {
+            height: 4rem;
+            width: auto;
+        }
+
+        .login-header h1 {
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .login-header h2 {
+            margin: 0;
+            font-size: clamp(1.5rem, 3vw, 1.875rem);
+            line-height: 1.15;
+            font-weight: 800;
+        }
+
+        .login-header p {
+            margin: 0.5rem 0 0;
+        }
+
+        .login-card {
+            padding: 1.5rem;
+        }
+
+        .login-form .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .login-form label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .dark .login-form label {
+            color: #d1d5db;
+        }
+
+        .login-form .field-shell {
+            position: relative;
+        }
+
+        .login-form .field-shell > i[data-lucide] {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            width: 1.25rem;
+            height: 1.25rem;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            pointer-events: none;
+        }
+
+        .login-form .field-shell > button[type="button"] {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+
+        .login-form .captcha-field {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .login-form button[type="submit"],
+        .login-form .google-section a {
+            width: 100%;
+            min-height: 44px;
+        }
+
+        .login-form .google-section {
+            margin-top: 1.25rem;
+        }
+
+        .login-form .google-section a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            background: #ffffff;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .dark .login-form .google-section a {
+            background: #334155;
+            border-color: #475569;
+            color: #e5e7eb;
+        }
+
+        .login-form .google-section svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            flex: 0 0 auto;
+            margin-right: 0;
+        }
+
+        .login-footer {
+            margin-top: 1.25rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+
+        .dark .login-footer {
+            color: #9ca3af;
+        }
+
+        .login-footer a {
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         [x-cloak] { display: none !important; }
+
+        @media (min-width: 640px) {
+            .login-header img {
+                height: 5rem;
+            }
+
+            .login-card {
+                padding: 2rem;
+            }
+        }
     </style>
 </head>
-<body class="flex items-center justify-center p-6 py-12 relative overflow-x-hidden">
+<body class="min-h-[100svh] flex items-center justify-center p-4 sm:p-6 relative overflow-x-hidden">
     
     <!-- Background accents -->
     <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200/40 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="w-full max-w-md relative z-10">
+    <div class="login-wrapper w-full max-w-md relative z-10">
         
-        <div class="text-center mb-8">
-            <a href="/" class="inline-flex flex-col items-center gap-2 mb-6 hover:opacity-80 transition-opacity">
-                <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-24 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
+        <div class="login-header text-center mb-5">
+            <a href="/" class="inline-flex flex-col items-center gap-1.5 mb-4 hover:opacity-80 transition-opacity">
+                <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-16 sm:h-20 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
                 <div class="text-center">
-                    <h1 class="font-bold text-xl text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
+                    <h1 class="font-bold text-lg text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
                     <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
                 </div>
             </a>
-            <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white">Welcome Back</h2>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">Welcome Back</h2>
             <p class="text-gray-500 dark:text-gray-400 mt-2">Sign in to manage your account and orders</p>
         </div>
 
-        <div class="card p-8 sm:p-10 {{ $errors->any() || session('error') ? 'shake' : '' }}">
+        <div class="login-card card p-6 sm:p-8 {{ $errors->any() || session('error') ? 'shake' : '' }}">
             
             <x-auth-session-status class="mb-4 bg-green-50 text-green-600 p-3 rounded-xl text-sm border border-green-100" :status="session('status')" />
 
@@ -171,13 +360,13 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login') }}" x-data="{ showPassword: false, isSubmitting: false }" @submit="isSubmitting = true">
+            <form method="POST" action="{{ route('login') }}" x-data="{ showPassword: false, isSubmitting: false }" @submit="isSubmitting = true" class="login-form">
                 @csrf
 
                 <!-- Email Address -->
-                <div class="mb-5 relative input-group">
+                <div class="mb-4 relative input-group">
                     <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
-                    <div class="relative">
+                    <div class="field-shell relative">
                         <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" 
                             class="input-field {{ $errors->has('email') || $errors->has('password') ? 'error' : '' }}" placeholder="you@example.com">
@@ -185,7 +374,7 @@
                 </div>
 
                 <!-- Password -->
-                <div class="mb-5 relative input-group">
+                <div class="mb-4 relative input-group">
                     <div class="flex justify-between items-center mb-1.5">
                         <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Password</label>
                         @if (Route::has('password.request'))
@@ -194,7 +383,7 @@
                             </a>
                         @endif
                     </div>
-                    <div class="relative">
+                    <div class="field-shell relative">
                         <i data-lucide="lock" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
                         <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="current-password" 
                             class="input-field pr-12 {{ $errors->has('email') || $errors->has('password') ? 'error' : '' }}" placeholder="••••••••">
@@ -209,13 +398,13 @@
                 </div>
 
                 <!-- Remember Me -->
-                <div class="mb-4 flex items-center">
+                <div class="mb-3 flex items-center">
                     <input id="remember_me" type="checkbox" name="remember" class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500">
                     <label for="remember_me" class="ml-2 text-sm text-gray-600 dark:text-gray-400 font-medium cursor-pointer">Keep me signed in</label>
                 </div>
 
                 <!-- Google reCAPTCHA -->
-                <div class="mb-6 flex flex-col items-center">
+                <div class="captcha-field mb-4 flex flex-col items-center">
                     <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
                     @if ($errors->has('g-recaptcha-response'))
                         <p class="mt-2 text-red-500 text-xs font-semibold">{{ $errors->first('g-recaptcha-response') }}</p>
@@ -228,7 +417,7 @@
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full h-12 text-base shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full min-h-[44px] text-base shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <span x-show="!isSubmitting">Sign In</span>
                     <span x-show="isSubmitting" x-cloak class="flex items-center gap-2">
                         <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
@@ -236,7 +425,7 @@
                     </span>
                 </button>
                 
-                <div class="mt-6">
+                <div class="google-section mt-5">
                     <div class="relative">
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
@@ -246,7 +435,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-6">
+                    <div class="mt-4">
                         <a href="{{ route('auth.google') }}" class="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-[#334155] text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
                             <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -261,14 +450,16 @@
             </form>
         </div>
         
-        <p class="text-center mt-8 text-gray-600 dark:text-gray-400 text-sm">
+        <p class="login-footer text-center mt-5 text-gray-600 dark:text-gray-400 text-sm">
             Don't have an account? 
             <a href="{{ route('register') }}" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Sign up</a>
         </p>
     </div>
 
     <script>
-        lucide.createIcons();
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>

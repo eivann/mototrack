@@ -1,16 +1,16 @@
 <x-app-layout>
     <div x-data="{ activeTab: 'overview' }" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
-        <!-- Premium Header -->
-        <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-30 shadow-sm">
+        <!-- Section Header -->
+        <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-indigo-900 rounded-2xl flex items-center justify-center shadow-lg">
-                            <span class="text-white text-2xl font-black">M</span>
+                        <div class="w-11 h-11 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-300">
+                            <i data-lucide="activity" class="w-6 h-6"></i>
                         </div>
                         <div>
-                            <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">MOTOTRACK</h2>
-                            <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">Master Dashboard</p>
+                            <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">Admin Dashboard</h2>
+                            <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">Operations overview</p>
                         </div>
                     </div>
                     
@@ -73,7 +73,7 @@
                                 <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Stock Summary</h3>
                                 <div class="flex gap-4 items-center">
                                     <a href="/inventory/adjustments" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline mr-4">Damaged & Returns</a>
-                                    <a href="/inventory" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">View All &rarr;</a>
+                                    <a href="/inventory" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">View All</a>
                                 </div>
                             </div>
                             <div class="overflow-x-auto">
@@ -124,7 +124,7 @@
                         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                             <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                                 <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Active Repairs Tracker</h3>
-                                <a href="{{ route('repairs.index') }}" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">Manage All &rarr;</a>
+                                <a href="{{ route('repairs.index') }}" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">Manage All</a>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left">
@@ -151,7 +151,7 @@
                         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                             <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                                 <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Recent Pre-orders</h3>
-                                <a href="/preorders" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">Manage All &rarr;</a>
+                                <a href="/preorders" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">Manage All</a>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left">

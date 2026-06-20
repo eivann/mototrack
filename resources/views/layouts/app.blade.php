@@ -217,7 +217,9 @@
         </div>
 
         <script>
-            lucide.createIcons();
+            if (window.lucide) {
+                lucide.createIcons();
+            }
 
             // Global Haptic Feedback Helper
             function hapticPulse() {

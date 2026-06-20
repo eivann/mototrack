@@ -29,53 +29,10 @@
 </head>
 <body class="font-sans antialiased text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-950 selection:bg-indigo-500 selection:text-white overflow-x-hidden">
 
-    {{-- NAVBAR --}}
-    <nav class="fixed w-full z-50 transition-all duration-300 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800" id="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16 md:h-20 lg:h-24">
-                <!-- Brand -->
-                <a href="/" class="flex items-center gap-3 group">
-                    <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts Logo" class="h-12 md:h-16 lg:h-20 w-auto group-hover:scale-110 transition-transform duration-500">
-                    <div>
-                        <h1 class="text-xl font-black tracking-tighter leading-none text-gray-900 dark:text-white">EDMAR MOTORCYCLE</h1>
-                        <p class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest mt-0.5">Parts and Accessories</p>
-                    </div>
-                </a>
-
-                <!-- Desktop Links -->
-                <div class="hidden md:flex items-center gap-8">
-                    <a href="#home" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Home</a>
-                    <a href="#services" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Services</a>
-                    <a href="#about" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">About</a>
-                    <a href="#compat" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Compatibility</a>
-                    <a href="#preorder" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Pre-Order</a>
-                    <a href="#contact" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</a>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex items-center gap-4">
-                    <button onclick="toggleTheme()" class="p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
-                        <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
-                        <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
-                    </button>
-
-
-                    @guest
-                        <a href="{{ route('login') }}" class="hidden lg:block text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Sign In</a>
-                        <a href="{{ route('register') }}" class="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-5 py-2.5 rounded-xl text-sm font-black hover:scale-105 active:scale-95 transition-all shadow-lg hover:shadow-gray-900/20 dark:hover:shadow-white/20">Get Started</a>
-                    @endguest
-                    @auth
-                        <a href="/dashboard" class="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-black hover:scale-105 active:scale-95 transition-all shadow-lg shadow-indigo-500/30 flex items-center gap-2">
-                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
-                        </a>
-                    @endauth
-                </div>
-            </div>
-        </div>
-    </nav>
+    @include('layouts.navigation')
 
     {{-- HERO --}}
-    <section id="home" class="relative pt-32 pb-16 lg:pt-36 lg:pb-20 overflow-hidden">
+    <section id="home" class="relative pt-12 pb-16 lg:pt-16 lg:pb-20 overflow-hidden">
         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col lg:flex-row items-center gap-12">
             
@@ -225,15 +182,18 @@
                     <form id="compatForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="flex flex-col">
                             <label for="compatMake" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Make</label>
-                            <input type="text" id="compatMake" placeholder="E.g., Honda" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
+                            <input type="text" id="compatMake" placeholder="E.g., Honda" list="landingMakeSuggestions" autocomplete="off" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
+                            <datalist id="landingMakeSuggestions"></datalist>
                         </div>
                         <div class="flex flex-col">
                             <label for="compatModel" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Model</label>
-                            <input type="text" id="compatModel" placeholder="E.g., TMX 125" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
+                            <input type="text" id="compatModel" placeholder="E.g., TMX 125" list="landingModelSuggestions" autocomplete="off" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
+                            <datalist id="landingModelSuggestions"></datalist>
                         </div>
                         <div class="flex flex-col">
-                            <label for="compatPart" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Year/Part</label>
-                            <input type="text" id="compatPart" placeholder="E.g., 2024 or Brake" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
+                            <label for="compatPart" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Part</label>
+                            <input type="text" id="compatPart" placeholder="E.g., Brake Pad" list="landingPartSuggestions" autocomplete="off" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
+                            <datalist id="landingPartSuggestions"></datalist>
                         </div>
                         <div class="flex items-end">
                             <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-3.5 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
@@ -416,16 +376,6 @@
 
     <script>
         lucide.createIcons();
-        
-        function toggleTheme() {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        }
 
         // Inline Compatibility Checker AJAX Engine
         (function() {
@@ -436,8 +386,40 @@
             const resultsBox = document.getElementById('compatResultsBox');
             const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
             const toastContainer = document.getElementById('toast-container');
+            const suggestionTimers = {};
 
             if (!form) return;
+
+            function loadSuggestions(field, value, datalistId) {
+                clearTimeout(suggestionTimers[datalistId]);
+                const datalist = document.getElementById(datalistId);
+                const query = (value || '').trim();
+
+                if (!datalist || query.length < 1) {
+                    if (datalist) datalist.innerHTML = '';
+                    return;
+                }
+
+                suggestionTimers[datalistId] = setTimeout(() => {
+                    fetch(`{{ route('inventory.suggestions') }}?field=${encodeURIComponent(field)}&q=${encodeURIComponent(query)}`, {
+                        headers: { 'Accept': 'application/json' }
+                    })
+                        .then(response => response.ok ? response.json() : [])
+                        .then(data => {
+                            datalist.innerHTML = '';
+                            data.forEach(item => {
+                                const option = document.createElement('option');
+                                option.value = item.value;
+                                datalist.appendChild(option);
+                            });
+                        })
+                        .catch(() => { datalist.innerHTML = ''; });
+                }, 180);
+            }
+
+            makeInput.addEventListener('input', () => loadSuggestions('brand', makeInput.value, 'landingMakeSuggestions'));
+            modelInput.addEventListener('input', () => loadSuggestions('model', modelInput.value, 'landingModelSuggestions'));
+            partInput.addEventListener('input', () => loadSuggestions('part_name', partInput.value, 'landingPartSuggestions'));
 
             // Toast Notification System
             function showToast(message, type = 'success') {

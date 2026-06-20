@@ -28,11 +28,35 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if ($request->user()->role === 'owner') {
-            return redirect()->intended(route('dashboard', absolute: false));
+        $intended = $request->session()->pull('url.intended');
+        $default = $request->user()->role === 'owner'
+            ? route('dashboard', absolute: false)
+            : route('customer.dashboard', absolute: false);
+
+        if ($intended && $safeIntendedPath = $this->safeIntendedPath($intended)) {
+            return redirect()->to($safeIntendedPath);
         }
 
-        return redirect()->intended(route('customer.dashboard', absolute: false));
+        $request->session()->forget('url.intended');
+
+        if ($request->user()->role === 'owner') {
+            return redirect($default);
+        }
+
+        return redirect($default);
+    }
+
+    private function safeIntendedPath(string $url): ?string
+    {
+        $path = parse_url($url, PHP_URL_PATH) ?: $url;
+        $path = '/'.ltrim($path, '/');
+        $query = parse_url($url, PHP_URL_QUERY);
+
+        if (! str_starts_with($path, '/checkout')) {
+            return null;
+        }
+
+        return $query ? "{$path}?{$query}" : $path;
     }
 
     /**

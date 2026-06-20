@@ -1,5 +1,5 @@
 <x-app-layout>
-<div x-data="{ showFilters: window.innerWidth >= 1024 }" class="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
+<div x-data="browsePage()" class="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
 
     <!-- HEADER / SEARCH BAR -->
     <div class="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -11,8 +11,18 @@
                 name="search"
                 value="{{ request('search') }}"
                 placeholder="Search parts..."
+                list="browse-search-suggestions"
+                autocomplete="off"
+                @input.debounce.250ms="loadSuggestions('search', $event.target.value, 'browseSearch')"
                 class="w-full border dark:border-gray-700 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
             >
+            <input type="hidden" name="category" value="{{ request('category') }}">
+            <input type="hidden" name="sort" value="{{ request('sort') }}">
+            <datalist id="browse-search-suggestions">
+                <template x-for="suggestion in browseSearch" :key="suggestion.field + '-' + suggestion.value">
+                    <option :value="suggestion.value" :label="suggestion.field"></option>
+                </template>
+            </datalist>
             <button
                 :disabled="loading"
                 class="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 shadow font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-75 disabled:cursor-not-allowed shrink-0"
@@ -100,6 +110,11 @@
                     </svg>
                     Apply Filters
                 </button>
+                @if(request()->hasAny(['search', 'category', 'sort']))
+                    <a href="{{ route('browse') }}" class="mt-3 flex items-center justify-center w-full text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors">
+                        Clear filters
+                    </a>
+                @endif
             </form>
         </div>
 
@@ -168,4 +183,31 @@
     </div>
 
 </div>
+<script>
+    function browsePage() {
+        return {
+            showFilters: window.innerWidth >= 1024,
+            browseSearch: [],
+            suggestionTimers: {},
+            loadSuggestions(field, value, target) {
+                clearTimeout(this.suggestionTimers[target]);
+
+                const query = (value || '').trim();
+                if (query.length < 1) {
+                    this[target] = [];
+                    return;
+                }
+
+                this.suggestionTimers[target] = setTimeout(() => {
+                    fetch(`{{ route('inventory.suggestions') }}?field=${encodeURIComponent(field)}&q=${encodeURIComponent(query)}`, {
+                        headers: { 'Accept': 'application/json' }
+                    })
+                        .then(response => response.ok ? response.json() : [])
+                        .then(data => { this[target] = data; })
+                        .catch(() => { this[target] = []; });
+                }, 180);
+            }
+        }
+    }
+</script>
 </x-app-layout>

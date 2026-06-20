@@ -18,7 +18,7 @@
                                 id="pos-search"
                                 type="text"
                                 x-model="searchQuery"
-                                placeholder="Scan SKU/Barcode or type part name, brand, model..."
+                                placeholder="Search products manually by SKU, part name, brand, or model..."
                                 class="w-full pl-12 pr-4 py-4 rounded-xl border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-lg shadow-sm transition-shadow"
                             >
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

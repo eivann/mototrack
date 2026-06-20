@@ -7,6 +7,11 @@
     <title>{{ config('app.name', 'MotoTrack') }} - Register</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (window.tailwind) {
+            tailwind.config = { darkMode: 'class' };
+        }
+    </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -28,13 +33,28 @@
             font-family: 'Inter', sans-serif;
             background: radial-gradient(circle at top, #eef2ff, #f8fafc);
             color: #0f172a;
-            min-height: 100vh;
+            min-height: 100svh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0.75rem;
+            overflow-x: hidden;
             transition: background 0.3s ease;
+            color-scheme: light;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
         }
         
         .dark body {
             background: radial-gradient(circle at top, #1e1b4b, #0f172a);
             color: white;
+            color-scheme: dark;
         }
         
         .card {
@@ -52,7 +72,7 @@
         
         .btn {
             border-radius: 14px;
-            padding: 12px 22px;
+            padding: 10px 20px;
             font-weight: 500;
             transition: 0.25s;
             display: inline-flex;
@@ -77,7 +97,7 @@
             border-radius: 12px;
             border: 1px solid #e2e8f0;
             transition: all 0.2s;
-            padding: 12px 16px;
+            padding: 10px 14px;
             padding-left: 44px;
             width: 100%;
             background: #f8fafc;
@@ -125,35 +145,223 @@
             animation: slideDown 0.4s ease-out forwards;
         }
 
+        .hidden {
+            display: none !important;
+        }
+
+        .register-wrapper {
+            width: 100%;
+            max-width: 42rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .register-header a {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            margin-bottom: 0.75rem;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .register-header img {
+            height: 3rem;
+            width: auto;
+        }
+
+        .register-header h1 {
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .register-header h2 {
+            margin: 0;
+            font-size: clamp(1.5rem, 3vw, 1.875rem);
+            line-height: 1.15;
+            font-weight: 800;
+        }
+
+        .register-header p {
+            margin: 0.25rem 0 0;
+            font-size: 0.875rem;
+        }
+
+        .register-card {
+            padding: 1.25rem;
+        }
+
+        .register-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            column-gap: 1rem;
+            row-gap: 0.75rem;
+        }
+
+        .register-form .input-group {
+            margin: 0;
+        }
+
+        .register-form label {
+            display: block;
+            margin-bottom: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .dark .register-form label {
+            color: #d1d5db;
+        }
+
+        .register-form .field-shell {
+            position: relative;
+        }
+
+        .register-form .field-shell > i[data-lucide] {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            width: 1.25rem;
+            height: 1.25rem;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            pointer-events: none;
+        }
+
+        .register-form .field-shell > button[type="button"] {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+
+        .register-form .span-all,
+        .register-form .google-section {
+            grid-column: 1 / -1;
+        }
+
+        .register-form .captcha-field {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .register-form .google-section {
+            margin-top: 0.25rem;
+        }
+
+        .register-form button[type="submit"],
+        .register-form .google-section a {
+            width: 100%;
+            min-height: 44px;
+        }
+
+        .register-form .google-section a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            background: #ffffff;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .dark .register-form .google-section a {
+            background: #334155;
+            border-color: #475569;
+            color: #e5e7eb;
+        }
+
+        .register-form .google-section svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            flex: 0 0 auto;
+            margin-right: 0;
+        }
+
+        .register-footer {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+
+        .dark .register-footer {
+            color: #9ca3af;
+        }
+
+        .register-footer a {
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .register-footer a:hover {
+            text-decoration: underline;
+        }
+
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         [x-cloak] { display: none !important; }
+
+        @media (min-width: 640px) {
+            .register-header img {
+                height: 3.5rem;
+            }
+
+            .register-card {
+                padding: 1.5rem;
+            }
+
+            .register-form {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
     </style>
 </head>
-<body class="flex items-center justify-center p-6 py-12 relative overflow-x-hidden">
+<body class="min-h-[100svh] flex items-center justify-center p-3 sm:p-4 relative overflow-x-hidden">
     
     <!-- Background accents -->
     <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200/40 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="w-full max-w-md relative z-10">
+    <div class="register-wrapper w-full max-w-2xl relative z-10">
         
-        <div class="text-center mb-8">
-            <a href="/" class="inline-flex flex-col items-center gap-2 mb-6 hover:opacity-80 transition-opacity">
-                <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-24 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
+        <div class="register-header text-center mb-4">
+            <a href="/" class="inline-flex flex-col items-center gap-1 mb-3 hover:opacity-80 transition-opacity">
+                <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-12 sm:h-14 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
                 <div class="text-center">
-                    <h1 class="font-bold text-xl text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
+                    <h1 class="font-bold text-lg text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
                     <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
                 </div>
             </a>
-            <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white">Create an Account</h2>
-            <p class="text-gray-500 dark:text-gray-400 mt-2">Sign up to pre-order parts and track services</p>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">Create an Account</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign up to pre-order parts and track services</p>
         </div>
 
-        <div class="card p-8 sm:p-10 {{ $errors->any() || session('error') ? 'shake' : '' }}">
+        <div class="register-card card p-5 sm:p-6 {{ $errors->any() || session('error') ? 'shake' : '' }}">
             
             @if($errors->any() || session('error'))
                 <div role="alert" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400 error-banner">
@@ -169,13 +377,13 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('register') }}" x-data="{ showPassword: false, isSubmitting: false }" @submit="isSubmitting = true">
+            <form method="POST" action="{{ route('register') }}" x-data="{ showPassword: false, isSubmitting: false }" @submit="isSubmitting = true" class="register-form grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                 @csrf
 
                 <!-- Name -->
-                <div class="mb-4 relative input-group">
+                <div class="relative input-group">
                     <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
-                    <div class="relative">
+                    <div class="field-shell relative">
                         <i data-lucide="user" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
                         <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" 
                             class="input-field {{ $errors->has('name') ? 'error' : '' }}" placeholder="John Doe">
@@ -184,9 +392,9 @@
                 </div>
 
                 <!-- Email Address -->
-                <div class="mb-4 relative input-group">
+                <div class="relative input-group">
                     <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
-                    <div class="relative">
+                    <div class="field-shell relative">
                         <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" 
                             class="input-field {{ $errors->has('email') ? 'error' : '' }}" placeholder="example@gmail.com">
@@ -195,9 +403,9 @@
                 </div>
 
                 <!-- Phone Number -->
-                <div class="mb-4 relative input-group">
+                <div class="relative input-group">
                     <label for="phone" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Phone Number</label>
-                    <div class="relative">
+                    <div class="field-shell relative">
                         <i data-lucide="phone" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
                         <input id="phone" type="text" name="phone" value="{{ old('phone') }}" required autocomplete="tel" 
                             class="input-field {{ $errors->has('phone') ? 'error' : '' }}" 
@@ -210,9 +418,9 @@
                 </div>
 
                 <!-- Password -->
-                <div class="mb-4 relative input-group">
+                <div class="relative input-group">
                     <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
-                    <div class="relative">
+                    <div class="field-shell relative">
                         <i data-lucide="lock" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
                         <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="new-password" 
                             class="input-field pr-12 {{ $errors->has('password') ? 'error' : '' }}" placeholder="••••••••">
@@ -225,14 +433,14 @@
                         </button>
                     </div>
                     <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500 text-xs italic" />
-                    <p class="mt-2 text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                    <p class="mt-1.5 text-[10px] text-gray-400 dark:text-gray-500 font-medium">
                         Must be at least 8 characters with upper/lower case, numbers, and symbols.
                     </p>
                 </div>
 
-                <div class="mb-6 relative input-group">
+                <div class="relative input-group">
                     <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Confirm Password</label>
-                    <div class="relative">
+                    <div class="field-shell relative">
                         <i data-lucide="shield-check" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
                         <input id="password_confirmation" :type="showPassword ? 'text' : 'password'" name="password_confirmation" required autocomplete="new-password" 
                             class="input-field pr-12 {{ $errors->has('password_confirmation') ? 'error' : '' }}" placeholder="••••••••">
@@ -248,7 +456,7 @@
                 </div>
                 
                 <!-- Google reCAPTCHA -->
-                <div class="mb-6 flex flex-col items-center">
+                <div class="captcha-field flex flex-col items-center justify-center">
                     <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
                     @if ($errors->has('g-recaptcha-response'))
                         <p class="mt-2 text-red-500 text-xs font-semibold">{{ $errors->first('g-recaptcha-response') }}</p>
@@ -256,12 +464,12 @@
                 </div>
 
                 <!-- Honeypot (Invisible Trap) -->
-                <div class="hidden">
+                <div class="hidden span-all sm:col-span-2">
                     <input type="text" name="my_extra_field" value="">
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full h-12 text-base shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button type="submit" :disabled="isSubmitting" class="span-all btn btn-primary w-full min-h-[44px] text-base shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-span-2">
                     <span x-show="!isSubmitting">Create Account</span>
                     <span x-show="isSubmitting" x-cloak class="flex items-center gap-2">
                         <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
@@ -269,7 +477,7 @@
                     </span>
                 </button>
                 
-                <div class="mt-6">
+                <div class="google-section mt-1 sm:col-span-2">
                     <div class="relative">
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
@@ -279,7 +487,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-6">
+                    <div class="mt-3">
                         <a href="{{ route('auth.google') }}" class="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-[#334155] text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
                             <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -294,14 +502,16 @@
             </form>
         </div>
         
-        <p class="text-center mt-8 text-gray-600 dark:text-gray-400 text-sm">
+        <p class="register-footer text-center mt-4 text-gray-600 dark:text-gray-400 text-sm">
             Already have an account? 
             <a href="{{ route('login') }}" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Sign in</a>
         </p>
     </div>
 
     <script>
-        lucide.createIcons();
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>

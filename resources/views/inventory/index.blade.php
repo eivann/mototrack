@@ -58,7 +58,12 @@
                         </div>
                         <div>
                             <label for="item-category" class="sr-only">Category</label>
-                            <input id="item-category" name="category" x-model="category" placeholder="Category (e.g. Engine)" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                            <input id="item-category" name="category" x-model="category" list="inventory-category-suggestions" placeholder="Choose or type category" autocomplete="off" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                            <datalist id="inventory-category-suggestions">
+                                @foreach($categories as $category)
+                                    <option value="{{ $category }}"></option>
+                                @endforeach
+                            </datalist>
                         </div>
                         <div>
                             <label for="item-part-name" class="sr-only">Part Name</label>

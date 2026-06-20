@@ -1,13 +1,69 @@
+@php
+    $dashboardRoute = auth()->check() && auth()->user()->role === 'owner'
+        ? route('dashboard')
+        : route('customer.dashboard');
+    $navItems = [
+        [
+            'label' => 'Home',
+            'mobile_label' => 'Home',
+            'href' => url('/'),
+            'icon' => 'home',
+            'active' => request()->is('/'),
+            'show' => true,
+        ],
+        [
+            'label' => 'Dashboard',
+            'mobile_label' => auth()->check() && auth()->user()->role === 'owner' ? 'Admin Dashboard' : 'Customer Dashboard',
+            'href' => $dashboardRoute,
+            'icon' => auth()->check() && auth()->user()->role === 'owner' ? 'activity' : 'layout-dashboard',
+            'active' => request()->routeIs('dashboard') || request()->routeIs('customer.dashboard'),
+            'show' => auth()->check(),
+        ],
+        [
+            'label' => 'Browse',
+            'mobile_label' => 'Browse Products',
+            'href' => route('browse'),
+            'icon' => 'shopping-bag',
+            'active' => request()->routeIs('browse'),
+            'show' => !auth()->check() || auth()->user()->role !== 'owner',
+        ],
+        [
+            'label' => 'Compatibility',
+            'mobile_label' => 'Compatibility Checker',
+            'href' => route('compatibility.view'),
+            'icon' => 'search',
+            'active' => request()->routeIs('compatibility.view'),
+            'show' => !auth()->check() || auth()->user()->role !== 'owner',
+        ],
+        [
+            'label' => 'Pre-orders',
+            'mobile_label' => 'Pre-orders',
+            'href' => route('preorder.parts'),
+            'icon' => 'clipboard-list',
+            'active' => request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*'),
+            'show' => auth()->check() && auth()->user()->role !== 'owner',
+        ],
+        [
+            'label' => 'Audit Trail',
+            'mobile_label' => 'Audit Trail',
+            'href' => route('admin.audit_logs.index'),
+            'icon' => 'history',
+            'active' => request()->routeIs('admin.audit_logs.*'),
+            'show' => auth()->check() && auth()->user()->role === 'owner',
+        ],
+    ];
+@endphp
+
 <nav x-data="{ open: false }" class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 md:h-20 lg:h-24">
             <div class="flex items-center">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 xl:mr-8">
-                    <a href="{{ auth()->check() ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard')) : url('/') }}" class="flex items-center gap-4">
-                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-12 md:h-16 lg:h-20 w-auto object-contain group-hover:scale-110 transition-transform duration-500 dark:invert dark:brightness-200">
-                        <div class="flex flex-col leading-none {{ auth()->check() ? 'hidden' : 'hidden xl:flex' }}">
-                            <span class="text-xl font-black tracking-tighter text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
+                    <a href="{{ url('/') }}" class="flex items-center gap-3 xl:gap-4">
+                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-12 md:h-16 lg:h-20 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
+                        <div class="hidden sm:flex flex-col leading-none">
+                            <span class="text-lg xl:text-xl font-black text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
                             <span class="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mt-0.5">Parts and Accessories</span>
                         </div>
                     </a>
@@ -21,84 +77,19 @@
                         $inactiveClasses = "text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-white";
                     @endphp
 
-                    <a href="/" class="{{ $linkClasses }} {{ request()->is('/') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
-                        <i data-lucide="home" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
-                        <span>Home</span>
-                        @if(request()->is('/'))
-                            <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
-                        @else
-                            <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
-                        @endif
-                    </a>
-                    
-                    @if(!auth()->check() || auth()->user()->role !== 'owner')
-                        <a href="{{ route('browse') }}" class="{{ $linkClasses }} {{ request()->routeIs('browse') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
-                            <i data-lucide="shopping-bag" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
-                            <span>Browse</span>
-                            @if(request()->routeIs('browse'))
-                                <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
-                            @else
-                                <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
-                            @endif
-                        </a>
-
-                        <a href="{{ route('compatibility.view') }}" class="{{ $linkClasses }} {{ request()->routeIs('compatibility.view') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
-                            <i data-lucide="search" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
-                            <span>Compatibility</span>
-                            @if(request()->routeIs('compatibility.view'))
-                                <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
-                            @else
-                                <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
-                            @endif
-                        </a>
-
-
-                    @endif
-
-                    @auth
-                        @if(auth()->user()->role !== 'owner')
-                            <a href="{{ route('customer.dashboard') }}" class="{{ $linkClasses }} {{ request()->routeIs('customer.dashboard') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
-                                <i data-lucide="layout-dashboard" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
-                                <span>Dashboard</span>
-                                @if(request()->routeIs('customer.dashboard'))
-                                    <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
-                                @else
-                                    <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
-                                @endif
-                            </a>
-
-                            <a href="{{ route('preorder.parts') }}" class="{{ $linkClasses }} {{ request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
-                                <i data-lucide="clipboard-list" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
-                                <span>Pre-orders</span>
-                                @if(request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*'))
+                    @foreach($navItems as $item)
+                        @if($item['show'])
+                            <a href="{{ $item['href'] }}" class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }}">
+                                <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
+                                <span>{{ $item['label'] }}</span>
+                                @if($item['active'])
                                     <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
                                 @else
                                     <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
                                 @endif
                             </a>
                         @endif
-
-                        @if(auth()->user()->role === 'owner')
-                            <a href="{{ route('dashboard') }}" class="{{ $linkClasses }} {{ request()->routeIs('dashboard') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
-                                <i data-lucide="activity" class="w-5 h-5 mr-2.5 transition-transform group-hover:-translate-y-0.5"></i>
-                                <span>Admin Panel</span>
-                                @if(request()->routeIs('dashboard'))
-                                    <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
-                                @else
-                                    <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
-                                @endif
-                            </a>
-                            <a href="{{ route('admin.audit_logs.index') }}" class="{{ $linkClasses }} {{ request()->routeIs('admin.audit_logs.*') ? $activeClasses : $inactiveClasses }}" style="white-space: nowrap !important;">
-                                <i data-lucide="history" class="w-5 h-5 mr-2.5 transition-transform group-hover:-translate-y-0.5"></i>
-                                <span>Audit Trail</span>
-                                @if(request()->routeIs('admin.audit_logs.*'))
-                                    <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
-                                @else
-                                    <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
-                                @endif
-                            </a>
-                        @endif
-                    @endauth
+                    @endforeach
                 </div>
             </div>
 
@@ -231,6 +222,12 @@
                             <div class="px-4 py-3 bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-700">
                                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">User Settings</p>
                             </div>
+                            <x-dropdown-link :href="$dashboardRoute" class="flex items-center gap-3 py-3 transition-colors">
+                                <div class="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600">
+                                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                                </div>
+                                <span class="font-semibold">{{ __('Dashboard') }}</span>
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-3 py-3 transition-colors">
                                 <div class="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600">
                                     <i data-lucide="user" class="w-4 h-4"></i>
@@ -279,57 +276,27 @@
          x-transition:enter-end="opacity-100 translate-y-0"
          class="lg:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl">
         <div class="pt-4 pb-6 space-y-2 px-4">
-            <a href="/" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->is('/') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
-                <i data-lucide="home" class="w-5 h-5 mr-4"></i>
-                Home
-            </a>
-
-            @if(!auth()->check() || auth()->user()->role !== 'owner')
-                <a href="/browse" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->is('browse') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
-                    <i data-lucide="shopping-bag" class="w-5 h-5 mr-4"></i>
-                    Browse Products
-                </a>
-
-                <a href="/compatibility" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->is('compatibility') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
-                    <i data-lucide="search" class="w-5 h-5 mr-4"></i>
-                    Compatibility Checker
-                </a>
-
-
-            @endif
-            
-            @auth
-                @if(auth()->user()->role !== 'owner')
-                    <a href="{{ route('customer.dashboard') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->routeIs('customer.dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
-                        <i data-lucide="layout-dashboard" class="w-5 h-5 mr-4"></i>
-                        Customer Dashboard
-                    </a>
-                    <a href="{{ route('preorder.parts') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
-                        <i data-lucide="clipboard-list" class="w-5 h-5 mr-4"></i>
-                        Pre-orders
-                    </a>
-                @else
-                    <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
-                        <i data-lucide="activity" class="w-5 h-5 mr-4"></i>
-                        Admin Dashboard
-                    </a>
-                    <a href="{{ route('admin.audit_logs.index') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ request()->routeIs('admin.audit_logs.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50' }}">
-                        <i data-lucide="history" class="w-5 h-5 mr-4"></i>
-                        Audit Trail
+            @foreach($navItems as $item)
+                @if($item['show'])
+                    <a href="{{ $item['href'] }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ $item['active'] ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
+                        <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 mr-4"></i>
+                        {{ $item['mobile_label'] }}
                     </a>
                 @endif
-            @else
+            @endforeach
+
+            @guest
                 <div class="border-t border-gray-100 dark:border-gray-800 my-4 pt-4">
-                    <a href="{{ route('login') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 hover:bg-gray-50">
+                    <a href="{{ route('login') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
                         <i data-lucide="log-in" class="w-5 h-5 mr-4"></i>
                         Sign In
                     </a>
-                    <a href="{{ route('register') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-blue-600 hover:bg-blue-50">
+                    <a href="{{ route('register') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20">
                         <i data-lucide="user-plus" class="w-5 h-5 mr-4"></i>
                         Get Started
                     </a>
                 </div>
-            @endauth
+            @endguest
             {{-- Mobile Theme Toggle --}}
             <button id="mobileThemeToggle" aria-label="Toggle light/dark mode"
                 class="flex items-center w-full px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-2xl">
@@ -351,7 +318,12 @@
                 </div>
 
                 <div class="px-4 space-y-2">
-                    <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 hover:bg-white transition-colors">
+                    <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-colors">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5 mr-4 text-gray-400"></i>
+                        Dashboard
+                    </a>
+
+                    <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-colors">
                         <i data-lucide="user" class="w-5 h-5 mr-4 text-gray-400"></i>
                         Profile Settings
                     </a>
