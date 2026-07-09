@@ -7,20 +7,12 @@ use App\Models\PreOrder;
 use App\Models\Sale;
 use App\Models\User;
 use App\Notifications\StatusUpdated;
-use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class RcpayWebhookController extends Controller
 {
-    protected $paymentService;
-
-    public function __construct(PaymentService $paymentService)
-    {
-        $this->paymentService = $paymentService;
-    }
-
     /**
      * Handle the RCPAY PLUS webhook.
      */
@@ -30,11 +22,7 @@ class RcpayWebhookController extends Controller
 
         Log::info('RCPAY PLUS Webhook received:', $payload);
 
-        // Verify the signature to prevent spoofing
-        if (!$this->paymentService->verifyRcpayWebhook($payload)) {
-            Log::warning('RCPAY PLUS Webhook: Invalid signature received.');
-            return response()->json(['message' => 'Invalid Signature'], 400);
-        }
+        // Signature verified by the `verify.rcpay.signature` middleware (audit #11).
 
         // Only process successful payments
         if ($payload['status'] !== 'SUCCESS') {
@@ -84,8 +72,19 @@ class RcpayWebhookController extends Controller
             return response()->json(['message' => 'OK'], 200);
         }
 
+        // Audit #13: resolve display data here (the pre-order is already loaded)
+        // so the queued notification listener doesn't re-parse the order id or
+        // re-query the model.
+        $customerUser = $preorder->customer ? $preorder->customer->user : null;
+        $context = [
+            'customer_user_id' => $customerUser?->id,
+            'customer_name' => $customerUser?->name ?? $preorder->customer_name,
+            'display_amount' => (float) $preorder->down_payment,
+            'part_name' => $preorder->part_name,
+        ];
+
         // Fire Domain Event to decouple Database and Notification processing
-        \App\Events\PaymentReceived::dispatch('preorder', $orderId, $amount);
+        \App\Events\PaymentReceived::dispatch('preorder', $orderId, $amount, $context);
 
         return response()->json(['message' => 'OK'], 200);
     }
@@ -115,8 +114,21 @@ class RcpayWebhookController extends Controller
             return response()->json(['message' => 'OK'], 200);
         }
 
+        // Audit #13: resolve display data here so the queued notification
+        // listener doesn't re-query the sales rows. Eager-load explicitly now
+        // that Sale no longer auto-loads relations (audit #12).
+        $sales = Sale::where('transaction_reference', $orderId)->with('customer.user')->get();
+        $firstSale = $sales->first();
+        $customerUser = $firstSale && $firstSale->customer ? $firstSale->customer->user : null;
+        $context = [
+            'customer_user_id' => $customerUser?->id,
+            'customer_name' => $customerUser?->name ?? 'Customer',
+            'display_amount' => (float) $sales->sum('total_price'),
+            'part_name' => null,
+        ];
+
         // Fire Domain Event to decouple Notification processing
-        \App\Events\PaymentReceived::dispatch('shop', $orderId, $amount);
+        \App\Events\PaymentReceived::dispatch('shop', $orderId, $amount, $context);
 
         return response()->json(['message' => 'OK'], 200);
     }

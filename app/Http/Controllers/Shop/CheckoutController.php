@@ -11,7 +11,7 @@ use App\Models\User;
 use App\Notifications\StatusUpdated;
 use App\Services\CartService;
 use App\Services\CheckoutService;
-use App\Services\PaymentService;
+use App\Contracts\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -21,7 +21,7 @@ class CheckoutController extends Controller
     use HandlesExceptions;
     public function __construct(
         protected CartService $cartService,
-        protected PaymentService $paymentService,
+        protected PaymentGateway $paymentService,
         protected CheckoutService $checkoutService
     ) {}
 

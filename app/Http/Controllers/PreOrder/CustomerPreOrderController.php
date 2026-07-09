@@ -10,7 +10,7 @@ use App\Models\PreOrder;
 use App\Models\User;
 use App\Models\Customer;
 use App\Notifications\StatusUpdated;
-use App\Services\PaymentService;
+use App\Contracts\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 
@@ -20,7 +20,7 @@ class CustomerPreOrderController extends Controller
 
     protected $paymentService;
 
-    public function __construct(PaymentService $paymentService)
+    public function __construct(PaymentGateway $paymentService)
     {
         $this->paymentService = $paymentService;
     }

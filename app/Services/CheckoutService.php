@@ -2,15 +2,21 @@
 
 namespace App\Services;
 
-use App\Models\Customer;
-use App\Models\InventoryItem;
-use App\Models\Sale;
-use Illuminate\Support\Facades\DB;
+use App\Actions\CommitOrder;
 
 class CheckoutService
 {
+    public function __construct(protected CommitOrder $commitOrder)
+    {
+    }
+
     /**
      * Process the cart and generate sales records.
+     *
+     * Audit #6: delegates the two-pass lock/total/create/decrement logic to the
+     * shared CommitOrder action. Tender/change semantics for the online cart:
+     * only the first row carries the tendered amount (defaulting to the grand
+     * total when none was provided) and the change is clamped at zero.
      *
      * @param array $cart
      * @param string $transactionReference
@@ -21,45 +27,20 @@ class CheckoutService
      */
     public function processTransaction(array $cart, $transactionReference, $customerId, $amountTenderedInput)
     {
-        return DB::transaction(function () use ($cart, $transactionReference, $customerId, $amountTenderedInput) {
-            // Pass 1: Lock stock and precisely calculate the true grand total
-            $finalGrandTotal = 0;
-            $lockedItems = [];
-            
-            foreach ($cart as $id => $item) {
-                $inventory = InventoryItem::lockForUpdate()->find($id);
+        // Normalize the associative cart (keyed by item id) into an ordered list.
+        $lines = [];
+        foreach ($cart as $id => $item) {
+            $lines[] = ['id' => $id, 'quantity' => $item['quantity']];
+        }
 
-                if (!$inventory || $inventory->quantity < $item['quantity']) {
-                    throw new \Exception('Stock issue detected for: ' . ($inventory ? $inventory->part_name : 'Unknown item'));
-                }
-
-                $finalGrandTotal += ($inventory->price * $item['quantity']);
-                $lockedItems[$id] = $inventory;
-            }
-
-            $isFirstItem = true;
-
-            // Pass 2: Generate sales records using the accurate grand total
-            foreach ($cart as $id => $item) {
-                $inventory = $lockedItems[$id];
-                $total = $inventory->price * $item['quantity'];
-
-                Sale::create([
-                    'inventory_item_id' => $id,
-                    'customer_id' => $customerId,
-                    'quantity' => $item['quantity'],
-                    'price' => $inventory->price,
-                    'total_price' => $total,
-                    'transaction_reference' => $transactionReference,
-                    'amount_tendered' => $isFirstItem ? ($amountTenderedInput ?: $finalGrandTotal) : 0,
-                    'change' => $isFirstItem ? (max(0, ($amountTenderedInput ?? 0) - $finalGrandTotal)) : 0,
-                ]);
-
-                $inventory->decrement('quantity', $item['quantity']);
-                $isFirstItem = false;
-            }
-
-            return $finalGrandTotal;
-        });
+        return $this->commitOrder->execute(
+            $lines,
+            $transactionReference,
+            $customerId,
+            'Stock issue detected for: ',
+            fn (bool $isFirst, float $grandTotal) => $isFirst ? ($amountTenderedInput ?: $grandTotal) : 0,
+            fn (bool $isFirst, float $grandTotal) => $isFirst ? max(0, ($amountTenderedInput ?? 0) - $grandTotal) : 0,
+            dispatchLowStockAlert: false
+        );
     }
 }

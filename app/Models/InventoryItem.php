@@ -120,36 +120,12 @@ class InventoryItem extends Model
 
     /**
      * Scope a query to search for inventory items.
+     *
+     * Audit #7: the search logic lives in InventorySearchService; this scope
+     * is a thin forwarder so existing call sites and chaining are unchanged.
      */
     public function scopeSearch($query, $searchTerm)
     {
-        $searchTerm = trim($searchTerm);
-        if (empty($searchTerm)) {
-            return $query;
-        }
-
-        $stopwords = ['for', 'the', 'and', 'with', 'in', 'on', 'at', 'to', 'a', 'an', 'of', 'my'];
-        $all_terms = explode(' ', strtolower($searchTerm));
-        $terms = array_filter($all_terms, function($word) use ($stopwords) {
-            return !in_array(trim($word), $stopwords) && strlen(trim($word)) > 1;
-        });
-
-        if (empty($terms)) {
-            $terms = $all_terms;
-        }
-
-        $likeOperator = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
-
-        return $query->where(function ($q) use ($terms, $likeOperator) {
-            foreach ($terms as $term) {
-                $q->where(function ($inner) use ($term, $likeOperator) {
-                    $inner->where('sku', $likeOperator, "%$term%")
-                          ->orWhere('model', $likeOperator, "%$term%")
-                          ->orWhere('part_name', $likeOperator, "%$term%")
-                          ->orWhere('category', $likeOperator, "%$term%")
-                          ->orWhere('brand', $likeOperator, "%$term%");
-                });
-            }
-        });
+        return app(\App\Services\InventorySearchService::class)->apply($query, $searchTerm);
     }
 }

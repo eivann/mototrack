@@ -10,7 +10,9 @@ class Sale extends Model
 {
     use SoftDeletes, HasAuditTrail;
 
-    protected $with = ['item', 'customer'];
+    // Audit #12: no `protected $with` — every view-facing query eager-loads
+    // its relations explicitly (SaleController, CheckoutController, dashboards),
+    // so auto-loading only wasted joins on aggregate/update/notification queries.
 
 public function item()
 {

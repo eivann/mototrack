@@ -46,6 +46,11 @@ return [
         'public_key' => env('XENDIT_PUBLIC_KEY'),
     ],
 
+    // Audit #2: selects the PaymentGateway implementation bound in AppServiceProvider.
+    'payment' => [
+        'provider' => env('PAYMENT_PROVIDER', 'default'),
+    ],
+
     'rcpay' => [
         'merchant_id' => env('RCPAY_MERCHANT_ID', 'MCH123456'),
         'api_key' => env('RCPAY_API_KEY', 'abc123*'),

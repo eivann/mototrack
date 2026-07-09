@@ -1,0 +1,34 @@
+# Audit #14 — Secret-scanning gitleaks config.
+# Use with CI or a local pre-commit framework:
+#   gitleaks protect --staged --config .gitleaks.toml
+# (The repo also ships a dependency-free hook at scripts/git-hooks/pre-commit.)
+
+title = "MotoTrack gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "mototrack-xendit-secret"
+description = "Xendit secret key"
+regex = '''XENDIT_SECRET_KEY\s*=\s*\S+'''
+tags = ["key", "xendit"]
+
+[[rules]]
+id = "mototrack-rcpay-key"
+description = "RCPAY API key"
+regex = '''RCPAY_API_KEY\s*=\s*\S+'''
+tags = ["key", "rcpay"]
+
+[[rules]]
+id = "mototrack-movider-secret"
+description = "Movider API secret"
+regex = '''MOVIDER_API_SECRET\s*=\s*\S+'''
+tags = ["key", "movider"]
+
+[allowlist]
+description = "Ignore templates and vendored fixtures"
+paths = [
+    '''\.env\.example$''',
+    '''vendor/''',
+]

@@ -2,17 +2,30 @@
 
 namespace App\Services;
 
+use App\Contracts\CartRepository;
 use App\Models\InventoryItem;
-use Illuminate\Support\Facades\Session;
+use App\Repositories\SessionCartRepository;
 
 class CartService
 {
     /**
-     * Get the current cart from session.
+     * Audit #5: persistence is delegated to a CartRepository. Defaults to the
+     * session-backed implementation so existing callers (and `new CartService()`)
+     * keep working; the container binds the interface for DI.
+     */
+    protected CartRepository $repository;
+
+    public function __construct(?CartRepository $repository = null)
+    {
+        $this->repository = $repository ?? new SessionCartRepository();
+    }
+
+    /**
+     * Get the current cart.
      */
     public function getCart()
     {
-        return Session::get('cart', []);
+        return $this->repository->get();
     }
 
     /**
@@ -43,7 +56,7 @@ class CartService
             ];
         }
 
-        Session::put('cart', $cart);
+        $this->repository->put($cart);
         return $cart;
     }
 
@@ -56,7 +69,7 @@ class CartService
 
         if (isset($cart[$id])) {
             unset($cart[$id]);
-            Session::put('cart', $cart);
+            $this->repository->put($cart);
         }
 
         return $cart;
@@ -78,7 +91,7 @@ class CartService
             }
 
             $cart[$id]['quantity'] = $quantity;
-            Session::put('cart', $cart);
+            $this->repository->put($cart);
         }
 
         return $cart;
@@ -89,6 +102,6 @@ class CartService
      */
     public function clear()
     {
-        Session::forget('cart');
+        $this->repository->forget();
     }
 }

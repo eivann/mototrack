@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\Contracts\PaymentGateway;
 use Xendit\Configuration;
 use Xendit\Invoice\InvoiceApi;
 use Xendit\Invoice\CreateInvoiceRequest;
 
-class PaymentService
+class PaymentService implements PaymentGateway
 {
     public function __construct()
     {

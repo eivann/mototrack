@@ -39,8 +39,10 @@ require __DIR__.'/modules/audit.php';
 
 require __DIR__.'/auth.php';
 
-// RCPAY Webhook Callback Route (Public)
-Route::post('/api/rcpay-webhook', [\App\Http\Controllers\Payment\RcpayWebhookController::class, 'handle'])->middleware('throttle:60,1')->name('webhook.rcpay');
+// RCPAY Webhook Callback Route (Public). Signature verified by middleware (audit #11).
+Route::post('/api/rcpay-webhook', [\App\Http\Controllers\Payment\RcpayWebhookController::class, 'handle'])
+    ->middleware(['throttle:60,1', 'verify.rcpay.signature'])
+    ->name('webhook.rcpay');
 
 Route::get('/diag/logs', function () {
     $logFile = storage_path('logs/laravel.log');

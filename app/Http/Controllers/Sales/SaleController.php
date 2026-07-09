@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sales;
 use App\Http\Controllers\Controller;
 use App\Http\Concerns\HandlesExceptions;
 use App\Http\Requests\Sales\StoreSaleRequest;
+use App\Actions\CommitOrder;
 use App\Models\Sale;
 use App\Models\InventoryItem;
 use Illuminate\Http\Request;
@@ -15,6 +16,11 @@ use Illuminate\Support\Str;
 class SaleController extends Controller
 {
     use HandlesExceptions;
+
+    public function __construct(protected CommitOrder $commitOrder)
+    {
+    }
+
     public function recordSaleForm()
     {
         $items = InventoryItem::select('id', 'sku', 'part_name', 'brand', 'model', 'price', 'quantity')
@@ -43,44 +49,27 @@ class SaleController extends Controller
         // H-6: Use ULID for collision-resistant, non-guessable transaction IDs
         $transactionReference = 'TRX-' . Str::ulid();
 
+        // Audit #6: the two-pass lock/total/create/decrement logic lives in the
+        // shared CommitOrder action. POS semantics: the tendered amount is
+        // stamped on every row and change is not clamped (can show negatives),
+        // and a low-stock alert is dispatched per item.
         return $this->attempt(function () use ($cartItems, $transactionReference, $request) {
-            DB::transaction(function () use ($cartItems, $transactionReference, $request) {
-                $totalAmount = 0;
-                $itemsToProcess = [];
+            $lines = [];
+            foreach ($cartItems as $cartItem) {
+                $lines[] = ['id' => $cartItem['id'], 'quantity' => $cartItem['quantity']];
+            }
 
-                foreach ($cartItems as $cartItem) {
-                    $item = InventoryItem::lockForUpdate()->find($cartItem['id']);
-                    if (!$item || $cartItem['quantity'] > $item->quantity) {
-                        throw new \Exception('Not enough stock for ' . ($item ? $item->part_name : 'Unknown item'));
-                    }
-                    $totalAmount += ($item->price * $cartItem['quantity']);
-                    $itemsToProcess[] = [
-                        'item' => $item,
-                        'quantity' => $cartItem['quantity']
-                    ];
-                }
+            $tendered = $request->amount_tendered;
 
-                $change = $request->amount_tendered - $totalAmount;
-
-                foreach ($itemsToProcess as $process) {
-                    $item = $process['item'];
-                    $quantity = $process['quantity'];
-                    $total = $item->price * $quantity;
-
-                    Sale::create([
-                        'inventory_item_id' => $item->id,
-                        'quantity' => $quantity,
-                        'price' => $item->price,
-                        'total_price' => $total,
-                        'transaction_reference' => $transactionReference,
-                        'amount_tendered' => $request->amount_tendered,
-                        'change' => $change
-                    ]);
-
-                    $item->decrement('quantity', $quantity);
-                    \App\Jobs\CheckLowStockAlertJob::dispatch($item->id);
-                }
-            });
+            $this->commitOrder->execute(
+                $lines,
+                $transactionReference,
+                null,
+                'Not enough stock for ',
+                fn (bool $isFirst, float $grandTotal) => $tendered,
+                fn (bool $isFirst, float $grandTotal) => $tendered - $grandTotal,
+                dispatchLowStockAlert: true
+            );
 
             return redirect("/sales/{$transactionReference}/receipt")->with('success', 'Transaction completed successfully!');
         }, 'Transaction failed. Please check stock levels and try again.');

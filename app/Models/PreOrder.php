@@ -25,7 +25,8 @@ class PreOrder extends Model
         'is_paid' => 'boolean',
     ];
 
-    protected $with = ['customer'];
+    // Audit #12: no `protected $with` — views render the denormalized
+    // `customer_name` column, not the relation, so this eager load was unused.
 
     public function customer()
     {
