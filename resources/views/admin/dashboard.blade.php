@@ -18,12 +18,12 @@
                 </div>
 
                 <!-- Navigation Tabs -->
-                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-0 mt-2">
+                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-4 px-1 mt-2">
                     @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'preorders' => 'Pre-orders', 'reports' => 'Reports'] as $id => $label)
                         <button
                             @click="activeTab = '{{ $id }}'"
                             :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'"
-                            class="whitespace-nowrap py-3 px-6 rounded-xl font-black text-xs uppercase tracking-widest transition-all mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            class="whitespace-nowrap py-3 px-6 rounded-xl font-black text-xs uppercase tracking-widest transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
                             {{ $label }}
                         </button>

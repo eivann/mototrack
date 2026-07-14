@@ -330,19 +330,19 @@
 
     <div class="login-wrapper w-full max-w-md relative z-10">
         
-        <div class="login-header text-center mb-5">
-            <a href="/" class="inline-flex flex-col items-center gap-1.5 mb-4 hover:opacity-80 transition-opacity">
-                <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-16 sm:h-20 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
+        <div class="login-header text-center mb-4">
+            <a href="/" class="inline-flex flex-col items-center gap-1 mb-2 hover:opacity-80 transition-opacity">
+                <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-12 sm:h-16 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
                 <div class="text-center">
-                    <h1 class="font-bold text-lg text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
+                    <h1 class="font-bold text-base text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
                 </div>
             </a>
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">Welcome Back</h2>
-            <p class="text-gray-500 dark:text-gray-400 mt-2">Sign in to manage your account and orders</p>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">Welcome Back</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to manage your account and orders</p>
         </div>
 
-        <div class="login-card card p-6 sm:p-8 {{ $errors->any() || session('error') ? 'shake' : '' }}">
+        <div class="login-card card p-5 sm:p-6 {{ $errors->any() || session('error') ? 'shake' : '' }}">
             
             <x-auth-session-status class="mb-4 bg-green-50 text-green-600 p-3 rounded-xl text-sm border border-green-100" :status="session('status')" />
 
@@ -364,7 +364,7 @@
                 @csrf
 
                 <!-- Email Address -->
-                <div class="mb-4 relative input-group">
+                <div class="mb-3 relative input-group">
                     <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
                     <div class="field-shell relative">
                         <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
@@ -374,7 +374,7 @@
                 </div>
 
                 <!-- Password -->
-                <div class="mb-4 relative input-group">
+                <div class="mb-3 relative input-group">
                     <div class="flex justify-between items-center mb-1.5">
                         <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Password</label>
                         @if (Route::has('password.request'))
@@ -404,7 +404,7 @@
                 </div>
 
                 <!-- Google reCAPTCHA -->
-                <div class="captcha-field mb-4 flex flex-col items-center">
+                <div class="captcha-field mb-3 flex flex-col items-center">
                     <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
                     @if ($errors->has('g-recaptcha-response'))
                         <p class="mt-2 text-red-500 text-xs font-semibold">{{ $errors->first('g-recaptcha-response') }}</p>
@@ -425,7 +425,7 @@
                     </span>
                 </button>
                 
-                <div class="google-section mt-5">
+                <div class="google-section mt-4">
                     <div class="relative">
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
@@ -450,7 +450,7 @@
             </form>
         </div>
         
-        <p class="login-footer text-center mt-5 text-gray-600 dark:text-gray-400 text-sm">
+        <p class="login-footer text-center mt-4 text-gray-600 dark:text-gray-400 text-sm">
             Don't have an account? 
             <a href="{{ route('register') }}" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Sign up</a>
         </p>

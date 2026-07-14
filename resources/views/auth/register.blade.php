@@ -349,19 +349,19 @@
 
     <div class="register-wrapper w-full max-w-2xl relative z-10">
         
-        <div class="register-header text-center mb-4">
-            <a href="/" class="inline-flex flex-col items-center gap-1 mb-3 hover:opacity-80 transition-opacity">
-                <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-12 sm:h-14 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
+        <div class="register-header text-center mb-3">
+            <a href="/" class="inline-flex flex-col items-center gap-1 mb-2 hover:opacity-80 transition-opacity">
+                <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-10 sm:h-12 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
                 <div class="text-center">
-                    <h1 class="font-bold text-lg text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
+                    <h1 class="font-bold text-base text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
                 </div>
             </a>
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">Create an Account</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign up to pre-order parts and track services</p>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">Create an Account</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Sign up to pre-order parts and track services</p>
         </div>
 
-        <div class="register-card card p-5 sm:p-6 {{ $errors->any() || session('error') ? 'shake' : '' }}">
+        <div class="register-card card p-4 sm:p-5 {{ $errors->any() || session('error') ? 'shake' : '' }}">
             
             @if($errors->any() || session('error'))
                 <div role="alert" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400 error-banner">
@@ -477,7 +477,7 @@
                     </span>
                 </button>
                 
-                <div class="google-section mt-1 sm:col-span-2">
+                <div class="google-section mt-0 sm:col-span-2">
                     <div class="relative">
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
@@ -502,7 +502,7 @@
             </form>
         </div>
         
-        <p class="register-footer text-center mt-4 text-gray-600 dark:text-gray-400 text-sm">
+        <p class="register-footer text-center mt-3 text-gray-600 dark:text-gray-400 text-sm">
             Already have an account? 
             <a href="{{ route('login') }}" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Sign in</a>
         </p>

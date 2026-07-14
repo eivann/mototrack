@@ -253,7 +253,7 @@
                     </x-dropdown>
                 @else
                     <div class="flex items-center gap-2">
-                        <a href="{{ route('login') }}" class="px-5 py-2 text-sm font-bold text-gray-600 hover:text-blue-600 transition-colors">Sign In</a>
+                        <a href="{{ route('login') }}" class="px-5 py-2 text-sm font-bold text-gray-600 hover:text-blue-600 dark:text-gray-100 dark:hover:text-white transition-colors">Sign In</a>
                         <a href="{{ route('register') }}" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95">Get Started</a>
                     </div>
                 @endauth

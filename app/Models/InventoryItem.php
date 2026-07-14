@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use App\Traits\HasAuditTrail;
 
 class InventoryItem extends Model
@@ -116,6 +117,34 @@ class InventoryItem extends Model
         return $this->image_path 
             ? asset('storage/' . $this->image_path)
             : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>';
+    }
+
+    /**
+     * Distinct, display-ready category list for filter dropdowns.
+     *
+     * Defends against legacy rows where a JSON array was stored as a single
+     * category string (e.g. '["Accessories","Brakes"]') by flattening it back
+     * into individual categories, so the filter never shows raw JSON.
+     * Cache key bumped to v3 to bust the previous (v2) stale cache.
+     */
+    public static function distinctCategories()
+    {
+        return Cache::remember('inventory_categories_v3', now()->addHours(6), function () {
+            return static::query()
+                ->whereNotNull('category')
+                ->distinct()
+                ->pluck('category')
+                ->flatMap(function ($value) {
+                    $decoded = json_decode((string) $value, true);
+
+                    return is_array($decoded) ? $decoded : [$value];
+                })
+                ->map(fn ($value) => is_string($value) ? trim($value) : null)
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values();
+        });
     }
 
     /**

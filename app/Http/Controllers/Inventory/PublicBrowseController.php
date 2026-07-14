@@ -35,9 +35,7 @@ class PublicBrowseController extends Controller
 
         $items = $query->paginate(12)->withQueryString();
 
-        $categories = Cache::remember('inventory_categories_v2', now()->addHours(6), function () {
-            return InventoryItem::select('category')->distinct()->orderBy('category')->pluck('category');
-        });
+        $categories = InventoryItem::distinctCategories();
 
         return view('inventory.browse', compact('items', 'categories'));
     }
