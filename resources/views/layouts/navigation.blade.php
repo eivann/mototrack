@@ -61,8 +61,8 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 xl:mr-8">
                     <a href="{{ url('/') }}" class="flex items-center gap-3 xl:gap-4">
-                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-12 md:h-16 lg:h-20 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
-                        <div class="hidden sm:flex flex-col leading-none">
+                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-12 md:h-16 lg:h-16 xl:h-20 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
+                        <div class="hidden sm:flex lg:hidden 2xl:flex flex-col leading-none">
                             <span class="text-lg xl:text-xl font-black text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
                             <span class="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mt-0.5">Parts and Accessories</span>
                         </div>
@@ -70,9 +70,9 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden lg:flex lg:space-x-2 xl:space-x-4 h-full shrink-0" style="flex-shrink: 0 !important;">
+                <div class="hidden lg:flex space-x-1 xl:space-x-2 h-full">
                     @php
-                        $linkClasses = "inline-flex items-center px-3 xl:px-4 h-full text-xs xl:text-sm font-bold transition-all duration-300 group relative whitespace-nowrap";
+                        $linkClasses = "inline-flex items-center px-2 xl:px-3 h-full text-xs xl:text-sm font-bold transition-all duration-300 group relative whitespace-nowrap";
                         $activeClasses = "text-blue-600";
                         $inactiveClasses = "text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-white";
                     @endphp
@@ -80,7 +80,6 @@
                     @foreach($navItems as $item)
                         @if($item['show'])
                             <a href="{{ $item['href'] }}" class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }}">
-                                <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 mr-2.5 transition-all duration-300 group-hover:-translate-y-1"></i>
                                 <span>{{ $item['label'] }}</span>
                                 @if($item['active'])
                                     <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
@@ -93,7 +92,7 @@
                 </div>
             </div>
 
-            <div class="hidden lg:flex lg:items-center lg:ms-6 gap-2 shrink-0" style="flex-shrink: 0 !important;">
+            <div class="hidden lg:flex lg:items-center lg:ms-4 xl:ms-6 gap-2">
                 {{-- Notification Bell --}}
                 @auth
                 <div class="relative group" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
