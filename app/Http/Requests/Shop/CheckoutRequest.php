@@ -14,9 +14,8 @@ class CheckoutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'payment_method'  => 'required|string|in:gcash,rcpay,cash',
+            'payment_method'  => 'required|string|in:gcash,cash',
             'amount_tendered' => 'nullable|numeric|min:0',
-            'bank_code'       => 'nullable|string|max:10',
         ];
     }
 }

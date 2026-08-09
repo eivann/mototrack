@@ -6,6 +6,20 @@ use App\Models\AuditLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
+/**
+ * Audit #14: audit rows are written synchronously, inside whatever DB
+ * transaction the audited change runs in. This is deliberate, not an oversight:
+ *
+ *   - Atomicity: if a checkout/commit rolls back, its audit rows must roll back
+ *     with it. Writing them asynchronously or after commit would record actions
+ *     that never actually happened (or lose the record if the async write fails).
+ *   - Granularity: callers and tests rely on exactly one row per model event,
+ *     read back through Eloquent casts (see Admin/AuditLogTest). A bulk insert
+ *     would bypass the created_at hook and array→json casting.
+ *
+ * The extra inserts are bounded by cart size (a handful of items per POS/online
+ * order), so the throughput cost is negligible at this application's scale.
+ */
 trait HasAuditTrail
 {
     public ?array $audit_temp_changes = null;

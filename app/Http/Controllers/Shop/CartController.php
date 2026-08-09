@@ -49,6 +49,11 @@ class CartController extends Controller
     {
         try {
             $cart = $this->cartService->getCart();
+
+            if (!isset($cart[$id])) {
+                return back()->with('error', 'Item not found in cart.');
+            }
+
             $this->cartService->updateQuantity($id, $cart[$id]['quantity'] + 1);
             return back();
         } catch (\Exception $e) {
@@ -58,9 +63,23 @@ class CartController extends Controller
 
     public function decrease($id)
     {
-        $cart = $this->cartService->getCart();
-        $this->cartService->updateQuantity($id, $cart[$id]['quantity'] - 1);
-        return back();
+        try {
+            $cart = $this->cartService->getCart();
+
+            if (!isset($cart[$id])) {
+                return back()->with('error', 'Item not found in cart.');
+            }
+
+            if ($cart[$id]['quantity'] <= 1) {
+                $this->cartService->removeItem($id);
+                return back()->with('success', 'Item removed from cart.');
+            }
+
+            $this->cartService->updateQuantity($id, $cart[$id]['quantity'] - 1);
+            return back();
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function update(Request $request, $id)

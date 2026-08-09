@@ -57,6 +57,7 @@ class CustomerPreOrderController extends Controller
 
         $preorder = PreOrder::create([
             'customer_id' => $customer->id,
+            'inventory_item_id' => $request->inventory_item_id,
             'customer_name' => ucwords($user->name),
             'part_name' => ucwords($request->part_name),
             'model' => $request->model ? ucwords($request->model) : null,
@@ -76,23 +77,6 @@ class CustomerPreOrderController extends Controller
                 "/preorders"
             ));
             return redirect('/customer/dashboard')->with('success', 'Custom pre-order request submitted!');
-        }
-
-        $paymentMethod = $request->input('payment_method', 'gcash');
-
-        if ($paymentMethod === 'rcpay') {
-            return $this->attempt(function () use ($preorder, $downPayment, $request) {
-                $externalId = 'PRE-' . $preorder->id . '-' . time();
-                $bankCode = $request->input('bank_code', 'PMP');
-                $redirectUrl = $this->paymentService->createRcpayUrl($externalId, $downPayment, $bankCode);
-
-                $preorder->update([
-                    'xendit_invoice_id' => $externalId,
-                    'xendit_invoice_url' => $redirectUrl,
-                ]);
-
-                return redirect($redirectUrl);
-            }, 'Pre-order saved but RCPAY payment could not be initiated. Please contact support.');
         }
 
         return $this->attempt(function () use ($preorder, $downPayment, $request) {

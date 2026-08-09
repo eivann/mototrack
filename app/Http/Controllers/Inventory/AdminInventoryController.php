@@ -8,7 +8,6 @@ use App\Http\Requests\Inventory\UpdateInventoryRequest;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
 use App\Models\InventoryItem;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 
 class AdminInventoryController extends Controller
@@ -23,7 +22,7 @@ class AdminInventoryController extends Controller
         ->paginate(12)
         ->withQueryString();
 
-    $categories = $this->categories();
+    $categories = InventoryItem::distinctCategories();
 
     return view('inventory.index', compact('items', 'search', 'categories'));
 }
@@ -62,7 +61,7 @@ public function edit(InventoryItem $item)
 {
     Gate::authorize('update', $item);
 
-    $categories = $this->categories();
+    $categories = InventoryItem::distinctCategories();
 
     return view('inventory.edit', compact('item', 'categories'));
 }
@@ -82,17 +81,6 @@ public function lowStock()
 
     $lowStockItems = InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->paginate(10);
     return view('inventory.low_stock', compact('lowStockItems'));
-}
-
-private function categories()
-{
-    return Cache::remember('inventory_categories_v2', now()->addHours(6), function () {
-        return InventoryItem::select('category')
-            ->whereNotNull('category')
-            ->distinct()
-            ->orderBy('category')
-            ->pluck('category');
-    });
 }
 
 }

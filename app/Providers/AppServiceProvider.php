@@ -40,17 +40,11 @@ class AppServiceProvider extends ServiceProvider
             $twilioAuthToken = config('services.twilio.auth_token');
             $twilioNumber = config('services.twilio.number');
 
-            $semaphoreApiKey = config('services.semaphore.api_key');
-
             $moviderApiKey = config('services.movider.api_key');
             $moviderApiSecret = config('services.movider.api_secret');
 
             if ($twilioSid && $twilioAuthToken && $twilioNumber) {
                 return new \App\Services\Sms\TwilioSmsGateway($twilioSid, $twilioAuthToken, $twilioNumber);
-            }
-
-            if ($semaphoreApiKey) {
-                return new \App\Services\Sms\SemaphoreSmsGateway($semaphoreApiKey);
             }
 
             if ($moviderApiKey && $moviderApiSecret) {

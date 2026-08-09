@@ -15,12 +15,6 @@ regex = '''XENDIT_SECRET_KEY\s*=\s*\S+'''
 tags = ["key", "xendit"]
 
 [[rules]]
-id = "mototrack-rcpay-key"
-description = "RCPAY API key"
-regex = '''RCPAY_API_KEY\s*=\s*\S+'''
-tags = ["key", "rcpay"]
-
-[[rules]]
 id = "mototrack-movider-secret"
 description = "Movider API secret"
 regex = '''MOVIDER_API_SECRET\s*=\s*\S+'''

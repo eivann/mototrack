@@ -12,7 +12,12 @@ class InventoryItem extends Model
 
     protected $table = 'inventory_items';
 
-    public $timestamps = false; // IMPORTANT (no created_at, updated_at)
+    // Audit #15: the inventory_items table has created_at/updated_at columns,
+    // but this model intentionally does not maintain them (writes leave them
+    // NULL). Do not order by those columns — use the monotonic `id` instead
+    // (e.g. `latest('id')`). Flipping this to true would require backfilling
+    // existing NULL rows, so it is deliberately left off.
+    public $timestamps = false;
 
     protected $fillable = [
         'sku',

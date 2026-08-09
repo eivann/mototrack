@@ -4,7 +4,6 @@ use App\Models\InventoryItem;
 use App\Services\SmsGatewayInterface;
 use App\Services\Sms\MockSmsGateway;
 use App\Services\Sms\TwilioSmsGateway;
-use App\Services\Sms\SemaphoreSmsGateway;
 use App\Services\Sms\MoviderSmsGateway;
 use App\Services\SmsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,8 +17,6 @@ beforeEach(function () {
         'services.twilio.sid' => null,
         'services.twilio.auth_token' => null,
         'services.twilio.number' => null,
-        'services.semaphore.api_key' => null,
-        'services.semaphore.notify_number' => null,
         'services.movider.api_key' => null,
         'services.movider.api_secret' => null,
         'services.movider.notify_number' => null,
@@ -40,16 +37,6 @@ test('it resolves active gateway to TwilioSmsGateway when Twilio credentials exi
     
     $gateway = app(SmsGatewayInterface::class);
     expect($gateway)->toBeInstanceOf(TwilioSmsGateway::class);
-});
-
-test('it resolves active gateway to SemaphoreSmsGateway when Semaphore credentials exist', function () {
-    config([
-        'services.semaphore.api_key' => 'semKey123',
-        'services.semaphore.notify_number' => '09171234567',
-    ]);
-    
-    $gateway = app(SmsGatewayInterface::class);
-    expect($gateway)->toBeInstanceOf(SemaphoreSmsGateway::class);
 });
 
 test('it resolves active gateway to MoviderSmsGateway when Movider credentials exist', function () {

@@ -28,7 +28,6 @@ added=$(git diff --cached --unified=0 | grep -E '^\+' | grep -vE '^\+\+\+' || tr
 # Known secret-bearing key names in this project + generic private-key / token shapes.
 patterns=(
     'XENDIT_SECRET_KEY[[:space:]]*=[[:space:]]*[^[:space:]]+'
-    'RCPAY_API_KEY[[:space:]]*=[[:space:]]*[^[:space:]]+'
     'GOOGLE_CLIENT_SECRET[[:space:]]*=[[:space:]]*[^[:space:]]+'
     'MOVIDER_API_SECRET[[:space:]]*=[[:space:]]*[^[:space:]]+'
     'AWS_SECRET_ACCESS_KEY[[:space:]]*=[[:space:]]*[^[:space:]]+'

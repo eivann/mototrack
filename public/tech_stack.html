@@ -49,7 +49,7 @@ pre{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;f
 <tr><td>MySQL</td><td>—</td><td>Relational database (via Laragon)</td></tr>
 <tr><td>Eloquent ORM</td><td>built-in</td><td>Database queries, models, and relationships</td></tr>
 <tr><td>Xendit PHP SDK</td><td>7.0</td><td>GCash payment gateway integration</td></tr>
-<tr><td>Semaphore API</td><td>HTTP</td><td>SMS notifications for low stock alerts</td></tr>
+<tr><td>Twilio / Movider API</td><td>HTTP</td><td>SMS notifications for low stock alerts</td></tr>
 </table>
 
 <h2>Frontend</h2>
@@ -92,7 +92,7 @@ pre{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;f
 <table>
 <tr><th>Service</th><th>Purpose</th><th>Config Location</th></tr>
 <tr><td>Xendit</td><td>GCash payment gateway</td><td><code>config/services.php</code></td></tr>
-<tr><td>Semaphore</td><td>SMS low-stock alerts</td><td><code>config/services.php</code></td></tr>
+<tr><td>Twilio / Movider</td><td>SMS low-stock alerts</td><td><code>config/services.php</code></td></tr>
 <tr><td>Google Maps Embed API</td><td>Shop location map on landing page</td><td><code>config/services.php</code></td></tr>
 </table>
 
@@ -114,7 +114,7 @@ pre{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;f
 ├── app/
 │   ├── Http/Controllers/       # 6 controllers + Auth/
 │   ├── Models/                 # 5 models (User, InventoryItem, Sale, Repair, PreOrder)
-│   ├── Services/               # SmsService (Semaphore SMS integration)
+│   ├── Services/               # SmsService (Twilio / Movider SMS integration)
 │   └── Http/Middleware/        # OwnerMiddleware (role-based access)
 ├── resources/views/            # 20+ Blade templates
 │   ├── layouts/                # app.blade.php, navigation.blade.php
@@ -140,7 +140,7 @@ pre{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;f
 <div class="feature"><div class="feature-num">6</div><div><b>Repair Tracking</b><span>Log, update status, and mark repairs as paid</span></div></div>
 <div class="feature"><div class="feature-num">7</div><div><b>Sales History</b><span>Filter by date, view receipts, archive transactions</span></div></div>
 <div class="feature"><div class="feature-num">8</div><div><b>Role-Based Access</b><span>Owner dashboard vs. Customer dashboard</span></div></div>
-<div class="feature"><div class="feature-num">9</div><div><b>SMS Alerts</b><span>Automatic low-stock notifications via Semaphore</span></div></div>
+<div class="feature"><div class="feature-num">9</div><div><b>SMS Alerts</b><span>Automatic low-stock notifications via Twilio / Movider</span></div></div>
 </div>
 
 </body>

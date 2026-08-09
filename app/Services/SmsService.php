@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Services\Sms\TwilioSmsGateway;
-use App\Services\Sms\SemaphoreSmsGateway;
 use App\Services\Sms\MoviderSmsGateway;
 use App\Services\Sms\MockSmsGateway;
 use Illuminate\Support\Facades\Log;
@@ -28,9 +27,7 @@ class SmsService
         // If no recipient number was passed, fall back to configured default numbers based on gateway type
         if (!$number) {
             if ($gateway instanceof TwilioSmsGateway) {
-                $number = env('SMS_NOTIFY_NUMBER') ?: config('services.twilio.number');
-            } elseif ($gateway instanceof SemaphoreSmsGateway) {
-                $number = config('services.semaphore.notify_number');
+                $number = config('services.movider.notify_number') ?: config('services.twilio.number');
             } elseif ($gateway instanceof MoviderSmsGateway) {
                 $number = config('services.movider.notify_number');
             } else {

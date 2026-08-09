@@ -9,6 +9,7 @@ class PreOrder extends Model
    protected $fillable = [
     'customer_name',
     'customer_id',
+    'inventory_item_id',
     'part_name',
     'model',
     'quantity',
@@ -31,5 +32,12 @@ class PreOrder extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    // Audit #10: the catalog item this pre-order was placed against (null for
+    // custom/sourced parts). Used to restock accurately on completion.
+    public function inventoryItem()
+    {
+        return $this->belongsTo(InventoryItem::class);
     }
 }

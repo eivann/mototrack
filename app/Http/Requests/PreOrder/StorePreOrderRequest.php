@@ -31,6 +31,7 @@ class StorePreOrderRequest extends FormRequest
             }];
 
         return [
+            'inventory_item_id'    => 'nullable|integer|exists:inventory_items,id',
             'part_name'            => 'required|string|max:255',
             'model'                => 'nullable|string|max:255',
             'quantity'             => 'required|integer|min:1',

@@ -13,7 +13,7 @@ class InventoryService
     public function store(array $data): InventoryItem
     {
         $item = InventoryItem::create($data);
-        Cache::forget('inventory_categories');
+        Cache::forget('inventory_categories_v3');
         return $item;
     }
 
@@ -30,7 +30,7 @@ class InventoryService
             $item->save();
         }
 
-        Cache::forget('inventory_categories');
+        Cache::forget('inventory_categories_v3');
         return $item->fresh();
     }
 
@@ -40,7 +40,7 @@ class InventoryService
     public function destroy(InventoryItem $item): void
     {
         $item->delete();
-        Cache::forget('inventory_categories');
+        Cache::forget('inventory_categories_v3');
     }
 
     /**

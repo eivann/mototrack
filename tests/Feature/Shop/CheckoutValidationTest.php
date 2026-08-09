@@ -68,15 +68,14 @@ test('checkout preserves order and redirects to receipt if gateway crashes', fun
 
     // Arrange: Mock Payment Gateway to Throw Exception (Simulating Server Down)
     $this->mock(PaymentService::class, function (MockInterface $mock) {
-        $mock->shouldReceive('createRcpayUrl')
+        $mock->shouldReceive('createInvoice')
              ->once()
-             ->andThrow(new \Exception('RCPAY Connection Timeout 504'));
+             ->andThrow(new \Exception('Xendit Connection Timeout 504'));
     });
 
     // Act
     $response = $this->actingAs($user)->post('/checkout', [
-        'payment_method' => 'rcpay',
-        'bank_code' => 'PMP'
+        'payment_method' => 'gcash',
     ]);
 
     // Assert: Handled gracefully without 500 error screen

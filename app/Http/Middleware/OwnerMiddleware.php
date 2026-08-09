@@ -15,7 +15,7 @@ class OwnerMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-          if (auth()->user()->role !== 'owner') {
+          if (!auth()->check() || auth()->user()->role !== 'owner') {
         abort(403, 'Unauthorized');
     }
         return $next($request);

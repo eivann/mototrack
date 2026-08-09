@@ -51,16 +51,6 @@ return [
         'provider' => env('PAYMENT_PROVIDER', 'default'),
     ],
 
-    'rcpay' => [
-        'merchant_id' => env('RCPAY_MERCHANT_ID', 'MCH123456'),
-        'api_key' => env('RCPAY_API_KEY', 'abc123*'),
-    ],
-
-    'semaphore' => [
-        'api_key' => env('SEMAPHORE_API_KEY'),
-        'notify_number' => env('SMS_NOTIFY_NUMBER'),
-    ],
-
     'twilio' => [
         'sid' => env('TWILIO_SID'),
         'auth_token' => env('TWILIO_AUTH_TOKEN'),

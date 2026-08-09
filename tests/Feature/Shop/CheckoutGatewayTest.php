@@ -86,7 +86,7 @@ test('checkout processes multi-item cart, locks stock, and assigns tendered amou
     expect(Session::get('cart'))->toBeNull();
 });
 
-test('checkout processes rcpay integration successfully without amount_tendered provided', function () {
+test('checkout processes gcash integration successfully without amount_tendered provided', function () {
     $user = User::factory()->create();
     $item = InventoryItem::create(['part_name' => 'Gloves', 'price' => 500.00, 'quantity' => 5]);
 
@@ -94,22 +94,21 @@ test('checkout processes rcpay integration successfully without amount_tendered 
         $item->id => ['part_name' => 'Gloves', 'model' => 'Fox', 'price' => 500.00, 'quantity' => 1]
     ]);
 
-    // Mock RCPAY
+    // Mock GCash gateway
     $this->mock(PaymentService::class, function (MockInterface $mock) {
-        $mock->shouldReceive('createRcpayUrl')
+        $mock->shouldReceive('createInvoice')
              ->once()
-             ->andReturn('https://mock-rcpay.com/pay');
+             ->andReturn(['invoice_url' => 'https://mock-xendit.com/gcash-pay']);
     });
 
     // Act: No amount_tendered provided
     $response = $this->actingAs($user)->post('/checkout', [
-        'payment_method' => 'rcpay',
-        'bank_code' => 'QRPH'
+        'payment_method' => 'gcash',
     ]);
 
     // Assert
-    $response->assertRedirect('https://mock-rcpay.com/pay');
-    
+    $response->assertRedirect('https://mock-xendit.com/gcash-pay');
+
     // Fallback logic: amount_tendered defaults to grandTotal if null
     $sale = Sale::first();
     expect($sale->amount_tendered)->toEqual(500.00)

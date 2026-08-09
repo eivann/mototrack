@@ -92,7 +92,10 @@ class RepairController extends Controller
                 \App\Models\Sale::create([
                     'inventory_item_id' => null,
                     'quantity' => 1,
+                    'price' => $repair->cost,
                     'total_price' => $repair->cost,
+                    'amount_tendered' => $repair->cost,
+                    'change' => 0,
                     'customer_id' => $repair->customer_id,
                     'transaction_reference' => 'REPAIR-' . strtoupper(Str::random(8)),
                 ]);

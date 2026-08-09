@@ -22,7 +22,7 @@ If you want to go back to the standard UI:
 
 ### 🏢 For Shop Owners (Admin Dashboard)
 - **Smart POS System**: Rapid checkout interface with automated inventory deduction and transaction grouping.
-- **Inventory Management**: Real-time tracking of parts with automated **SMS Low-Stock Alerts** via Semaphore API.
+- **Inventory Management**: Real-time tracking of parts with automated **SMS Low-Stock Alerts** via Twilio / Movider.
 - **Repair Tracking**: Manage service jobs, track progress, and record payments with one-click receipt generation.
 - **Pre-Order Processing**: Sourcing management for out-of-stock parts with down-payment verification.
 - **Financial Analytics**: Comprehensive sales history and reporting filtered by day, week, or custom date ranges.
@@ -38,7 +38,7 @@ If you want to go back to the standard UI:
 - **Framework**: Laravel 13
 - **Frontend**: Blade, Alpine.js, Tailwind CSS (Custom Dark/Light mode)
 - **Database**: **PostgreSQL (Supabase)** — *Primary Production Database*
-- **APIs**: Xendit (Payments), Semaphore (SMS), Google reCAPTCHA v2
+- **APIs**: Xendit (Payments), Twilio / Movider (SMS), Google reCAPTCHA v2
 - **Icons**: Lucide Icons
 - **Typography**: Inter
 
@@ -86,8 +86,8 @@ npm run build
 ### 4. Configuration
 Ensure the following keys are set in your `.env` file:
 - `XENDIT_SECRET_KEY`: Your Xendit API key
-- `SEMAPHORE_API_KEY`: Your Semaphore SMS key
-- `SEMAPHORE_NOTIFY_NUMBER`: Owner's notification number
+- `TWILIO_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_NUMBER`: Twilio SMS credentials (or use `MOVIDER_API_KEY` / `MOVIDER_API_SECRET`)
+- `SMS_NOTIFY_NUMBER`: Owner's notification number
 - `NOCAPTCHA_SITEKEY` / `NOCAPTCHA_SECRET`: Google reCAPTCHA keys
 
 ## 🛡️ Security & Performance

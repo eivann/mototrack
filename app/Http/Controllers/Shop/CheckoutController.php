@@ -85,9 +85,8 @@ class CheckoutController extends Controller
             ));
 
             // P1-2: Only notify owners immediately for cash payments.
-            // For online payments (gcash/rcpay), the SendPaymentNotification
-            // listener fires upon webhook confirmation — notifying owners at
-            // the right time, after payment is actually received.
+            // For online payments (gcash), owners are notified when payment
+            // is confirmed — at the right time, after payment is received.
             if ($paymentMethod === 'cash') {
                 $owners = User::owners();
                 Notification::send($owners, new StatusUpdated(
@@ -99,7 +98,7 @@ class CheckoutController extends Controller
         }
 
         // For cash/walk-in payments, no external API is needed.
-        if ($paymentMethod !== 'gcash' && $paymentMethod !== 'rcpay') {
+        if ($paymentMethod !== 'gcash') {
             return redirect('/checkout/receipt')->with('success', 'Order placed successfully!');
         }
 
@@ -109,27 +108,15 @@ class CheckoutController extends Controller
         // receives recovery guidance instead of a misleading
         // "checkout failed" error.
         try {
-            if ($paymentMethod === 'gcash') {
-                $paymentAmount = $request->amount_tendered ?: $grandTotal;
-                $result = $this->paymentService->createInvoice(
-                    $transactionReference,
-                    $paymentAmount,
-                    'MotoTrack Order ' . $transactionReference,
-                    url('/checkout/receipt?trx=' . $transactionReference),
-                    url('/shop/cart')
-                );
-                return redirect($result['invoice_url']);
-            }
-
-            // rcpay
             $paymentAmount = $request->amount_tendered ?: $grandTotal;
-            $bankCode = $request->bank_code ?? 'PMP';
-            $redirectUrl = $this->paymentService->createRcpayUrl(
+            $result = $this->paymentService->createInvoice(
                 $transactionReference,
                 $paymentAmount,
-                $bankCode
+                'MotoTrack Order ' . $transactionReference,
+                url('/checkout/receipt?trx=' . $transactionReference),
+                url('/shop/cart')
             );
-            return redirect($redirectUrl);
+            return redirect($result['invoice_url']);
         } catch (\Throwable $e) {
             report($e);
 

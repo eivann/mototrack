@@ -13,10 +13,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
        $middleware->alias([
         'owner' => \App\Http\Middleware\OwnerMiddleware::class,
-        'verify.rcpay.signature' => \App\Http\Middleware\VerifyRcpaySignature::class,
-       ]);
-       $middleware->validateCsrfTokens(except: [
-           'api/rcpay-webhook',
        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

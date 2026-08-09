@@ -118,6 +118,7 @@ class SaleController extends Controller
 
             if ($item) {
                 $item->increment('quantity', $sale->quantity);
+                $item->refresh();
                 if ($item->quantity > $item->low_stock_threshold) {
                     $item->update(['low_stock_notified' => false]);
                 }
@@ -133,7 +134,7 @@ class SaleController extends Controller
     {
         $sales = Sale::with('item')->where('transaction_reference', $id)->get();
         if ($sales->isEmpty()) {
-            $sales = collect([Sale::with('item')->findOrFail($id)]);
+            abort(404, 'Receipt not found.');
         }
         return view('sales.receipt', compact('sales'));
     }

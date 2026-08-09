@@ -15,8 +15,6 @@ beforeEach(function () {
         'services.twilio.sid' => null,
         'services.twilio.auth_token' => null,
         'services.twilio.number' => null,
-        'services.semaphore.api_key' => null,
-        'services.semaphore.notify_number' => null,
         'services.movider.api_key' => null,
         'services.movider.api_secret' => null,
         'services.movider.notify_number' => null,
