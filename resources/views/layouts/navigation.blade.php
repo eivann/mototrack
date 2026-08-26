@@ -1,7 +1,8 @@
 @php
-    $dashboardRoute = auth()->check() && auth()->user()->role === 'owner'
-        ? route('dashboard')
-        : route('customer.dashboard');
+    $dashboardRoute = auth()->check()
+        ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard'))
+        : route('login');
+        
     $navItems = [
         [
             'label' => 'Home',
@@ -12,20 +13,20 @@
             'show' => true,
         ],
         [
-            'label' => 'Dashboard',
-            'mobile_label' => auth()->check() && auth()->user()->role === 'owner' ? 'Admin Dashboard' : 'Customer Dashboard',
-            'href' => $dashboardRoute,
-            'icon' => auth()->check() && auth()->user()->role === 'owner' ? 'activity' : 'layout-dashboard',
-            'active' => request()->routeIs('dashboard') || request()->routeIs('customer.dashboard'),
-            'show' => auth()->check(),
+            'label' => 'Services',
+            'mobile_label' => 'Services',
+            'href' => url('/services'),
+            'icon' => 'settings',
+            'active' => request()->is('services'),
+            'show' => true,
         ],
         [
-            'label' => 'Browse',
-            'mobile_label' => 'Browse Products',
-            'href' => route('browse'),
-            'icon' => 'shopping-bag',
-            'active' => request()->routeIs('browse'),
-            'show' => !auth()->check() || auth()->user()->role !== 'owner',
+            'label' => 'About',
+            'mobile_label' => 'About Us',
+            'href' => url('/about'),
+            'icon' => 'info',
+            'active' => request()->is('about'),
+            'show' => true,
         ],
         [
             'label' => 'Compatibility',
@@ -33,69 +34,76 @@
             'href' => route('compatibility.view'),
             'icon' => 'search',
             'active' => request()->routeIs('compatibility.view'),
-            'show' => !auth()->check() || auth()->user()->role !== 'owner',
+            'show' => true,
         ],
         [
-            'label' => 'Pre-orders',
+            'label' => 'Pre-Order',
             'mobile_label' => 'Pre-orders',
             'href' => route('preorder.parts'),
             'icon' => 'clipboard-list',
             'active' => request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*'),
-            'show' => auth()->check() && auth()->user()->role !== 'owner',
+            'show' => true,
         ],
         [
-            'label' => 'Audit Trail',
-            'mobile_label' => 'Audit Trail',
-            'href' => route('admin.audit_logs.index'),
-            'icon' => 'history',
-            'active' => request()->routeIs('admin.audit_logs.*'),
-            'show' => auth()->check() && auth()->user()->role === 'owner',
+            'label' => 'Contact',
+            'mobile_label' => 'Contact Us',
+            'href' => url('/contact'),
+            'icon' => 'phone',
+            'active' => request()->is('contact'),
+            'show' => true,
         ],
     ];
 @endphp
 
-<nav x-data="{ open: false }" class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
+<nav x-data="{ open: false }" class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16 md:h-20 lg:h-24">
+        <div class="flex justify-between items-center h-16 md:h-20 lg:h-[88px]">
             <div class="flex items-center">
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 xl:mr-8">
+                <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 xl:mr-10">
                     <a href="{{ url('/') }}" class="flex items-center gap-3 xl:gap-4">
-                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-12 md:h-16 lg:h-16 xl:h-20 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
-                        <div class="hidden sm:flex lg:hidden 2xl:flex flex-col leading-none">
-                            <span class="text-lg xl:text-xl font-black text-gray-900 dark:text-white uppercase">Edmar Motorcycle</span>
-                            <span class="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mt-0.5">Parts and Accessories</span>
+                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-10 md:h-12 lg:h-14 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
+                        <div class="hidden sm:flex flex-col leading-none">
+                            <span class="text-[16px] xl:text-[18px] font-black text-[#1a1f2c] dark:text-white uppercase tracking-tight">Edmar Motorcycle</span>
+                            <span class="text-[9px] font-bold tracking-[0.2em] text-indigo-600 dark:text-indigo-400 uppercase mt-1">Parts and Accessories</span>
                         </div>
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden lg:flex space-x-1 xl:space-x-2 h-full">
+                <div class="hidden lg:flex space-x-6 xl:space-x-8 h-full items-center ml-4">
                     @php
-                        $linkClasses = "inline-flex items-center px-2 xl:px-3 h-full text-xs xl:text-sm font-bold transition-all duration-300 group relative whitespace-nowrap";
-                        $activeClasses = "text-blue-600";
-                        $inactiveClasses = "text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-white";
+                        $linkClasses = "inline-flex items-center text-[13px] xl:text-[14px] font-bold transition-all duration-300 relative whitespace-nowrap";
+                        $activeClasses = "text-indigo-600 dark:text-indigo-400";
+                        $inactiveClasses = "text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white";
                     @endphp
 
                     @foreach($navItems as $item)
                         @if($item['show'])
                             <a href="{{ $item['href'] }}" class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }}">
                                 <span>{{ $item['label'] }}</span>
-                                @if($item['active'])
-                                    <span class="absolute bottom-0 left-4 right-4 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></span>
-                                @else
-                                    <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-blue-400/50 rounded-t-full transition-all duration-300 group-hover:w-8"></span>
-                                @endif
                             </a>
                         @endif
                     @endforeach
                 </div>
             </div>
 
-            <div class="hidden lg:flex lg:items-center lg:ms-4 xl:ms-6 gap-2">
+            <div class="hidden lg:flex lg:items-center gap-4 xl:gap-6">
+                {{-- Global Theme Toggle --}}
+                <button id="globalThemeToggle" aria-label="Toggle light/dark mode" title="Toggle Light/Dark Mode"
+                    class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none">
+                    <i id="globalThemeIcon" data-lucide="sun" class="w-[18px] h-[18px]"></i>
+                </button>
+
+                <!-- Dashboard Button -->
+                <a href="{{ $dashboardRoute }}" class="inline-flex items-center gap-2 bg-[#5244e1] hover:bg-[#4336bf] text-white px-5 py-2.5 rounded-full text-[13px] font-bold transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                    <span>Dashboard</span>
+                </a>
+                
                 {{-- Notification Bell --}}
                 @auth
-                <div class="relative group" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
+                <div class="relative group hidden" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
                     <button @click="open = !open; hasNew = false"
                         :aria-expanded="open"
                         aria-label="Toggle notifications"
@@ -192,70 +200,7 @@
                 </div>
                 @endauth
 
-                {{-- Global Theme Toggle --}}
-                <button id="globalThemeToggle" aria-label="Toggle light/dark mode" title="Toggle Light/Dark Mode"
-                    class="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    <i id="globalThemeIcon" data-lucide="moon" class="w-4 h-4"></i>
-                </button>
-                @auth
-                    <x-dropdown align="right" width="56">
-                        <x-slot name="trigger">
-                            <button class="group inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-bold rounded-2xl text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all duration-300">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 flex-shrink-0 aspect-square rounded-xl bg-blue-600 flex items-center justify-center text-white text-base font-black shadow-lg group-hover:rotate-6 transition-transform">
-                                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                                    </div>
-                                    <div class="text-left flex-grow">
-                                        <p class="text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest leading-none mb-1">Account</p>
-                                        <p class="leading-none font-bold text-gray-900 dark:text-white whitespace-nowrap text-ellipsis overflow-hidden max-w-[100px]">{{ auth()->user()->name }}</p>
-                                    </div>
-                                </div>
 
-                                <div class="ms-3">
-                                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors"></i>
-                                </div>
-                            </button>
-                        </x-slot>
-
-                        <x-slot name="content">
-                            <div class="px-4 py-3 bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-700">
-                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">User Settings</p>
-                            </div>
-                            <x-dropdown-link :href="$dashboardRoute" class="flex items-center gap-3 py-3 transition-colors">
-                                <div class="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600">
-                                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                                </div>
-                                <span class="font-semibold">{{ __('Dashboard') }}</span>
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-3 py-3 transition-colors">
-                                <div class="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600">
-                                    <i data-lucide="user" class="w-4 h-4"></i>
-                                </div>
-                                <span class="font-semibold">{{ __('My Profile') }}</span>
-                            </x-dropdown-link>
-
-                            <div class="border-t border-gray-100 dark:border-gray-800"></div>
-
-                            <!-- Authentication -->
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <x-dropdown-link :href="route('logout')"
-                                        class="flex items-center gap-3 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
-                                        onclick="event.preventDefault(); this.closest('form').submit();">
-                                    <div class="p-1.5 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                                    </div>
-                                    <span class="font-semibold">{{ __('Sign Out') }}</span>
-                                </x-dropdown-link>
-                            </form>
-                        </x-slot>
-                    </x-dropdown>
-                @else
-                    <div class="flex items-center gap-2">
-                        <a href="{{ route('login') }}" class="px-5 py-2 text-sm font-bold text-gray-600 hover:text-blue-600 dark:text-gray-100 dark:hover:text-white transition-colors">Sign In</a>
-                        <a href="{{ route('register') }}" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95">Get Started</a>
-                    </div>
-                @endauth
             </div>
 
             <!-- Hamburger -->
