@@ -176,33 +176,41 @@
                 <p class="text-gray-500 dark:text-gray-400 font-medium text-lg">Enter your motorcycle details and we'll instantly find the exact parts that fit your ride.</p>
             </div>
 
-            <div class="relative group mt-8">
-                <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
-                <div class="relative bg-white dark:bg-gray-800 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
-                    <form id="compatForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="flex flex-col">
-                            <label for="compatMake" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Make</label>
-                            <input type="text" id="compatMake" placeholder="E.g., Honda" list="landingMakeSuggestions" autocomplete="off" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
+            <form id="compatForm" class="relative group z-20 mt-8">
+                <div class="bg-white dark:bg-gray-800 rounded-[2rem] shadow-[0_8px_30px_rgba(82,68,225,0.15)] dark:shadow-none p-3 md:p-4 border border-gray-50 dark:border-gray-700">
+                    <div class="flex flex-col md:flex-row items-end gap-3 md:gap-4">
+                        <div class="flex-1 w-full">
+                            <label for="compatMake" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5 text-left">Make</label>
+                            <input type="text" id="compatMake" placeholder="E.g., Honda" list="landingMakeSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
                             <datalist id="landingMakeSuggestions"></datalist>
                         </div>
-                        <div class="flex flex-col">
-                            <label for="compatModel" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Model</label>
-                            <input type="text" id="compatModel" placeholder="E.g., TMX 125" list="landingModelSuggestions" autocomplete="off" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
+                        <div class="flex-1 w-full">
+                            <label for="compatModel" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5 text-left">Model</label>
+                            <input type="text" id="compatModel" placeholder="E.g., TMX 125" list="landingModelSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
                             <datalist id="landingModelSuggestions"></datalist>
                         </div>
-                        <div class="flex flex-col">
-                            <label for="compatPart" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1 text-left">Part</label>
-                            <input type="text" id="compatPart" placeholder="E.g., Brake Pad" list="landingPartSuggestions" autocomplete="off" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold">
-                            <datalist id="landingPartSuggestions"></datalist>
+                        <div class="flex-1 w-full relative">
+                            <label for="compatPart" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5 text-left">Year/Part</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="compatPart" placeholder="E.g., 2024 or Brake" list="landingPartSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
+                                <datalist id="landingPartSuggestions"></datalist>
+                                <!-- Loading Spinner -->
+                                <div id="landingSpinner" class="hidden absolute right-4 top-[42px]">
+                                    <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex items-end">
-                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-3.5 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <div class="w-full md:w-auto mt-2 md:mt-0">
+                            <button type="submit" class="w-full md:w-auto bg-[#5244e1] hover:bg-[#4336bf] text-white font-bold rounded-2xl px-8 py-3.5 flex items-center justify-center gap-2 transition-all shadow-md ring-2 ring-indigo-500 dark:ring-indigo-400 ring-offset-2 dark:ring-offset-gray-800">
                                 <i data-lucide="search" class="w-5 h-5"></i> Search
                             </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+            </form>
 
             <!-- RESULTS GRID -->
             <div id="compatResultsBox" class="mt-8 transition-all duration-300 relative z-10"></div>
@@ -522,27 +530,21 @@
                     </div>
                 `;
 
-                fetch(`/search-parts?model=${encodeURIComponent(query)}`)
-                    .then(res => res.json())
+                fetch(`/search-parts?model=${encodeURIComponent(query)}`, {
+                    headers: { 'Accept': 'application/json' }
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Network response was not ok');
+                        return res.json();
+                    })
                     .then(data => {
                         resultsBox.innerHTML = '';
 
-                        if (data.length === 0) {
-                            // Add error ring to input boxes
-                            const inputs = [makeInput, modelInput, partInput];
-                            inputs.forEach(inp => {
-                                inp.classList.add('ring-2', 'ring-red-400', 'border-red-400');
-                            });
-                            setTimeout(() => {
-                                inputs.forEach(inp => {
-                                    inp.classList.remove('ring-2', 'ring-red-400', 'border-red-400');
-                                });
-                            }, 3000);
-
+                        if (!Array.isArray(data) || data.length === 0) {
                             resultsBox.innerHTML = `
-                                <div class="bg-red-50 dark:bg-red-900/10 rounded-2xl shadow-sm border border-red-200 dark:border-red-800 p-8 text-center max-w-2xl mx-auto">
-                                    <p class="font-bold text-lg text-red-600 dark:text-red-400 mb-2">No matching parts found</p>
-                                    <p class="text-red-500/80 dark:text-red-400/70 font-medium text-sm">Try adjusting your search terms or check a different motorcycle model.</p>
+                                <div class="bg-red-50/80 dark:bg-red-900/10 rounded-[2rem] border border-red-200/60 dark:border-red-900/30 p-8 text-center max-w-3xl mx-auto mt-4">
+                                    <p class="font-bold text-[17px] text-[#dc2626] dark:text-red-400 mb-2">No matching parts found</p>
+                                    <p class="text-[13px] text-red-400 dark:text-red-500 font-bold tracking-wide">Try adjusting your search terms or check a different motorcycle model.</p>
                                 </div>
                             `;
                         } else {
@@ -568,10 +570,14 @@
 
                                 const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${item.brand}</p>` : '';
                                 const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
+                                
+                                const imageHtml = item.image_url 
+                                    ? `<img src="${item.image_url}" alt="${item.part_name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">`
+                                    : `<svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`;
 
                                 card.innerHTML = `
                                     <div class="aspect-square bg-gray-50 dark:bg-gray-700 flex items-center justify-center p-0 relative overflow-hidden group-hover:bg-gray-100 dark:group-hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-700">
-                                        <img src="${item.image_url}" alt="${item.part_name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                                        ${imageHtml}
                                         ${item.quantity <= 0 ? '<div class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">Sold Out</div>' : ''}
                                     </div>
                                     <div class="p-4 flex-1 flex flex-col text-left">
@@ -595,8 +601,12 @@
                         }
                     }).catch((err) => {
                         console.error(err);
-                        resultsBox.innerHTML = '';
-                        showToast('Failed to fetch compatibility results.', 'error');
+                        resultsBox.innerHTML = `
+                            <div class="bg-red-50/80 dark:bg-red-900/10 rounded-[2rem] border border-red-200/60 dark:border-red-900/30 p-8 text-center max-w-3xl mx-auto mt-4">
+                                <p class="font-bold text-[17px] text-[#dc2626] dark:text-red-400 mb-2">Error connecting to server</p>
+                                <p class="text-[13px] text-red-400 dark:text-red-500 font-bold tracking-wide">Please try again in a moment or type slower to avoid rate limits.</p>
+                            </div>
+                        `;
                     });
             }
 

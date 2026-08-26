@@ -17,7 +17,7 @@
             </div>
 
             <!-- Search Area -->
-            <div class="relative group z-20">
+            <form id="compatForm" class="relative group z-20">
                 <div class="bg-white dark:bg-gray-800 rounded-[2rem] shadow-[0_8px_30px_rgba(82,68,225,0.15)] dark:shadow-none p-3 md:p-4 border border-gray-50 dark:border-gray-700">
                     <div class="flex flex-col md:flex-row items-end gap-3 md:gap-4">
                         <div class="flex-1 w-full">
@@ -45,7 +45,7 @@
                             </div>
                         </div>
                         <div class="w-full md:w-auto mt-2 md:mt-0">
-                            <button class="w-full md:w-auto bg-[#5244e1] hover:bg-[#4336bf] text-white font-bold rounded-2xl px-8 py-3.5 flex items-center justify-center gap-2 transition-all shadow-md ring-2 ring-indigo-500 dark:ring-indigo-400 ring-offset-2 dark:ring-offset-gray-800">
+                            <button type="submit" class="w-full md:w-auto bg-[#5244e1] hover:bg-[#4336bf] text-white font-bold rounded-2xl px-8 py-3.5 flex items-center justify-center gap-2 transition-all shadow-md ring-2 ring-indigo-500 dark:ring-indigo-400 ring-offset-2 dark:ring-offset-gray-800">
                                 <i data-lucide="search" class="w-5 h-5"></i>
                                 Search
                             </button>
@@ -57,7 +57,7 @@
                 <div id="resultsBox" class="mt-8 transition-all duration-300 relative z-10">
                     <!-- Results injected here -->
                 </div>
-            </div>
+            </form>
         </div>
 
     </div>
@@ -182,7 +182,9 @@
             return String(text).replace(regex, '<span class="highlight">$1</span>');
         }
 
-        function triggerSearch() {
+        function triggerSearch(e) {
+            if (e && e.type === 'submit') e.preventDefault();
+            
             clearTimeout(timeout);
             const query = `${makeInput.value} ${modelInput.value} ${yearInput.value}`.trim();
 
@@ -194,13 +196,18 @@
             spinner.classList.remove('hidden');
 
             timeout = setTimeout(() => {
-                fetch(`/search-parts?model=${encodeURIComponent(query)}`)
-                    .then(res => res.json())
+                fetch(`/search-parts?model=${encodeURIComponent(query)}`, {
+                    headers: { 'Accept': 'application/json' }
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Network response was not ok');
+                        return res.json();
+                    })
                     .then(data => {
                         spinner.classList.add('hidden');
                         resultsBox.innerHTML = '';
 
-                        if (data.length === 0) {
+                        if (!Array.isArray(data) || data.length === 0) {
                             resultsBox.innerHTML = `
                                 <div class="bg-red-50/80 dark:bg-red-900/10 rounded-[2rem] border border-red-200/60 dark:border-red-900/30 p-8 text-center max-w-3xl mx-auto mt-4">
                                     <p class="font-bold text-[17px] text-[#dc2626] dark:text-red-400 mb-2">No matching parts found</p>
@@ -230,10 +237,14 @@
 
                                 const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${item.brand}</p>` : '';
                                 const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
+                                
+                                const imageHtml = item.image_url 
+                                    ? `<img src="${item.image_url}" alt="${item.part_name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">`
+                                    : `<svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`;
 
                                 card.innerHTML = `
-                                    <div class="aspect-square bg-gray-50 dark:bg-gray-700 flex items-center justify-center p-4 relative overflow-hidden group-hover:bg-gray-100 dark:group-hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-700">
-                                        <svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                    <div class="aspect-square bg-gray-50 dark:bg-gray-700 flex items-center justify-center p-0 relative overflow-hidden group-hover:bg-gray-100 dark:group-hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-700">
+                                        ${imageHtml}
                                         ${item.quantity <= 0 ? '<div class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">Sold Out</div>' : ''}
                                     </div>
                                     <div class="p-4 flex-1 flex flex-col">
@@ -257,8 +268,19 @@
                         }
                     }).catch(() => {
                         spinner.classList.add('hidden');
+                        resultsBox.innerHTML = `
+                            <div class="bg-red-50/80 dark:bg-red-900/10 rounded-[2rem] border border-red-200/60 dark:border-red-900/30 p-8 text-center max-w-3xl mx-auto mt-4">
+                                <p class="font-bold text-[17px] text-[#dc2626] dark:text-red-400 mb-2">Error connecting to server</p>
+                                <p class="text-[13px] text-red-400 dark:text-red-500 font-bold tracking-wide">Please try again in a moment or type slower to avoid rate limits.</p>
+                            </div>
+                        `;
                     });
             }, 400);
+        }
+
+        const compatForm = document.getElementById('compatForm');
+        if (compatForm) {
+            compatForm.addEventListener('submit', triggerSearch);
         }
 
         makeInput.addEventListener('input', () => loadSuggestions('brand', makeInput.value, 'makeSuggestions'));
@@ -275,5 +297,5 @@
                 triggerSearch();
             }
         });
-    </script>
+</script>
 </x-app-layout>
