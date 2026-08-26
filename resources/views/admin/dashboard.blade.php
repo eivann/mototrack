@@ -12,10 +12,8 @@
                             <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">Admin Dashboard</h2>
                             <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">Operations overview</p>
                         </div>
-                    </div>
-                    
-
                 </div>
+            </div>
 
                 <!-- Navigation Tabs -->
                 <div class="flex gap-2 overflow-x-auto no-scrollbar pb-4 px-1 mt-2">
@@ -69,9 +67,9 @@
                     <!-- Inventory Tab -->
                     <div x-show="activeTab === 'inventory'" x-cloak class="space-y-6">
                         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
-                            <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                            <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex flex-wrap justify-between items-center gap-3">
                                 <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Stock Summary</h3>
-                                <div class="flex gap-4 items-center">
+                                <div class="flex flex-wrap gap-4 items-center">
                                     <a href="/inventory/adjustments" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline mr-4">Damaged & Returns</a>
                                     <a href="/inventory" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">View All</a>
                                 </div>

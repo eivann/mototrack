@@ -12,10 +12,8 @@
                             <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">Customer Dashboard</h2>
                             <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">Orders and service tracking</p>
                         </div>
-                    </div>
-                    
-
                 </div>
+            </div>
             </div>
         </div>
 

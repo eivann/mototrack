@@ -29,7 +29,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://unpkg.com/lucide@0.460.0"></script>
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
         <style>
             [x-cloak] { display: none !important; }

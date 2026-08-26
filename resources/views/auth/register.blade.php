@@ -6,15 +6,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'MotoTrack') }} - Register</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        if (window.tailwind) {
-            tailwind.config = { darkMode: 'class' };
-        }
-    </script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.460.0"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     
     <script>
@@ -325,6 +321,13 @@
         }
 
         [x-cloak] { display: none !important; }
+
+        @media (max-width: 360px) {
+            .g-recaptcha {
+                transform: scale(0.85);
+                transform-origin: center;
+            }
+        }
 
         @media (min-width: 640px) {
             .register-header img {

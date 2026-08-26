@@ -207,7 +207,7 @@
                             `;
                         } else {
                             const grid = document.createElement('div');
-                            grid.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4';
+                            grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
                             
                             data.forEach(item => {
                                 const card = document.createElement('div');

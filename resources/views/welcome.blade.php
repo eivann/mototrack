@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -377,6 +377,14 @@
     <script>
         lucide.createIcons();
 
+        // Conditionally disable Vanilla Tilt on touch devices for performance
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            document.querySelectorAll('[data-tilt]').forEach(el => {
+                if (el.vanillaTilt) el.vanillaTilt.destroy();
+                el.removeAttribute('data-tilt');
+            });
+        }
+
         // Inline Compatibility Checker AJAX Engine
         (function() {
             const form = document.getElementById('compatForm');
@@ -539,7 +547,7 @@
                             `;
                         } else {
                             const grid = document.createElement('div');
-                            grid.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4';
+                            grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
                             
                             data.forEach(item => {
                                 const card = document.createElement('div');
