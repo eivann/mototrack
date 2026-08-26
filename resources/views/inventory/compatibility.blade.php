@@ -17,35 +17,38 @@
             </div>
 
             <!-- Search Area -->
-            <div class="relative group">
-                <!-- Decorative background glow -->
-                <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
-                
-                <div class="relative bg-white dark:bg-gray-800 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="flex flex-col">
-                            <label for="makeInput" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Make</label>
-                            <input type="text" id="makeInput" value="{{ request('make') }}" placeholder="E.g., Honda" list="makeSuggestions" autocomplete="off" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <div class="relative group z-20">
+                <div class="bg-white dark:bg-gray-800 rounded-[2rem] shadow-[0_8px_30px_rgba(82,68,225,0.15)] dark:shadow-none p-3 md:p-4 border border-gray-50 dark:border-gray-700">
+                    <div class="flex flex-col md:flex-row items-end gap-3 md:gap-4">
+                        <div class="flex-1 w-full">
+                            <label for="makeInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Make</label>
+                            <input type="text" id="makeInput" value="{{ request('make') }}" placeholder="E.g., Honda" list="makeSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
                             <datalist id="makeSuggestions"></datalist>
                         </div>
-                        <div class="flex flex-col">
-                            <label for="modelInput" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Model</label>
-                            <input type="text" id="modelInput" value="{{ request('model') }}" placeholder="E.g., TMX 125" list="modelSuggestions" autocomplete="off" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div class="flex-1 w-full">
+                            <label for="modelInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Model</label>
+                            <input type="text" id="modelInput" value="{{ request('model') }}" placeholder="E.g., TMX 125" list="modelSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
                             <datalist id="modelSuggestions"></datalist>
                         </div>
-                        <div class="flex flex-col relative">
-                            <label for="yearInput" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-1">Part</label>
+                        <div class="flex-1 w-full relative">
+                            <label for="yearInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Year/Part</label>
                             <div class="flex items-center gap-2">
-                                <input type="text" id="yearInput" value="{{ request('part') }}" placeholder="E.g., Brake Pad" list="partSuggestions" autocomplete="off" class="w-full bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <input type="text" id="yearInput" value="{{ request('part') }}" placeholder="E.g., 2024 or Brake" list="partSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
                                 <datalist id="partSuggestions"></datalist>
                                 <!-- Loading Spinner -->
-                                <div id="loadingSpinner" class="hidden absolute right-3 top-[34px]">
+                                <div id="loadingSpinner" class="hidden absolute right-4 top-[42px]">
                                     <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
                                 </div>
                             </div>
+                        </div>
+                        <div class="w-full md:w-auto mt-2 md:mt-0">
+                            <button class="w-full md:w-auto bg-[#5244e1] hover:bg-[#4336bf] text-white font-bold rounded-2xl px-8 py-3.5 flex items-center justify-center gap-2 transition-all shadow-md ring-2 ring-indigo-500 dark:ring-indigo-400 ring-offset-2 dark:ring-offset-gray-800">
+                                <i data-lucide="search" class="w-5 h-5"></i>
+                                Search
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -199,10 +202,9 @@
 
                         if (data.length === 0) {
                             resultsBox.innerHTML = `
-                                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-                                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    <p class="font-bold text-xl text-gray-800 dark:text-white mb-2">No matching parts found</p>
-                                    <p class="text-gray-500 dark:text-gray-400">No parts found for this specific motorcycle.</p>
+                                <div class="bg-red-50/80 dark:bg-red-900/10 rounded-[2rem] border border-red-200/60 dark:border-red-900/30 p-8 text-center max-w-3xl mx-auto mt-4">
+                                    <p class="font-bold text-[17px] text-[#dc2626] dark:text-red-400 mb-2">No matching parts found</p>
+                                    <p class="text-[13px] text-red-400 dark:text-red-500 font-bold tracking-wide">Try adjusting your search terms or check a different motorcycle model.</p>
                                 </div>
                             `;
                         } else {
