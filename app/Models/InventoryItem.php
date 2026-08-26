@@ -134,7 +134,7 @@ class InventoryItem extends Model
      */
     public static function distinctCategories()
     {
-        return Cache::remember('inventory_categories_v3', now()->addHours(6), function () {
+        return Cache::remember('inventory_categories_v4', now()->addHours(6), function () {
             return static::query()
                 ->whereNotNull('category')
                 ->distinct()
@@ -148,7 +148,8 @@ class InventoryItem extends Model
                 ->filter()
                 ->unique()
                 ->sort()
-                ->values();
+                ->values()
+                ->toArray();
         });
     }
 
