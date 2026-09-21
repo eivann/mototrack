@@ -1,7 +1,9 @@
 @php
+    $isAdmin = auth()->check() && auth()->user()->role === 'owner';
     $dashboardRoute = auth()->check()
-        ? (auth()->user()->role === 'owner' ? route('dashboard') : route('customer.dashboard'))
+        ? ($isAdmin ? route('dashboard') : route('customer.dashboard'))
         : route('login');
+    $cartCount = count(session('cart', []));
         
     $navItems = [
         [
@@ -15,18 +17,18 @@
         [
             'label' => 'Services',
             'mobile_label' => 'Services',
-            'href' => url('/services'),
+            'href' => url('/#services'),
             'icon' => 'settings',
             'active' => request()->is('services'),
-            'show' => true,
+            'show' => !$isAdmin,
         ],
         [
             'label' => 'About',
             'mobile_label' => 'About Us',
-            'href' => url('/about'),
+            'href' => url('/#about'),
             'icon' => 'info',
             'active' => request()->is('about'),
-            'show' => true,
+            'show' => !$isAdmin,
         ],
         [
             'label' => 'Compatibility',
@@ -34,7 +36,7 @@
             'href' => route('compatibility.view'),
             'icon' => 'search',
             'active' => request()->routeIs('compatibility.view'),
-            'show' => true,
+            'show' => !$isAdmin,
         ],
         [
             'label' => 'Pre-Order',
@@ -42,15 +44,31 @@
             'href' => route('preorder.parts'),
             'icon' => 'clipboard-list',
             'active' => request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*'),
-            'show' => true,
+            'show' => !$isAdmin,
         ],
         [
             'label' => 'Contact',
             'mobile_label' => 'Contact Us',
-            'href' => url('/contact'),
+            'href' => url('/#contact'),
             'icon' => 'phone',
             'active' => request()->is('contact'),
-            'show' => true,
+            'show' => !$isAdmin,
+        ],
+        [
+            'label' => 'FAQ',
+            'mobile_label' => 'FAQ',
+            'href' => route('faq'),
+            'icon' => 'help-circle',
+            'active' => request()->routeIs('faq'),
+            'show' => !$isAdmin,
+        ],
+        [
+            'label' => 'Admin Panel',
+            'mobile_label' => 'Admin Panel',
+            'href' => route('dashboard'),
+            'icon' => 'shield',
+            'active' => request()->routeIs('dashboard'),
+            'show' => $isAdmin,
         ],
     ];
 @endphp
@@ -62,7 +80,8 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 xl:mr-10">
                     <a href="{{ url('/') }}" class="flex items-center gap-3 xl:gap-4">
-                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-10 md:h-12 lg:h-14 w-auto object-contain group-hover:scale-110 transition-transform duration-500">
+                        <img src="{{ asset('images/logo-light.svg') }}" alt="EM Parts" class="h-10 md:h-12 lg:h-14 w-auto object-contain transition-transform duration-500 block dark:hidden">
+                        <img src="{{ asset('images/logo-dark.svg') }}" alt="EM Parts" class="h-10 md:h-12 lg:h-14 w-auto object-contain transition-transform duration-500 hidden dark:block">
                         <div class="hidden sm:flex flex-col leading-none">
                             <span class="text-[16px] xl:text-[18px] font-black text-[#1a1f2c] dark:text-white uppercase tracking-tight">Edmar Motorcycle</span>
                             <span class="text-[9px] font-bold tracking-[0.2em] text-indigo-600 dark:text-indigo-400 uppercase mt-1">Parts and Accessories</span>
@@ -95,15 +114,36 @@
                     <i id="globalThemeIcon" data-lucide="sun" class="w-[18px] h-[18px]"></i>
                 </button>
 
+                @auth
+                {{-- Cart Icon --}}
+                <a href="/cart" class="relative w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" aria-label="Shopping cart">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                    @if($cartCount > 0)
+                        <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-black shadow-sm">{{ $cartCount > 9 ? '9+' : $cartCount }}</span>
+                    @endif
+                </a>
+                @endauth
+
                 <!-- Dashboard Button -->
+                @auth
                 <a href="{{ $dashboardRoute }}" class="inline-flex items-center gap-2 bg-[#5244e1] hover:bg-[#4336bf] text-white px-5 py-2.5 rounded-full text-[13px] font-bold transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                     <i data-lucide="layout-grid" class="w-4 h-4"></i>
                     <span>Dashboard</span>
                 </a>
+                @else
+                <a href="{{ route('login') }}" class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-[13px] font-bold transition-all">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    <span>Sign In</span>
+                </a>
+                <a href="{{ route('register') }}" class="inline-flex items-center gap-2 bg-[#5244e1] hover:bg-[#4336bf] text-white px-5 py-2.5 rounded-full text-[13px] font-bold transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    <span>Get Started</span>
+                </a>
+                @endauth
                 
                 {{-- Notification Bell --}}
                 @auth
-                <div class="relative group hidden" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
+                <div class="relative group" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
                     <button @click="open = !open; hasNew = false"
                         :aria-expanded="open"
                         aria-label="Toggle notifications"
@@ -195,6 +235,39 @@
                                     </button>
                                 </form>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                {{-- User Profile Dropdown --}}
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button @click="open = !open" :aria-expanded="open" aria-label="User menu" class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white text-sm font-black shadow-md hover:shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </button>
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                         class="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden z-[70]"
+                         x-cloak>
+                        <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                            <p class="font-black text-sm text-gray-900 dark:text-white truncate">{{ auth()->user()->name }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ auth()->user()->email }}</p>
+                        </div>
+                        <div class="py-2">
+                            <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <i data-lucide="settings" class="w-4 h-4 text-gray-400"></i>
+                                Settings
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                                    Logout
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

@@ -62,7 +62,7 @@
 
             <div class="flex-1 relative mt-12 lg:mt-0 w-full max-w-lg lg:max-w-none mx-auto" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
                 <div class="absolute inset-0 bg-indigo-600/10 dark:bg-indigo-900/20 rounded-full blur-[100px] pointer-events-none -z-10"></div>
-                <img src="{{ asset('images/hero.png') }}" alt="Motorcycle Parts Shop" class="w-full h-auto drop-shadow-2xl relative z-10 hover:scale-[1.02] transition-transform duration-500" fetchpriority="high">
+                <img src="{{ asset('images/hero.jpg') }}" alt="Motorcycle Parts Shop" class="w-full h-auto drop-shadow-2xl relative z-10 hover:scale-[1.02] transition-transform duration-500" fetchpriority="high">
                 
                 <!-- Floating badge -->
                 <div class="absolute -bottom-6 -left-6 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-20 flex items-center gap-4 animate-bounce" style="animation-duration: 3s;">
@@ -134,7 +134,7 @@
             <div class="flex flex-col lg:flex-row items-center gap-16">
                 <div class="flex-1 w-full relative">
                     <div class="absolute inset-0 bg-blue-600/20 rounded-[3rem] -rotate-6 transform scale-105 pointer-events-none"></div>
-                    <img src="{{ asset('images/about.png') }}" alt="Expert Mechanics" class="w-full h-auto rounded-[3rem] shadow-2xl relative z-10 border border-gray-700" loading="lazy">
+                    <img src="{{ asset('images/about.jpg') }}" alt="Expert Mechanics" class="w-full h-auto rounded-[3rem] shadow-2xl relative z-10 border border-gray-700" loading="lazy">
                 </div>
                 
                 <div class="flex-1">
@@ -350,7 +350,8 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div class="md:col-span-2">
                     <div class="flex items-center gap-3 mb-6">
-                        <img src="{{ asset('images/logo.png') . '?v=' . filemtime(public_path('images/logo.png')) }}" alt="EM Parts" class="h-10 w-auto">
+                        <img src="{{ asset('images/logo-light.svg') }}" alt="EM Parts" class="h-10 w-auto block dark:hidden">
+                        <img src="{{ asset('images/logo-dark.svg') }}" alt="EM Parts" class="h-10 w-auto hidden dark:block">
                         <h2 class="text-xl font-black tracking-tighter text-gray-900 dark:text-white">MOTOTRACK</h2>
                     </div>
                     <p class="text-gray-500 dark:text-gray-400 font-medium max-w-sm">Your trusted partner for quality motorcycle parts and expert repair services in Pandi, Bulacan since 2009.</p>

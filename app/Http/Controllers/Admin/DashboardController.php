@@ -33,7 +33,25 @@ class DashboardController extends Controller
             $activeServiceJobs = Repair::whereIn('status', ['pending', 'ongoing'])->latest()->take(10)->get();
             $recentPreorders = \App\Models\PreOrder::latest()->take(10)->get();
 
-            return view('admin.dashboard', compact('stats', 'recentActivities', 'inventorySummary', 'recentSales', 'activeServiceJobs', 'recentPreorders'));
+            // Daily revenue for the last 30 days (Chart.js)
+            $dailyRevenue = Sale::selectRaw('DATE(created_at) as date, SUM(total_price) as revenue')
+                ->where('created_at', '>=', now()->subDays(30))
+                ->groupByRaw('DATE(created_at)')
+                ->orderByRaw('DATE(created_at)')
+                ->pluck('revenue', 'date');
+
+            // Fill in missing days with 0
+            $chartLabels = [];
+            $chartData = [];
+            for ($i = 29; $i >= 0; $i--) {
+                $date = now()->subDays($i)->format('Y-m-d');
+                $chartLabels[] = now()->subDays($i)->format('M d');
+                $chartData[] = (float) ($dailyRevenue[$date] ?? 0);
+            }
+
+            $pendingRefunds = \App\Models\RefundRequest::with(['sale.item', 'customer.user'])->where('status', 'pending')->latest()->get();
+
+            return view('admin.dashboard', compact('stats', 'recentActivities', 'inventorySummary', 'recentSales', 'activeServiceJobs', 'recentPreorders', 'chartLabels', 'chartData', 'pendingRefunds'));
         }
 
         return redirect()->route('customer.dashboard');

@@ -22,18 +22,18 @@
                     <div class="flex flex-col md:flex-row items-end gap-3 md:gap-4">
                         <div class="flex-1 w-full">
                             <label for="makeInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Make</label>
-                            <input type="text" id="makeInput" value="{{ request('make') }}" placeholder="E.g., Honda" list="makeSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
+                            <input type="text" id="makeInput" value="{{ request('make') }}" placeholder="E.g., Honda" list="makeSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
                             <datalist id="makeSuggestions"></datalist>
                         </div>
                         <div class="flex-1 w-full">
                             <label for="modelInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Model</label>
-                            <input type="text" id="modelInput" value="{{ request('model') }}" placeholder="E.g., TMX 125" list="modelSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
+                            <input type="text" id="modelInput" value="{{ request('model') }}" placeholder="E.g., TMX 125" list="modelSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
                             <datalist id="modelSuggestions"></datalist>
                         </div>
                         <div class="flex-1 w-full relative">
                             <label for="yearInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Year/Part</label>
                             <div class="flex items-center gap-2">
-                                <input type="text" id="yearInput" value="{{ request('part') }}" placeholder="E.g., 2024 or Brake" list="partSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
+                                <input type="text" id="yearInput" value="{{ request('part') }}" placeholder="E.g., 2024 or Brake" list="partSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
                                 <datalist id="partSuggestions"></datalist>
                                 <!-- Loading Spinner -->
                                 <div id="loadingSpinner" class="hidden absolute right-4 top-[42px]">

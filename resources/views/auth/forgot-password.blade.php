@@ -14,7 +14,7 @@
     <script>
         (function() {
             var theme = localStorage.getItem('theme');
-            if (theme === 'dark' || (!theme)) {
+            if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
@@ -115,7 +115,8 @@
         
         <div class="text-center mb-8">
             <a href="/" class="inline-flex items-center gap-3 mb-6 hover:opacity-80 transition-opacity">
-                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white w-12 h-12 flex items-center justify-center rounded-xl font-bold text-xl shadow-lg shadow-blue-500/30">M</div>
+                <img src="{{ asset('images/logo-light.svg') }}" alt="EM Parts" class="h-12 w-auto block dark:hidden">
+                <img src="{{ asset('images/logo-dark.svg') }}" alt="EM Parts" class="h-12 w-auto hidden dark:block">
                 <div class="text-left">
                     <h1 class="font-bold text-xl text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
                     <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>

@@ -17,13 +17,16 @@
 
                 <!-- Navigation Tabs -->
                 <div class="flex gap-2 overflow-x-auto no-scrollbar pb-4 px-1 mt-2">
-                    @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'preorders' => 'Pre-orders', 'reports' => 'Reports'] as $id => $label)
+                    @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'preorders' => 'Pre-orders', 'refunds' => 'Refund Requests', 'reports' => 'Reports'] as $id => $label)
                         <button
                             @click="activeTab = '{{ $id }}'"
                             :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'"
                             class="whitespace-nowrap py-3 px-6 rounded-xl font-black text-xs uppercase tracking-widest transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
                             {{ $label }}
+                            @if($id === 'refunds' && isset($pendingRefunds) && $pendingRefunds->count() > 0)
+                                <span class="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-[9px] font-black leading-none text-white bg-red-500 rounded-full">{{ $pendingRefunds->count() }}</span>
+                            @endif
                         </button>
                     @endforeach
                 </div>
@@ -181,6 +184,93 @@
                         </div>
                     </div>
 
+                    <!-- Refunds Tab -->
+                    <div x-show="activeTab === 'refunds'" x-cloak class="space-y-6">
+                        <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                            <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                                <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Pending Refund Requests</h3>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left" x-data="{ expandedRefund: null }">
+                                    <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                                        @forelse($pendingRefunds ?? [] as $refund)
+                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer" @click="expandedRefund = (expandedRefund === {{ $refund->id }} ? null : {{ $refund->id }})">
+                                                <td class="p-6">
+                                                    <div class="flex items-center gap-3">
+                                                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="expandedRefund === {{ $refund->id }} ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                                        <div>
+                                                            <div class="font-bold text-gray-900 dark:text-white">{{ $refund->sale->item?->part_name ?? 'Unknown Item' }}</div>
+                                                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{{ $refund->customer->name }} • {{ $refund->created_at->format('M d, Y') }}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="p-6">
+                                                    <span class="px-4 py-1 rounded-full bg-orange-50 text-orange-600 font-black text-[10px] uppercase tracking-widest">
+                                                        {{ $refund->reason }}
+                                                    </span>
+                                                </td>
+                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">
+                                                    ₱{{ number_format($refund->sale->total_price ?? 0, 2) }}
+                                                </td>
+                                            </tr>
+                                            <!-- Expanded Refund Details -->
+                                            <tr x-show="expandedRefund === {{ $refund->id }}" x-cloak class="bg-gray-50/30 dark:bg-gray-800/10">
+                                                <td colspan="3" class="p-0 border-b border-gray-100 dark:border-gray-800">
+                                                    <div class="p-8 pl-14 space-y-6">
+                                                        <div>
+                                                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Customer Details</h4>
+                                                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $refund->details ?? 'No additional details provided.' }}</p>
+                                                        </div>
+                                                        @if($refund->photo_path)
+                                                        <div>
+                                                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Photo Evidence</h4>
+                                                            <a href="{{ Storage::url($refund->photo_path) }}" target="_blank" class="inline-block mt-2">
+                                                                <img src="{{ Storage::url($refund->photo_path) }}" alt="Refund Evidence" class="h-32 rounded-xl object-cover border border-gray-200 dark:border-gray-700 shadow-sm hover:opacity-80 transition-opacity">
+                                                            </a>
+                                                        </div>
+                                                        @endif
+                                                        
+                                                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mt-4">
+                                                            <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest mb-4">Admin Action</h4>
+                                                            <div class="flex flex-col sm:flex-row gap-4">
+                                                                <form action="{{ route('admin.refund.approve', $refund->id) }}" method="POST" class="flex-1 space-y-4">
+                                                                    @csrf
+                                                                    <textarea name="admin_notes" rows="2" placeholder="Approval notes (optional)" class="w-full text-sm border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-xl focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                                                                    <div class="flex items-center gap-2 mb-4">
+                                                                        <input type="checkbox" name="restock" id="restock_{{ $refund->id }}" value="1" class="rounded text-indigo-600 focus:ring-indigo-500 bg-gray-50 border-gray-300">
+                                                                        <label for="restock_{{ $refund->id }}" class="text-xs font-bold text-gray-700 dark:text-gray-300">Restock item (increment inventory by {{ $refund->sale->quantity ?? 0 }})</label>
+                                                                    </div>
+                                                                    <button type="submit" class="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-colors shadow-lg shadow-emerald-200 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">Approve Refund</button>
+                                                                </form>
+                                                                
+                                                                <form action="{{ route('admin.refund.reject', $refund->id) }}" method="POST" class="flex-1 space-y-4">
+                                                                    @csrf
+                                                                    <textarea name="admin_notes" rows="2" placeholder="Reason for rejection (required)" required class="w-full text-sm border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-xl focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                                                                    <div class="mb-4 h-[20px]"></div> <!-- Spacer to match approve side -->
+                                                                    <button type="submit" class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-colors shadow-lg shadow-red-200 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Reject Refund</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="p-12 text-center">
+                                                    <div class="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-400">
+                                                        <i data-lucide="check-circle" class="w-8 h-8"></i>
+                                                    </div>
+                                                    <p class="text-gray-900 dark:text-white font-bold text-lg mb-1">All caught up!</p>
+                                                    <p class="text-gray-400 text-sm font-medium">There are no pending refund requests.</p>
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Reports Tab -->
                     <div x-show="activeTab === 'reports'" x-cloak class="space-y-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -196,6 +286,23 @@
                                 <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Completed Repairs</div>
                                 <div class="text-4xl font-black text-gray-900 dark:text-white mb-4">{{ number_format($stats['completedRepairs']) }}</div>
                                 <div class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 dark:bg-emerald-900/20 w-fit px-3 py-1 rounded-full italic">All time</div>
+                            </div>
+                        </div>
+
+                        <!-- Revenue Chart -->
+                        <div class="bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Daily Revenue</h3>
+                                    <p class="text-[10px] text-gray-400 mt-1">Last 30 days</p>
+                                </div>
+                                <div class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full">
+                                    <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                                    ₱{{ number_format(array_sum($chartData), 2) }} total
+                                </div>
+                            </div>
+                            <div class="relative" style="height: 300px;">
+                                <canvas id="revenueChart"></canvas>
                             </div>
                         </div>
 
@@ -252,4 +359,83 @@
             </div>
         </div>
     </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart');
+    if (!ctx) return;
+
+    const isDark = document.documentElement.classList.contains('dark');
+    const labels = @json($chartLabels);
+    const data = @json($chartData);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenue (₱)',
+                data: data,
+                backgroundColor: isDark ? 'rgba(99, 102, 241, 0.6)' : 'rgba(99, 102, 241, 0.8)',
+                borderColor: 'rgba(99, 102, 241, 1)',
+                borderWidth: 0,
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: isDark ? '#1f2937' : '#fff',
+                    titleColor: isDark ? '#f9fafb' : '#111827',
+                    bodyColor: isDark ? '#d1d5db' : '#4b5563',
+                    borderColor: isDark ? '#374151' : '#e5e7eb',
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 12,
+                    titleFont: { weight: '800', size: 12 },
+                    bodyFont: { weight: '600', size: 11 },
+                    callbacks: {
+                        label: function(context) {
+                            return '₱' + context.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2 });
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: isDark ? '#6b7280' : '#9ca3af',
+                        font: { size: 9, weight: '700' },
+                        maxRotation: 45,
+                        maxTicksLimit: 15,
+                    },
+                    border: { display: false }
+                },
+                y: {
+                    grid: {
+                        color: isDark ? 'rgba(55, 65, 81, 0.3)' : 'rgba(229, 231, 235, 0.5)',
+                        drawTicks: false,
+                    },
+                    ticks: {
+                        color: isDark ? '#6b7280' : '#9ca3af',
+                        font: { size: 10, weight: '700' },
+                        padding: 8,
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    },
+                    border: { display: false },
+                    beginAtZero: true,
+                }
+            }
+        }
+    });
+});
+</script>
 </x-app-layout>

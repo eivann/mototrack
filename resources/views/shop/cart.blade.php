@@ -145,7 +145,16 @@
     </div>
 
     @else
-        <p class="text-gray-500 dark:text-gray-400">Your cart is empty.</p>
+        <div class="bg-white dark:bg-gray-800 p-10 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm text-center">
+            <div class="w-20 h-20 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300 dark:text-gray-600">
+                <i data-lucide="shopping-cart" class="w-10 h-10"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Your cart is empty</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto">Looks like you haven't added any items to your cart yet. Browse our products to find what you need.</p>
+            <a href="/browse" class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Shop Now
+            </a>
+        </div>
     @endif
 
 </div>

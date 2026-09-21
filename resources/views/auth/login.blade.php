@@ -335,7 +335,8 @@
         
         <div class="login-header text-center mb-4">
             <a href="/" class="inline-flex flex-col items-center gap-1 mb-2 hover:opacity-80 transition-opacity">
-                <img src="{{ asset('images/logo.png') }}" alt="EM Parts" class="h-12 sm:h-16 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300">
+                <img src="{{ asset('images/logo-light.svg') }}" alt="EM Parts" class="h-12 sm:h-16 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300 block dark:hidden">
+                <img src="{{ asset('images/logo-dark.svg') }}" alt="EM Parts" class="h-12 sm:h-16 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300 hidden dark:block">
                 <div class="text-center">
                     <h1 class="font-bold text-base text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
                     <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>

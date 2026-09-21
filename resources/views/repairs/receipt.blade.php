@@ -54,10 +54,10 @@
                 </div>
 
                 <div class="text-center mt-12 pt-8 border-t border-gray-100 dark:border-gray-700">
-                    <button onclick="window.print()"
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98]">
-                        Print Receipt
-                    </button>
+                    <a href="{{ route('repairs.index') }}"
+                        class="inline-block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Back to Repairs
+                    </a>
                     <p class="mt-4 text-[10px] text-gray-400 uppercase tracking-widest">Powered by MotoTrack</p>
                 </div>
             </div>

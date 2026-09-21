@@ -122,14 +122,21 @@
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                                         @foreach($preorders as $order)
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                                                <td class="p-6 font-bold text-gray-900 dark:text-white">{{ $order->part_name }}</td>
+                                                <td class="p-6">
+                                                    <div class="font-bold text-gray-900 dark:text-white">{{ $order->part_name }}</div>
+                                                    <div class="text-[10px] text-gray-500 font-bold uppercase mt-1">{{ $order->model ?? 'Universal' }}</div>
+                                                </td>
                                                 <td class="p-6 font-black text-gray-900 dark:text-white text-center">x{{ $order->quantity }}</td>
                                                 <td class="p-6">
                                                     <span class="px-3 py-1 rounded-lg {{ strtolower($order->status ?? 'pending') === 'pending' ? 'bg-yellow-50 text-yellow-600' : (in_array(strtolower($order->status ?? 'pending'), ['completed','done','ready']) ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600') }} font-black text-[10px] uppercase tracking-widest">
                                                         {{ $order->status ?? 'pending' }}
                                                     </span>
                                                 </td>
-                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">₱{{ number_format((float)($order->down_payment ?? 0), 2) }}</td>
+                                                <td class="p-6 text-right">
+                                                    <div class="font-black text-gray-900 dark:text-white mb-1">Total: ₱{{ number_format((float)($order->total ?? 0), 2) }}</div>
+                                                    <div class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">Paid DP: ₱{{ number_format((float)($order->down_payment ?? 0), 2) }}</div>
+                                                    <div class="text-xs text-amber-600 dark:text-amber-400 font-bold">Bal: ₱{{ number_format((float)(($order->total ?? 0) - ($order->down_payment ?? 0)), 2) }}</div>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -153,13 +160,18 @@
                         </div>
                         @if(isset($purchases) && $purchases->count() > 0)
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left">
+                                <table class="w-full text-left" x-data="{ expanded: null }">
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                                         @foreach($purchases as $trx => $items)
-                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer" @click="expanded = (expanded === '{{ $trx }}' ? null : '{{ $trx }}')">
                                                 <td class="p-6">
-                                                    <div class="font-bold text-gray-900 dark:text-white">{{ $trx }}</div>
-                                                    <div class="text-[10px] text-gray-400 font-bold uppercase mt-1">{{ $items->first()->created_at->format('M d, Y') }}</div>
+                                                    <div class="flex items-center gap-3">
+                                                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="expanded === '{{ $trx }}' ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                                        <div>
+                                                            <div class="font-bold text-gray-900 dark:text-white">{{ $trx }}</div>
+                                                            <div class="text-[10px] text-gray-400 font-bold uppercase mt-1">{{ $items->first()->created_at->format('M d, Y') }}</div>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                                 <td class="p-6 text-sm text-gray-500">
                                                     {{ $items->count() }} item(s)
@@ -168,7 +180,41 @@
                                                     ₱{{ number_format($items->sum('total_price'), 2) }}
                                                 </td>
                                                 <td class="p-6 text-right">
-                                                    <a href="{{ url('/checkout/receipt?trx=' . $trx) }}" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">View Receipt</a>
+                                                    <a href="{{ url('/checkout/receipt?trx=' . $trx) }}" @click.stop class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline px-3 py-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg inline-block">Receipt</a>
+                                                </td>
+                                            </tr>
+                                            <!-- Expanded Items -->
+                                            <tr x-show="expanded === '{{ $trx }}'" x-cloak class="bg-gray-50/30 dark:bg-gray-800/10">
+                                                <td colspan="4" class="p-0 border-b border-gray-100 dark:border-gray-800">
+                                                    <div class="p-6 pl-12 space-y-4">
+                                                        @foreach($items as $item)
+                                                            <div class="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm">
+                                                                <div class="flex-1">
+                                                                    <div class="flex items-center gap-2 mb-1">
+                                                                        <h4 class="font-black text-gray-900 dark:text-white">{{ $item->item?->part_name ?? 'Unknown Item' }}</h4>
+                                                                        <span class="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-md 
+                                                                            {{ $item->status === 'pending' ? 'bg-yellow-50 text-yellow-600' : '' }}
+                                                                            {{ $item->status === 'completed' ? 'bg-emerald-50 text-emerald-600' : '' }}
+                                                                            {{ $item->status === 'cancelled' ? 'bg-red-50 text-red-600' : '' }}
+                                                                            {{ str_starts_with($item->status, 'refund') ? 'bg-orange-50 text-orange-600' : '' }}">
+                                                                            {{ str_replace('_', ' ', $item->status) }}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="text-xs text-gray-500 font-bold">Qty: {{ $item->quantity }} <span class="mx-2">•</span> ₱{{ number_format($item->total_price, 2) }}</div>
+                                                                </div>
+                                                                <div class="flex gap-2">
+                                                                    @if($item->status === 'pending')
+                                                                        <form action="{{ route('customer.order.cancel', $item->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this item?');">
+                                                                            @csrf
+                                                                            <button type="submit" class="px-4 py-2 text-xs font-black text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-xl transition-colors uppercase tracking-widest focus:outline-none">Cancel</button>
+                                                                        </form>
+                                                                    @elseif($item->status === 'completed')
+                                                                        <button type="button" @click="$dispatch('open-refund-modal', { id: {{ $item->id }}, name: '{{ addslashes($item->item?->part_name) }}' })" class="px-4 py-2 text-xs font-black text-orange-600 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 rounded-xl transition-colors uppercase tracking-widest focus:outline-none">Refund</button>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -235,6 +281,60 @@
 
                 </div>
             </div>
+            <!-- Refund Request Modal -->
+            <div x-data="{
+                open: false,
+                saleId: null,
+                itemName: '',
+                submitting: false,
+                init() {
+                    window.addEventListener('open-refund-modal', (e) => {
+                        this.saleId = e.detail.id;
+                        this.itemName = e.detail.name;
+                        this.open = true;
+                    });
+                }
+            }" @keydown.escape.window="open = false" x-cloak>
+                <div x-show="open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="open = false" x-transition.opacity></div>
+                    <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 dark:border-gray-700"
+                         x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+                        <div class="p-6 sm:p-8 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
+                            <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Request Refund</h3>
+                            <p class="text-xs text-gray-500 font-bold mt-1" x-text="'Item: ' + itemName"></p>
+                        </div>
+                        <form :action="'/orders/' + saleId + '/refund'" method="POST" enctype="multipart/form-data" @submit="submitting = true">
+                            @csrf
+                            <div class="p-6 sm:p-8 space-y-6">
+                                <div>
+                                    <label class="block text-sm font-black text-gray-900 dark:text-white mb-2 uppercase tracking-widest">Reason for Refund</label>
+                                    <select name="reason" required class="w-full border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold p-3">
+                                        <option value="">Select a reason...</option>
+                                        <option value="Damaged or Defective">Damaged or Defective (Requires photo)</option>
+                                        <option value="Wrong Item Received">Wrong Item Received</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-black text-gray-900 dark:text-white mb-2 uppercase tracking-widest">Additional Details</label>
+                                    <textarea name="details" rows="3" class="w-full border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm p-3" placeholder="Please describe the issue..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-black text-gray-900 dark:text-white mb-2 uppercase tracking-widest">Photo Evidence (Optional)</label>
+                                    <input type="file" name="photo" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-widest file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-400 transition-colors">
+                                </div>
+                            </div>
+                            <div class="p-6 sm:p-8 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex justify-end gap-3">
+                                <button type="button" @click="open = false" class="px-6 py-3 text-sm font-black text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors uppercase tracking-widest focus:outline-none">Cancel</button>
+                                <button type="submit" :disabled="submitting" class="px-6 py-3 text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors uppercase tracking-widest shadow-lg shadow-indigo-200 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center gap-2">
+                                    <span x-show="submitting">Submitting...</span>
+                                    <span x-show="!submitting">Submit Request</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </x-app-layout>

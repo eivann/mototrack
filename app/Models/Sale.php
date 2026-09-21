@@ -24,6 +24,11 @@ public function customer()
     return $this->belongsTo(Customer::class);
 }
 
+public function refundRequests()
+{
+    return $this->hasMany(RefundRequest::class);
+}
+
 protected $fillable = [
     'inventory_item_id',
     'customer_id',
@@ -33,6 +38,8 @@ protected $fillable = [
     'transaction_reference',
     'amount_tendered',
     'change',
+    'status',
+    'cancellation_reason',
 ];
 
 protected $casts = [

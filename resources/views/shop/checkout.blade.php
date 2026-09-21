@@ -79,7 +79,9 @@
 
             <div class="flex-1">
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
-                    <form method="POST" action="/checkout" class="space-y-6" x-data="{ loading: false }" @submit="loading = true">
+                    <form method="POST" action="/checkout" class="space-y-6"
+                          x-data="{ loading: false, agreed: false, showTerms: false, scrolledToBottom: false }"
+                          @submit="if (!agreed) { $event.preventDefault(); return; } loading = true">
                         @csrf
 
                         <!-- PAYMENT METHOD -->
@@ -131,13 +133,140 @@
                             </p>
                         </div>
 
+                        <!-- TERMS & CONDITIONS CHECKBOX -->
+                        <div class="border-t border-gray-100 dark:border-gray-700 pt-5">
+                            <div class="flex items-start gap-3">
+                                <input type="checkbox" id="agree-terms" x-model="agreed" :disabled="!scrolledToBottom"
+                                    class="mt-0.5 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity">
+                                <label for="agree-terms" class="text-sm text-gray-600 dark:text-gray-400 leading-snug">
+                                    I have read and agree to the
+                                    <button type="button" @click="showTerms = true" class="text-blue-600 dark:text-blue-400 font-bold hover:underline focus:outline-none">Terms and Conditions</button>.
+                                    <span x-show="!scrolledToBottom" x-cloak class="block mt-1 text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider">
+                                        Please read the Terms and Conditions first
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
                         <button id="submit-pay-btn"
-                                :disabled="loading"
-                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                :disabled="loading || !agreed"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                             <svg x-show="loading" class="animate-spin w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                             <svg x-show="!loading" class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            <span id="btn-text">Pay with GCash</span>
+                            <span id="btn-text" x-text="agreed ? 'Pay with GCash' : 'Agree to Terms First'"></span>
                         </button>
+
+                        <!-- T&C MODAL -->
+                        <template x-teleport="body">
+                            <div x-show="showTerms" x-cloak
+                                 class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0">
+                                <!-- Backdrop -->
+                                <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showTerms = false"></div>
+
+                                <!-- Modal -->
+                                <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-100 dark:border-gray-700"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+
+                                    <!-- Header -->
+                                    <div class="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 shrink-0">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            </div>
+                                            <h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">Terms and Conditions</h3>
+                                        </div>
+                                        <button @click="showTerms = false" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Close">
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Scrollable Content -->
+                                    <div class="overflow-y-auto flex-1 px-6 sm:px-8 py-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-6"
+                                         x-ref="termsContent"
+                                         @scroll="
+                                            let el = $refs.termsContent;
+                                            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
+                                                scrolledToBottom = true;
+                                            }
+                                         ">
+
+                                        <div>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Order Details</h4>
+                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
+                                                <li>Each order includes details on the amount paid, price, and product information.</li>
+                                                <li>For pre-orders, the downpayment amount and remaining balance will also be shown.</li>
+                                            </ul>
+                                        </div>
+
+                                        <div>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">2. Multiple Orders</h4>
+                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
+                                                <li>Customers may place two or more orders at the same time, even if the products are different.</li>
+                                                <li>Each order is processed and tracked separately, with its own status under Order History.</li>
+                                            </ul>
+                                        </div>
+
+                                        <div>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. Downpayment and Full Payment</h4>
+                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
+                                                <li>The downpayment is 50% of the product price, paid through GCash to confirm the order.</li>
+                                                <li>The remaining balance is paid upon pickup at the shop.</li>
+                                            </ul>
+                                        </div>
+
+                                        <div>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">4. Compatibility Checker</h4>
+                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
+                                                <li>The compatibility checker only checks products and brands currently available in Edmar Motorcycle Parts and Accessories' inventory.</li>
+                                                <li>It is not a general compatibility checker for all motorcycle parts or brands worldwide, and results only apply to items listed on this website.</li>
+                                            </ul>
+                                        </div>
+
+                                        <div>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">5. Refund Policy</h4>
+                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
+                                                <li><strong>Change of mind:</strong> A refund may still be requested even after full payment or downpayment, as long as the product has not yet been picked up from the shop.</li>
+                                                <li><strong>Damaged or defective product:</strong> A refund, replacement, or repair may be requested if the product received is damaged or defective, in accordance with the Consumer Act of the Philippines (RA 7394). Requests are subject to review to confirm the damage is a product defect and not caused by mishandling after pickup.</li>
+                                            </ul>
+                                        </div>
+
+                                        <div>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">6. Cancellation</h4>
+                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
+                                                <li>Orders may be cancelled before pickup at the shop.</li>
+                                                <li>Cancellation after pickup is no longer allowed and instead follows the refund policy above.</li>
+                                            </ul>
+                                        </div>
+
+                                        <!-- Scroll anchor marker -->
+                                        <div class="text-center pt-4 pb-2">
+                                            <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">— End of Terms —</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div class="px-6 sm:px-8 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 shrink-0 flex items-center justify-between gap-4">
+                                        <p class="text-xs font-bold" :class="scrolledToBottom ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'">
+                                            <span x-show="!scrolledToBottom">↓ Scroll down to read all terms</span>
+                                            <span x-show="scrolledToBottom" x-cloak>✓ You've read the terms</span>
+                                        </p>
+                                        <button type="button" @click="showTerms = false"
+                                                class="px-6 py-3 rounded-xl font-black text-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                                :class="scrolledToBottom ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg focus:ring-blue-500' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 focus:ring-gray-400'">
+                                            <span x-text="scrolledToBottom ? 'I Understand' : 'Close'"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     </form>
                 </div>
             </div>
