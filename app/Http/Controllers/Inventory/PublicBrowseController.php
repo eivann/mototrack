@@ -42,9 +42,13 @@ class PublicBrowseController extends Controller
 
     public function searchParts(Request $request)
     {
-        $request->validate(['model' => 'nullable|string|max:255']);
-        $items = InventoryItem::search($request->model)->take(20)->get();
-        return response()->json($items);
+        try {
+            $request->validate(['model' => 'nullable|string|max:255']);
+            $items = InventoryItem::search($request->model)->take(20)->get();
+            return response()->json($items);
+        } catch (\Exception $e) {
+            return response()->json(['error_debug' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
+        }
     }
 
     public function suggestions(Request $request)
