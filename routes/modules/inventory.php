@@ -16,8 +16,12 @@ Route::get('/debug-logs-temp-2026', function () {
     if (function_exists('opcache_reset')) {
         opcache_reset();
     }
-    $file = app_path('Http/Controllers/Inventory/PublicBrowseController.php');
-    return response(file_get_contents($file))->header('Content-Type', 'text/plain');
+    $files = glob(storage_path('logs/*.log'));
+    if (empty($files)) return 'No log file found.';
+    usort($files, function($a, $b) { return filemtime($a) < filemtime($b); });
+    $file = $files[0];
+    $lines = file($file);
+    return response("File: " . basename($file) . "\n\n" . implode("", array_slice($lines, -500)))->header('Content-Type', 'text/plain');
 });
 
 // Admin Routes
