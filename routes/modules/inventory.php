@@ -13,10 +13,12 @@ Route::get('/compatibility', [PublicBrowseController::class, 'compatibilityForm'
 Route::post('/compatibility', [PublicBrowseController::class, 'checkCompatibility'])->name('compatibility.check');
 
 Route::get('/debug-logs-temp-2026', function () {
-    $file = storage_path('logs/laravel.log');
-    if (!file_exists($file)) return 'No log file found.';
+    $files = glob(storage_path('logs/*.log'));
+    if (empty($files)) return 'No log file found.';
+    usort($files, function($a, $b) { return filemtime($a) < filemtime($b); });
+    $file = $files[0];
     $lines = file($file);
-    return response(implode("", array_slice($lines, -500)))->header('Content-Type', 'text/plain');
+    return response("File: " . basename($file) . "\n\n" . implode("", array_slice($lines, -500)))->header('Content-Type', 'text/plain');
 });
 
 // Admin Routes
