@@ -13,6 +13,9 @@ Route::get('/compatibility', [PublicBrowseController::class, 'compatibilityForm'
 Route::post('/compatibility', [PublicBrowseController::class, 'checkCompatibility'])->name('compatibility.check');
 
 Route::get('/debug-logs-temp-2026', function () {
+    if (function_exists('opcache_reset')) {
+        opcache_reset();
+    }
     $file = app_path('Http/Controllers/Inventory/PublicBrowseController.php');
     return response(file_get_contents($file))->header('Content-Type', 'text/plain');
 });

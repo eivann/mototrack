@@ -46,7 +46,7 @@ class PublicBrowseController extends Controller
             $request->validate(['model' => 'nullable|string|max:255']);
             $items = InventoryItem::search($request->model)->take(20)->get();
             return response()->json($items);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json(['error_debug' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
         }
     }
@@ -67,7 +67,7 @@ class PublicBrowseController extends Controller
             }
 
             return response()->json($this->fieldSuggestions($field, $term));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json(['error_debug' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
         }
     }
