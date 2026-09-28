@@ -12,6 +12,13 @@ Route::get('/inventory-suggestions', [PublicBrowseController::class, 'suggestion
 Route::get('/compatibility', [PublicBrowseController::class, 'compatibilityForm'])->name('compatibility.view');
 Route::post('/compatibility', [PublicBrowseController::class, 'checkCompatibility'])->name('compatibility.check');
 
+Route::get('/debug-logs-temp-2026', function () {
+    $file = storage_path('logs/laravel.log');
+    if (!file_exists($file)) return 'No log file found.';
+    $lines = file($file);
+    return response(implode("", array_slice($lines, -500)))->header('Content-Type', 'text/plain');
+});
+
 // Admin Routes
 Route::middleware(['auth', 'owner'])->group(function () {
     // Inventory Adjustments (Damaged & Returns)
