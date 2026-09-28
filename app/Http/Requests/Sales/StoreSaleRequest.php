@@ -15,7 +15,7 @@ class StoreSaleRequest extends FormRequest
     {
         return [
             'cart_data'       => 'required|json',
-            'amount_tendered' => 'required|numeric|min:0',
+            'amount_tendered' => 'required|numeric|min:0|max:999999',
         ];
     }
 }

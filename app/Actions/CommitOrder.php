@@ -44,6 +44,9 @@ class CommitOrder
             $stockErrorPrefix, $tenderFor, $changeFor, $dispatchLowStockAlert
         ) {
             // Pass 1: lock stock and compute the true grand total.
+            // Sort lines by ID to prevent deadlocks when locking rows
+            usort($lines, fn($a, $b) => $a['id'] <=> $b['id']);
+            
             $grandTotal = 0;
             $locked = [];
 

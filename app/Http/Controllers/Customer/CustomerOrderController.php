@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Enums\OrderStatus;
 use App\Models\Sale;
 use App\Models\RefundRequest;
 use App\Models\User;
@@ -47,10 +48,25 @@ class CustomerOrderController extends Controller
 
     public function requestRefund(Request $request, $id)
     {
-        $request->validate([
+        $rules = [
             'reason' => 'required|string|max:255',
             'details' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
+            'refund_method' => 'required|in:' . implode(',', OrderStatus::refundMethods()),
+        ];
+
+        // Conditional validation based on refund method
+        if ($request->input('refund_method') === OrderStatus::METHOD_DIGITAL) {
+            $rules['qr_code'] = 'required|image|max:2048';
+        }
+        if ($request->input('refund_method') === OrderStatus::METHOD_ON_SITE) {
+            $rules['pickup_time'] = 'required|date|after:now';
+        }
+
+        $request->validate($rules, [
+            'qr_code.required' => 'Please upload your QR code so we can send your refund digitally.',
+            'pickup_time.required' => 'Please select when you will pick up your refund.',
+            'pickup_time.after' => 'The pickup time must be a future date and time.',
         ]);
 
         $user = auth()->user();
@@ -60,13 +76,23 @@ class CustomerOrderController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if ($sale->status !== 'completed') {
-            return back()->with('error', 'You can only request a refund for completed orders. If you have not picked it up yet, please cancel the order instead.');
+        // Audit Item #39: Refunds only allowed if NOT picked up yet
+        if (!$sale->canBeRefunded()) {
+            if ($sale->isPickedUp()) {
+                return back()->with('error', 'This item has already been picked up and cannot be refunded. For concerns about a picked-up item, please contact the shop directly.');
+            }
+            return back()->with('error', 'This order is not eligible for a refund. It may have already been refunded or is in an invalid state.');
         }
 
+        // Handle file uploads
         $photoPath = null;
         if ($request->hasFile('photo')) {
             $photoPath = $request->file('photo')->store('refunds', 'public');
+        }
+
+        $qrCodePath = null;
+        if ($request->hasFile('qr_code')) {
+            $qrCodePath = $request->file('qr_code')->store('refund_qr_codes', 'public');
         }
 
         RefundRequest::create([
@@ -75,18 +101,23 @@ class CustomerOrderController extends Controller
             'reason' => $request->reason,
             'details' => $request->details,
             'photo_path' => $photoPath,
-            'status' => 'pending'
+            'status' => OrderStatus::REFUND_PENDING,
+            'refund_method' => $request->refund_method,
+            'qr_code_path' => $qrCodePath,
+            'pickup_time' => $request->pickup_time,
         ]);
 
-        $sale->update(['status' => 'refund_requested']);
+        $sale->update(['status' => OrderStatus::SALE_REFUND_REQUESTED]);
 
+        $methodLabel = $request->refund_method === OrderStatus::METHOD_DIGITAL ? 'Digital (QR)' : 'On-site Pickup';
         $owners = User::owners();
         Notification::send($owners, new StatusUpdated(
             'Refund Requested',
-            "Customer {$user->name} has requested a refund for {$sale->item?->part_name}.",
+            "Customer {$user->name} has requested a {$methodLabel} refund for {$sale->item?->part_name}.",
             "/sales"
         ));
 
         return back()->with('success', 'Refund request submitted successfully. We will review it shortly.');
     }
 }
+

@@ -129,9 +129,12 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Select Item</label>
-                        <select name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
+                        <select name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none searchable-select">
+                            <option value="">Search by ID, name, brand...</option>
                             @foreach($inventoryItems as $item)
-                                <option value="{{ $item->id }}" {{ old('inventory_item_id') == $item->id && old('action_taken') === null ? 'selected' : '' }}>{{ $item->part_name }} (Stock: {{ $item->quantity }})</option>
+                                <option value="{{ $item->id }}" {{ old('inventory_item_id') == $item->id && old('action_taken') === null ? 'selected' : '' }}>
+                                    [{{ $item->sku ?? 'ID:'.$item->id }}] {{ $item->part_name }} — {{ $item->brand }} {{ $item->model }} (Stock: {{ $item->quantity }})
+                                </option>
                             @endforeach
                         </select>
                         @if($errors->any() && old('action_taken') === null)
@@ -170,9 +173,12 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Select Item</label>
-                        <select name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
+                        <select name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none searchable-select">
+                            <option value="">Search by ID, name, brand...</option>
                             @foreach($inventoryItems as $item)
-                                <option value="{{ $item->id }}" {{ old('inventory_item_id') == $item->id && old('action_taken') !== null ? 'selected' : '' }}>{{ $item->part_name }}</option>
+                                <option value="{{ $item->id }}" {{ old('inventory_item_id') == $item->id && old('action_taken') !== null ? 'selected' : '' }}>
+                                    [{{ $item->sku ?? 'ID:'.$item->id }}] {{ $item->part_name }} — {{ $item->brand }} {{ $item->model }} (Stock: {{ $item->quantity }})
+                                </option>
                             @endforeach
                         </select>
                         @if($errors->any() && old('action_taken') !== null)
@@ -224,4 +230,21 @@
         </div>
     </div>
 </div>
+
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.searchable-select').forEach((el) => {
+            new TomSelect(el, {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                },
+                maxOptions: 50
+            });
+        });
+    });
+</script>
 </x-app-layout>

@@ -73,7 +73,8 @@
     ];
 @endphp
 
-<nav x-data="{ open: false }" class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
+<div x-data="{ open: false }">
+<nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl sticky top-0 z-40 border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16 md:h-20 lg:h-[88px]">
             <div class="flex items-center">
@@ -90,7 +91,7 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden lg:flex space-x-6 xl:space-x-8 h-full items-center ml-4">
+                <div class="hidden xl:flex space-x-6 xl:space-x-8 h-full items-center ml-4">
                     @php
                         $linkClasses = "inline-flex items-center text-[13px] xl:text-[14px] font-bold transition-all duration-300 relative whitespace-nowrap";
                         $activeClasses = "text-indigo-600 dark:text-indigo-400";
@@ -107,7 +108,7 @@
                 </div>
             </div>
 
-            <div class="hidden lg:flex lg:items-center gap-4 xl:gap-6">
+            <div class="hidden xl:flex xl:items-center gap-4 xl:gap-6">
                 {{-- Global Theme Toggle --}}
                 <button id="globalThemeToggle" aria-label="Toggle light/dark mode" title="Toggle Light/Dark Mode"
                     class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none">
@@ -277,7 +278,7 @@
             </div>
 
             <!-- Hamburger -->
-            <div class="-me-2 flex items-center lg:hidden">
+            <div class="-me-2 flex items-center xl:hidden">
                 <button @click="open = ! open" :aria-expanded="open" aria-label="Toggle navigation menu" aria-controls="mobile-nav" class="inline-flex items-center justify-center p-3 rounded-2xl text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
                     <i :class="{'hidden': open, 'block': ! open }" data-lucide="menu" class="w-6 h-6"></i>
                     <i :class="{'hidden': ! open, 'block': open }" data-lucide="x" class="w-6 h-6"></i>
@@ -286,79 +287,109 @@
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div id="mobile-nav" x-show="open"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 -translate-y-4"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         class="lg:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl">
-        <div class="pt-4 pb-6 space-y-2 px-4">
-            @foreach($navItems as $item)
-                @if($item['show'])
-                    <a href="{{ $item['href'] }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ $item['active'] ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800' }}">
-                        <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 mr-4"></i>
-                        {{ $item['mobile_label'] }}
-                    </a>
-                @endif
-            @endforeach
-
-            @guest
-                <div class="border-t border-gray-100 dark:border-gray-800 my-4 pt-4">
-                    <a href="{{ route('login') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <i data-lucide="log-in" class="w-5 h-5 mr-4"></i>
-                        Sign In
-                    </a>
-                    <a href="{{ route('register') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                        <i data-lucide="user-plus" class="w-5 h-5 mr-4"></i>
-                        Get Started
-                    </a>
-                </div>
-            @endguest
-            {{-- Mobile Theme Toggle --}}
-            <button id="mobileThemeToggle" aria-label="Toggle light/dark mode"
-                class="flex items-center w-full px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-2xl">
-                <i id="mobileThemeIcon" data-lucide="moon" class="w-5 h-5 mr-4"></i>
-                <span id="mobileThemeLabel">Dark Mode</span>
-            </button>
-        </div>
-
-        @auth
-            <div class="pt-6 pb-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-                <div class="flex items-center px-8 mb-6">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white text-lg font-black shadow-lg mr-4">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                    </div>
-                    <div class="overflow-hidden">
-                        <div class="font-black text-gray-900 dark:text-white truncate">{{ auth()->user()->name }}</div>
-                        <div class="text-sm text-gray-500 font-medium truncate">{{ auth()->user()->email }}</div>
-                    </div>
-                </div>
-
-                <div class="px-4 space-y-2">
-                    <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-colors">
-                        <i data-lucide="layout-dashboard" class="w-5 h-5 mr-4 text-gray-400"></i>
-                        Dashboard
-                    </a>
-
-                    <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-colors">
-                        <i data-lucide="user" class="w-5 h-5 mr-4 text-gray-400"></i>
-                        Profile Settings
-                    </a>
-
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <a href="{{ route('logout') }}"
-                                class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-red-600 hover:bg-red-50 transition-colors"
-                                onclick="event.preventDefault(); this.closest('form').submit();">
-                            <i data-lucide="log-out" class="w-5 h-5 mr-4"></i>
-                            Sign Out
-                        </a>
-                    </form>
-                </div>
-            </div>
-        @endauth
-    </div>
 </nav>
+
+    <!-- Off-canvas Backdrop -->
+    <div x-show="open" 
+         x-transition:enter="transition-opacity ease-linear duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-40 xl:hidden" 
+         @click="open = false" 
+         x-cloak></div>
+
+    <!-- Responsive Navigation Menu (Slide from right) -->
+    <div id="mobile-nav" x-show="open"
+         x-transition:enter="transition ease-in-out duration-300 transform"
+         x-transition:enter-start="translate-x-full"
+         x-transition:enter-end="translate-x-0"
+         x-transition:leave="transition ease-in-out duration-300 transform"
+         x-transition:leave-start="translate-x-0"
+         x-transition:leave-end="translate-x-full"
+         class="fixed top-0 right-0 h-screen w-[85%] max-w-sm bg-white dark:bg-gray-900 shadow-2xl z-50 xl:hidden flex flex-col"
+         x-cloak>
+         
+         <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50 shrink-0">
+             <div class="flex items-center gap-3">
+                 <span class="font-black text-gray-900 dark:text-white uppercase tracking-tight text-sm">Menu</span>
+             </div>
+             <button @click="open = false" aria-label="Close menu" class="p-2 -mr-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                 <i data-lucide="x" class="w-6 h-6"></i>
+             </button>
+         </div>
+
+         <div class="flex-1 overflow-y-auto custom-scrollbar">
+             <div class="p-4 space-y-1">
+                 @foreach($navItems as $item)
+                     @if($item['show'])
+                         <a href="{{ $item['href'] }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ $item['active'] ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors' }}">
+                             <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 mr-4"></i>
+                             {{ $item['mobile_label'] }}
+                         </a>
+                     @endif
+                 @endforeach
+
+                 @guest
+                     <div class="border-t border-gray-100 dark:border-gray-800 my-4 pt-4">
+                         <a href="{{ route('login') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                             <i data-lucide="log-in" class="w-5 h-5 mr-4"></i>
+                             Sign In
+                         </a>
+                         <a href="{{ route('register') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                             <i data-lucide="user-plus" class="w-5 h-5 mr-4"></i>
+                             Get Started
+                         </a>
+                     </div>
+                 @endguest
+                 {{-- Mobile Theme Toggle --}}
+                 <button id="mobileThemeToggle" aria-label="Toggle light/dark mode"
+                     class="flex items-center w-full px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-2xl transition-colors">
+                     <i id="mobileThemeIcon" data-lucide="moon" class="w-5 h-5 mr-4"></i>
+                     <span id="mobileThemeLabel">Dark Mode</span>
+                 </button>
+             </div>
+
+             @auth
+                 <div class="pt-6 pb-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 mt-auto shrink-0">
+                     <div class="flex items-center px-8 mb-6">
+                         <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white text-lg font-black shadow-lg mr-4 shrink-0">
+                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                         </div>
+                         <div class="overflow-hidden">
+                             <div class="font-black text-gray-900 dark:text-white truncate">{{ auth()->user()->name }}</div>
+                             <div class="text-sm text-gray-500 font-medium truncate">{{ auth()->user()->email }}</div>
+                         </div>
+                     </div>
+
+                     <div class="px-4 space-y-2">
+                         <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-colors">
+                             <i data-lucide="layout-dashboard" class="w-5 h-5 mr-4 text-gray-400"></i>
+                             Dashboard
+                         </a>
+
+                         <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-colors">
+                             <i data-lucide="user" class="w-5 h-5 mr-4 text-gray-400"></i>
+                             Profile Settings
+                         </a>
+
+                         <form method="POST" action="{{ route('logout') }}">
+                             @csrf
+                             <a href="{{ route('logout') }}"
+                                     class="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-red-600 hover:bg-red-50 transition-colors"
+                                     onclick="event.preventDefault(); this.closest('form').submit();">
+                                 <i data-lucide="log-out" class="w-5 h-5 mr-4"></i>
+                                 Sign Out
+                             </a>
+                         </form>
+                     </div>
+                 </div>
+             @endauth
+         </div>
+    </div>
+</div>
 
 <script>
 (function() {

@@ -113,6 +113,18 @@
                     </a>
                 @endif
             </form>
+
+            <!-- Audit #27: Check Compatibility Button -->
+            <div class="mt-6 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border border-indigo-100 dark:border-indigo-800 p-5 rounded-2xl shadow-sm text-center lg:sticky lg:top-[420px]">
+                <div class="w-10 h-10 mx-auto bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mb-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <h3 class="font-bold text-gray-900 dark:text-white mb-2">Not sure if it fits?</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Find exact matching parts for your motorcycle model.</p>
+                <a href="{{ route('compatibility.view') }}" class="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Check Compatibility
+                </a>
+            </div>
         </div>
 
         <!-- PRODUCTS -->
@@ -120,29 +132,58 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
 
             @forelse($items as $item)
-                <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow hover:shadow-lg transition p-4 flex flex-col group">
+                <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow hover:shadow-lg transition p-4 flex flex-col group"
+                     x-data="{ 
+                        selectedId: '{{ $item->id }}', 
+                        selectedPrice: {{ (float)($item->price ?? 0) }}, 
+                        selectedStock: {{ $item->quantity }} 
+                     }">
                     <div class="aspect-square w-full rounded-lg overflow-hidden mb-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
                         <img src="{{ $item->image_url }}" alt="{{ $item->part_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                     </div>
                     <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-white">{{ $item->part_name }}</h3>
                     <p class="text-gray-500 dark:text-gray-400 text-sm">{{ $item->brand }} • {{ $item->model }}</p>
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Category: {{ $item->category }}</p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500">Stock: {{ $item->quantity }}</p>
-                    <p class="text-green-600 dark:text-green-400 font-bold mt-2 text-lg">₱{{ number_format((float)($item->price ?? 0), 2) }}</p>
+                    
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Stock: <span x-text="selectedStock"></span></p>
+                    <p class="text-green-600 dark:text-green-400 font-bold mt-2 text-lg">₱<span x-text="selectedPrice.toFixed(2)"></span></p>
 
-                    <div class="mt-auto pt-3">
+                    @if($item->variations && $item->variations->count() > 0)
+                        <div class="mt-3">
+                            <label class="sr-only">Select Variation</label>
+                            <select x-on:change="
+                                const opt = $event.target.options[$event.target.selectedIndex];
+                                selectedId = opt.value;
+                                selectedPrice = parseFloat(opt.dataset.price) || {{ (float)($item->price ?? 0) }};
+                                selectedStock = parseInt(opt.dataset.stock) || 0;
+                            " class="w-full text-sm border-gray-200 dark:border-gray-600 p-2 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500">
+                                <option value="{{ $item->id }}" data-price="{{ $item->price }}" data-stock="{{ $item->quantity }}">Base Option ({{ $item->quantity }} in stock)</option>
+                                @foreach($item->variations as $var)
+                                    <option value="{{ $var->id }}" data-price="{{ $var->price ?? $item->price }}" data-stock="{{ $var->quantity }}">
+                                        {{ $var->variation_name }} ({{ $var->quantity }} in stock)
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+
+                    <div class="mt-auto pt-4">
                         @auth
-                            @if($item->quantity == 0)
-                                <a href="/preorder/{{ $item->id }}"
+                            <!-- Pre-order Button -->
+                            <div x-show="selectedStock == 0" style="display: none;">
+                                <a :href="'/preorder/' + selectedId"
                                    class="block text-center w-full bg-amber-500 text-white py-3 rounded-lg hover:bg-amber-600 font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors">
                                     Pre-order
                                 </a>
-                            @else
-                                <form method="POST" action="/cart/add/{{ $item->id }}" x-data="{ loading: false }" @submit="loading = true">
+                            </div>
+
+                            <!-- Add to Cart Form -->
+                            <div x-show="selectedStock > 0" style="display: none;">
+                                <form method="POST" :action="'/cart/add/' + selectedId" x-data="{ loading: false }" @submit="loading = true">
                                     @csrf
                                     <button
                                         :disabled="loading"
-                                        aria-label="Add {{ $item->part_name }} to cart"
+                                        aria-label="Add to cart"
                                         class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-75 disabled:cursor-not-allowed">
                                         <svg x-show="loading" class="animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -151,7 +192,7 @@
                                         <span x-text="loading ? 'Adding...' : 'Add to Cart'"></span>
                                     </button>
                                 </form>
-                            @endif
+                            </div>
                         @else
                             <a href="{{ route('login') }}"
                                class="block text-center w-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-semibold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors">

@@ -217,10 +217,42 @@
                                             <tr x-show="expandedRefund === {{ $refund->id }}" x-cloak class="bg-gray-50/30 dark:bg-gray-800/10">
                                                 <td colspan="3" class="p-0 border-b border-gray-100 dark:border-gray-800">
                                                     <div class="p-8 pl-14 space-y-6">
+                                                        {{-- Refund Method Badge --}}
+                                                        <div>
+                                                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Refund Method</h4>
+                                                            @if($refund->refund_method === 'digital')
+                                                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 font-black text-[10px] uppercase tracking-widest">
+                                                                    <i data-lucide="smartphone" class="w-3 h-3"></i> Digital (QR Code)
+                                                                </span>
+                                                            @elseif($refund->refund_method === 'on_site')
+                                                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-50 text-cyan-600 font-black text-[10px] uppercase tracking-widest">
+                                                                    <i data-lucide="store" class="w-3 h-3"></i> On-site Pickup
+                                                                    @if($refund->pickup_time)
+                                                                        — {{ $refund->pickup_time->format('M d, Y g:i A') }}
+                                                                    @endif
+                                                                </span>
+                                                            @else
+                                                                <span class="px-3 py-1.5 rounded-lg bg-gray-50 text-gray-500 font-black text-[10px] uppercase tracking-widest">Not specified</span>
+                                                            @endif
+                                                        </div>
+
                                                         <div>
                                                             <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Customer Details</h4>
                                                             <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $refund->details ?? 'No additional details provided.' }}</p>
                                                         </div>
+
+                                                        {{-- QR Code (for digital refunds) --}}
+                                                        @if($refund->qr_code_path)
+                                                        <div>
+                                                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Customer QR Code</h4>
+                                                            <a href="{{ Storage::url($refund->qr_code_path) }}" target="_blank" class="inline-block mt-2">
+                                                                <img src="{{ Storage::url($refund->qr_code_path) }}" alt="Customer QR Code" class="h-40 rounded-xl object-cover border border-gray-200 dark:border-gray-700 shadow-sm hover:opacity-80 transition-opacity">
+                                                            </a>
+                                                            <p class="text-[10px] text-gray-400 font-bold mt-2">Click to view full size. Use this QR to send the refund amount.</p>
+                                                        </div>
+                                                        @endif
+
+                                                        {{-- Photo Evidence --}}
                                                         @if($refund->photo_path)
                                                         <div>
                                                             <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Photo Evidence</h4>
@@ -235,7 +267,7 @@
                                                             <div class="flex flex-col sm:flex-row gap-4">
                                                                 <form action="{{ route('admin.refund.approve', $refund->id) }}" method="POST" class="flex-1 space-y-4">
                                                                     @csrf
-                                                                    <textarea name="admin_notes" rows="2" placeholder="Approval notes (optional)" class="w-full text-sm border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-xl focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                                                                    <textarea name="admin_notes" rows="2" placeholder="Reason for approval (required)" required class="w-full text-sm border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-xl focus:ring-indigo-500 focus:border-indigo-500"></textarea>
                                                                     <div class="flex items-center gap-2 mb-4">
                                                                         <input type="checkbox" name="restock" id="restock_{{ $refund->id }}" value="1" class="rounded text-indigo-600 focus:ring-indigo-500 bg-gray-50 border-gray-300">
                                                                         <label for="restock_{{ $refund->id }}" class="text-xs font-bold text-gray-700 dark:text-gray-300">Restock item (increment inventory by {{ $refund->sale->quantity ?? 0 }})</label>

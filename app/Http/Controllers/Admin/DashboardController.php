@@ -19,8 +19,8 @@ class DashboardController extends Controller
                     'totalProducts' => InventoryItem::count(),
                     'lowStockCount' => InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->count(),
                     'activeRepairs' => Repair::whereIn('status', ['pending', 'ongoing'])->count(),
-                    'todayRevenue' => Sale::whereDate('created_at', now()->today())->sum('total_price'),
-                    'monthlyRevenue' => Sale::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('total_price'),
+                    'todayRevenue' => Sale::whereDate('created_at', now()->today())->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)->sum('total_price'),
+                    'monthlyRevenue' => Sale::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)->sum('total_price'),
                     'totalSalesCount' => Sale::count(),
                     'completedRepairs' => Repair::where('status', 'completed')->count(),
                 ];
@@ -36,6 +36,7 @@ class DashboardController extends Controller
             // Daily revenue for the last 30 days (Chart.js)
             $dailyRevenue = Sale::selectRaw('DATE(created_at) as date, SUM(total_price) as revenue')
                 ->where('created_at', '>=', now()->subDays(30))
+                ->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)
                 ->groupByRaw('DATE(created_at)')
                 ->orderByRaw('DATE(created_at)')
                 ->pluck('revenue', 'date');

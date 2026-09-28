@@ -74,7 +74,9 @@
                                         <div class="font-bold text-gray-900 dark:text-white">₱<span x-text="formatMoney(cartItem.price * cartItem.quantity)"></span></div>
                                         <div class="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm">
                                             <button type="button" @click="updateQuantity(index, -1)" aria-label="Decrease quantity" class="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg></button>
-                                            <span class="w-10 text-center text-sm font-bold bg-gray-50 dark:bg-gray-900 py-1 text-gray-900 dark:text-white" x-text="cartItem.quantity"></span>
+                                            <input type="number" x-model.number="cartItem.quantity" 
+                                                   @change="if(cartItem.quantity < 1) cartItem.quantity = 1; if(cartItem.quantity > cartItem.maxStock) { cartItem.quantity = cartItem.maxStock; alert('Cannot exceed available stock.'); }" 
+                                                   class="w-12 text-center text-sm font-bold bg-gray-50 dark:bg-gray-900 py-1 text-gray-900 dark:text-white border-none focus:ring-0 p-0 m-0 custom-number-input">
                                             <button type="button" @click="updateQuantity(index, 1)" aria-label="Increase quantity" class="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></button>
                                         </div>
                                     </div>
@@ -103,7 +105,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <span class="text-gray-500 dark:text-gray-400 font-bold sm:text-lg">₱</span>
                                     </div>
-                                    <input id="amount-tendered" type="number" x-model.number="amountTendered" class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 text-gray-900 dark:text-white font-bold text-lg" placeholder="0.00">
+                                    <input id="amount-tendered" type="number" x-model.number="amountTendered" min="0" max="999999" class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 text-gray-900 dark:text-white font-bold text-lg" placeholder="0.00">
                                 </div>
                                 <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-200 dark:border-gray-600" x-show="amountTendered > 0">
                                     <span class="text-gray-600 dark:text-gray-400 font-semibold">Change</span>

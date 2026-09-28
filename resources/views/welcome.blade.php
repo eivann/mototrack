@@ -54,7 +54,7 @@
                     <a href="/browse" class="w-full sm:w-auto bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-8 py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl hover:shadow-gray-900/20 flex items-center justify-center gap-2">
                         <i data-lucide="shopping-bag" class="w-5 h-5"></i> Browse Products
                     </a>
-                    <a href="#compat" class="w-full sm:w-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-800 px-8 py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center justify-center gap-2 shadow-sm">
+                    <a href="/compatibility" class="w-full sm:w-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-800 px-8 py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center justify-center gap-2 shadow-sm">
                         <i data-lucide="search" class="w-5 h-5"></i> Check Compatibility
                     </a>
                 </div>
@@ -159,63 +159,7 @@
         </div>
     </section>
 
-    {{-- COMPATIBILITY --}}
-    <style>
-        .highlight { background-color: #fef08a; padding: 0 2px; border-radius: 4px; font-weight: 700; color: #1f2937; }
-    </style>
-    <section id="compat" class="py-16 relative overflow-hidden bg-white dark:bg-gray-900 border-y border-gray-100 dark:border-gray-800">
-        <!-- Toast Notification Container -->
-        <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center mb-10">
-                <div class="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm uppercase tracking-widest mb-4">
-                    <i data-lucide="search" class="w-4 h-4"></i> Compatibility Checker
-                </div>
-                <h2 class="text-4xl font-black tracking-tighter mb-4 text-gray-900 dark:text-white">Find the Right Part</h2>
-                <p class="text-gray-500 dark:text-gray-400 font-medium text-lg">Enter your motorcycle details and we'll instantly find the exact parts that fit your ride.</p>
-            </div>
-
-            <form id="compatForm" class="relative group z-20 mt-8">
-                <div class="bg-white dark:bg-gray-800 rounded-[2rem] shadow-[0_8px_30px_rgba(82,68,225,0.15)] dark:shadow-none p-3 md:p-4 border border-gray-50 dark:border-gray-700">
-                    <div class="flex flex-col md:flex-row items-end gap-3 md:gap-4">
-                        <div class="flex-1 w-full">
-                            <label for="compatMake" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5 text-left">Make</label>
-                            <input type="text" id="compatMake" placeholder="E.g., Honda" list="landingMakeSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
-                            <datalist id="landingMakeSuggestions"></datalist>
-                        </div>
-                        <div class="flex-1 w-full">
-                            <label for="compatModel" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5 text-left">Model</label>
-                            <input type="text" id="compatModel" placeholder="E.g., TMX 125" list="landingModelSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
-                            <datalist id="landingModelSuggestions"></datalist>
-                        </div>
-                        <div class="flex-1 w-full relative">
-                            <label for="compatPart" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5 text-left">Year/Part</label>
-                            <div class="flex items-center gap-2">
-                                <input type="text" id="compatPart" placeholder="E.g., 2024 or Brake" list="landingPartSuggestions" autocomplete="off" class="w-full bg-white dark:bg-gray-900 border-2 border-red-400/80 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold placeholder-gray-400 transition-colors">
-                                <datalist id="landingPartSuggestions"></datalist>
-                                <!-- Loading Spinner -->
-                                <div id="landingSpinner" class="hidden absolute right-4 top-[42px]">
-                                    <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="w-full md:w-auto mt-2 md:mt-0">
-                            <button type="submit" class="w-full md:w-auto bg-[#5244e1] hover:bg-[#4336bf] text-white font-bold rounded-2xl px-8 py-3.5 flex items-center justify-center gap-2 transition-all shadow-md ring-2 ring-indigo-500 dark:ring-indigo-400 ring-offset-2 dark:ring-offset-gray-800">
-                                <i data-lucide="search" class="w-5 h-5"></i> Search
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-
-            <!-- RESULTS GRID -->
-            <div id="compatResultsBox" class="mt-8 transition-all duration-300 relative z-10"></div>
-        </div>
-    </section>
 
     {{-- PREORDER --}}
     <section id="preorder" class="py-16">

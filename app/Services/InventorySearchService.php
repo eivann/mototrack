@@ -41,7 +41,13 @@ class InventorySearchService
                           ->orWhere('model', $likeOperator, "%$term%")
                           ->orWhere('part_name', $likeOperator, "%$term%")
                           ->orWhere('category', $likeOperator, "%$term%")
-                          ->orWhere('brand', $likeOperator, "%$term%");
+                          ->orWhere('brand', $likeOperator, "%$term%")
+                          // Audit #26: Check compatibility logic by year/parts (motorcycles relation)
+                          ->orWhereHas('motorcycles', function ($motoQuery) use ($term, $likeOperator) {
+                              $motoQuery->where('brand', $likeOperator, "%$term%")
+                                        ->orWhere('model', $likeOperator, "%$term%")
+                                        ->orWhere('year', $likeOperator, "%$term%");
+                          });
                 });
             }
         });

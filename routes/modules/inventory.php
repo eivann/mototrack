@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::get('/browse', [PublicBrowseController::class, 'index'])->name('browse');
-Route::get('/search-parts', [PublicBrowseController::class, 'searchParts'])->middleware('throttle:60,1')->name('search.parts');
-Route::get('/inventory-suggestions', [PublicBrowseController::class, 'suggestions'])->middleware('throttle:120,1')->name('inventory.suggestions');
+Route::get('/search-parts', [PublicBrowseController::class, 'searchParts'])->middleware('throttle:300,1')->name('search.parts');
+Route::get('/inventory-suggestions', [PublicBrowseController::class, 'suggestions'])->middleware('throttle:300,1')->name('inventory.suggestions');
 Route::get('/compatibility', [PublicBrowseController::class, 'compatibilityForm'])->name('compatibility.view');
 Route::post('/compatibility', [PublicBrowseController::class, 'checkCompatibility'])->name('compatibility.check');
 

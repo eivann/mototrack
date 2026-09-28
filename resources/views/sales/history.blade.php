@@ -89,9 +89,16 @@
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
                                 @forelse($sales as $sale)
-                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors {{ $sale->status === \App\Enums\OrderStatus::SALE_REFUNDED ? 'bg-red-50/50 dark:bg-red-900/20' : '' }}">
                                         <td class="p-5 font-semibold text-gray-900 dark:text-white">
-                                            {{ $sale->item->part_name ?? 'Unknown Item' }}
+                                            <div class="flex items-center gap-2">
+                                                {{ $sale->item->part_name ?? 'Unknown Item' }}
+                                                @if($sale->status === \App\Enums\OrderStatus::SALE_REFUNDED)
+                                                    <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">Refunded</span>
+                                                @elseif($sale->status === \App\Enums\OrderStatus::SALE_COMPLETED)
+                                                    <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">Purchased</span>
+                                                @endif
+                                            </div>
                                             <div class="text-xs text-gray-400 dark:text-gray-500 font-normal mt-0.5">{{ $sale->item->brand ?? '' }} {{ $sale->item->model ?? '' }}</div>
                                         </td>
                                         <td class="p-5 text-center font-medium">
@@ -124,10 +131,17 @@
                     <!-- MOBILE SALES CARDS -->
                     <div class="grid grid-cols-1 gap-4 p-4 md:hidden">
                         @forelse($sales as $sale)
-                            <div class="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                            <div class="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border {{ $sale->status === \App\Enums\OrderStatus::SALE_REFUNDED ? 'border-red-200 dark:border-red-800 bg-red-50/30' : 'border-gray-100 dark:border-gray-600' }}">
                                 <div class="flex justify-between items-start mb-3">
                                     <div>
-                                        <h4 class="font-bold text-gray-900 dark:text-white">{{ $sale->item->part_name ?? 'Unknown Item' }}</h4>
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="font-bold text-gray-900 dark:text-white">{{ $sale->item->part_name ?? 'Unknown Item' }}</h4>
+                                            @if($sale->status === \App\Enums\OrderStatus::SALE_REFUNDED)
+                                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">Refunded</span>
+                                            @elseif($sale->status === \App\Enums\OrderStatus::SALE_COMPLETED)
+                                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">Purchased</span>
+                                            @endif
+                                        </div>
                                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ $sale->item->brand ?? '' }} {{ $sale->item->model ?? '' }}</p>
                                     </div>
                                     <span class="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-lg text-xs font-bold">

@@ -12,7 +12,7 @@ class PublicBrowseController extends Controller
 {
     public function index()
     {
-        $query = InventoryItem::query();
+        $query = InventoryItem::with('variations')->whereNull('parent_id');
         $search = trim((string) request('search'));
         $category = trim((string) request('category'));
         $sort = request('sort');

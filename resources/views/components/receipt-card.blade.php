@@ -22,6 +22,7 @@
     <div class="p-8 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <p class="font-medium text-gray-600 dark:text-gray-400 mb-1">Thank you for your purchase!</p>
         <p>Please keep this receipt for returns/exchange.</p>
-        <p class="mt-4 opacity-50 text-[10px] uppercase tracking-widest">Powered by MotoTrack</p>
+        <p class="mt-4 opacity-50 text-[10px] uppercase tracking-widest font-black text-red-500 dark:text-red-400">*** This is not an official receipt ***</p>
+        <p class="mt-2 opacity-50 text-[10px] uppercase tracking-widest">Powered by MotoTrack</p>
     </div>
 </div>

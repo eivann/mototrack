@@ -23,6 +23,8 @@ class StoreInventoryRequest extends FormRequest
             'price'     => 'required|numeric|min:0',
             'notes'     => 'nullable|string|max:1000',
             'image'     => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'parent_id' => 'nullable|exists:inventory_items,id',
+            'variation_name' => 'nullable|string|max:255',
         ];
     }
 }

@@ -127,6 +127,84 @@
                 </form>
 
             </div>
+
+            <!-- Variations Section -->
+            @if(is_null($item->parent_id))
+            <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Product Variations</h2>
+                
+                @if($item->variations->count() > 0)
+                <div class="overflow-x-auto mb-6">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b dark:border-gray-700 text-sm text-gray-500">
+                                <th class="py-2">Variation Name</th>
+                                <th class="py-2">SKU</th>
+                                <th class="py-2">Stock</th>
+                                <th class="py-2">Price</th>
+                                <th class="py-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($item->variations as $var)
+                            <tr class="border-b dark:border-gray-700 last:border-0 text-sm text-gray-900 dark:text-gray-300">
+                                <td class="py-3 font-semibold">{{ $var->variation_name }}</td>
+                                <td class="py-3">{{ $var->sku }}</td>
+                                <td class="py-3">{{ $var->quantity }}</td>
+                                <td class="py-3">₱{{ number_format($var->price, 2) }}</td>
+                                <td class="py-3 flex gap-2">
+                                    <a href="/inventory/{{ $var->id }}/edit" class="text-indigo-600 hover:underline">Edit</a>
+                                    <form method="POST" action="/inventory/{{ $var->id }}" onsubmit="return confirm('Delete variation?');">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                <p class="text-sm text-gray-500 mb-6">No variations added yet.</p>
+                @endif
+
+                <!-- Add Variation Form -->
+                <div class="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-md font-semibold mb-4 text-gray-800 dark:text-gray-200">Add New Variation</h3>
+                    <form method="POST" action="/inventory">
+                        @csrf
+                        <input type="hidden" name="parent_id" value="{{ $item->id }}">
+                        <input type="hidden" name="category" value="{{ $item->category }}">
+                        <input type="hidden" name="brand" value="{{ $item->brand }}">
+                        <input type="hidden" name="model" value="{{ $item->model }}">
+                        <input type="hidden" name="part_name" value="{{ $item->part_name }}">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Variation Name</label>
+                                <input type="text" name="variation_name" placeholder="e.g. Red, Size L" class="w-full text-sm border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">SKU (Optional)</label>
+                                <input type="text" name="sku" placeholder="e.g. VAR-001" class="w-full text-sm border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
+                                <input type="number" name="quantity" class="w-full text-sm border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg" required min="0" value="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Price (₱)</label>
+                                <input type="number" name="price" step="0.01" class="w-full text-sm border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg" required min="0" value="{{ (float)$item->price }}">
+                            </div>
+                        </div>
+                        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors">
+                            Add Variation
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endif
+
         </div>
     </div>
 </x-app-layout>

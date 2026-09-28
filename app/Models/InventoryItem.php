@@ -30,10 +30,22 @@ class InventoryItem extends Model
         'price',
         'low_stock_threshold',
         'low_stock_notified',
-        'image_path'
+        'image_path',
+        'parent_id',
+        'variation_name'
     ];
 
     protected $appends = ['image_url'];
+
+    public function parent()
+    {
+        return $this->belongsTo(InventoryItem::class, 'parent_id');
+    }
+
+    public function variations()
+    {
+        return $this->hasMany(InventoryItem::class, 'parent_id');
+    }
 
     public function sales()
     {

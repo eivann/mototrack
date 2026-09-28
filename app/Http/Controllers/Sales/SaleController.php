@@ -93,7 +93,10 @@ class SaleController extends Controller
 
         // Use DB aggregates to avoid loading all rows into memory for totals
         $totalsQuery = clone $baseQuery;
-        $totalSales = $totalsQuery->sum('total_price');
+        // Audit #3.5: Exclude refunded sales from total revenue
+        $totalSales = (clone $totalsQuery)
+            ->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)
+            ->sum('total_price');
         $totalTransactions = (clone $totalsQuery)->whereNotNull('transaction_reference')->distinct('transaction_reference')->count('transaction_reference')
                            + (clone $totalsQuery)->whereNull('transaction_reference')->count();
 

@@ -17,14 +17,20 @@ class AdminInventoryController extends Controller
     public function index(Request $request)
 {
     $search = $request->search;
+    $category = $request->category;
 
-    $items = InventoryItem::search($search)
-        ->paginate(12)
-        ->withQueryString();
+    $query = InventoryItem::search($search)->orderBy('part_name', 'asc');
+    
+    if ($category) {
+        $query->where('category', $category);
+    }
 
+    $items = $query->paginate(12)->withQueryString();
+    
     $categories = InventoryItem::distinctCategories();
+    $brands = InventoryItem::distinct('brand')->pluck('brand')->filter();
 
-    return view('inventory.index', compact('items', 'search', 'categories'));
+    return view('inventory.index', compact('items', 'search', 'category', 'categories', 'brands'));
 }
 
 public function store(StoreInventoryRequest $request)

@@ -381,11 +381,7 @@
                 <div class="mb-3 relative input-group">
                     <div class="flex justify-between items-center mb-1.5">
                         <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Password</label>
-                        @if (Route::has('password.request'))
-                            <a href="{{ route('password.request') }}" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 font-medium transition-colors">
-                                Forgot password?
-                            </a>
-                        @endif
+
                     </div>
                     <div class="field-shell relative">
                         <i data-lucide="lock" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
