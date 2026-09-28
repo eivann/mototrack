@@ -53,19 +53,23 @@ class PublicBrowseController extends Controller
 
     public function suggestions(Request $request)
     {
-        $data = $request->validate([
-            'field' => 'nullable|string|in:search,category,part_name,brand,model,sku',
-            'q' => 'nullable|string|max:80',
-        ]);
+        try {
+            $data = $request->validate([
+                'field' => 'nullable|string|in:search,category,part_name,brand,model,sku',
+                'q' => 'nullable|string|max:80',
+            ]);
 
-        $field = $data['field'] ?? 'search';
-        $term = trim($data['q'] ?? '');
+            $field = $data['field'] ?? 'search';
+            $term = trim($data['q'] ?? '');
 
-        if ($field === 'search') {
-            return response()->json($this->searchSuggestions($term));
+            if ($field === 'search') {
+                return response()->json($this->searchSuggestions($term));
+            }
+
+            return response()->json($this->fieldSuggestions($field, $term));
+        } catch (\Exception $e) {
+            return response()->json(['error_debug' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
         }
-
-        return response()->json($this->fieldSuggestions($field, $term));
     }
 
     public function compatibilityForm(Request $request)
