@@ -2,7 +2,7 @@
     <div x-data="{ activeTab: 'overview' }" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
         <!-- Section Header -->
         <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="w-full px-4 sm:px-8 lg:px-12">
                 <div class="flex justify-between items-center py-4">
                     <div class="flex items-center gap-4">
                         <div class="w-11 h-11 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-300">
@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="w-full px-4 sm:px-8 lg:px-12 py-8">
             <div class="flex flex-col md:flex-row gap-8 items-start">
                 
                 <!-- Sidebar Navigation (Left) -->
