@@ -397,10 +397,13 @@
                     </div>
                 </div>
 
-                <!-- Remember Me -->
-                <div class="mb-3 flex items-center">
-                    <input id="remember_me" type="checkbox" name="remember" class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500">
-                    <label for="remember_me" class="ml-2 text-sm text-gray-600 dark:text-gray-400 font-medium cursor-pointer">Keep me signed in</label>
+                <!-- Remember Me + Forgot Password -->
+                <div class="mb-3 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember_me" type="checkbox" name="remember" class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500">
+                        <label for="remember_me" class="ml-2 text-sm text-gray-600 dark:text-gray-400 font-medium cursor-pointer">Keep me signed in</label>
+                    </div>
+                    <a href="{{ route('password.request') }}" class="text-sm text-blue-600 dark:text-blue-400 font-semibold hover:underline">Forgot password?</a>
                 </div>
 
                 <!-- Google reCAPTCHA -->

@@ -19,7 +19,7 @@
 
                 <!-- Q1 -->
                 <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
-                    <button @click="open = open === 1 ? null : 1" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset group" :aria-expanded="open === 1">
+                    <button @click="open = open === 1 ? null : 1" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 1">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-black">1</span>
                             <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">Is the product I see on the website currently in stock?</h3>
@@ -36,7 +36,7 @@
 
                 <!-- Q2 -->
                 <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
-                    <button @click="open = open === 2 ? null : 2" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset group" :aria-expanded="open === 2">
+                    <button @click="open = open === 2 ? null : 2" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 2">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-black">2</span>
                             <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">How do I know if a part is compatible with my motorcycle?</h3>
@@ -53,7 +53,7 @@
 
                 <!-- Q3 -->
                 <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
-                    <button @click="open = open === 3 ? null : 3" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset group" :aria-expanded="open === 3">
+                    <button @click="open = open === 3 ? null : 3" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 3">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-xs font-black">3</span>
                             <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">What is a pre-order and when do I use it?</h3>
@@ -70,7 +70,7 @@
 
                 <!-- Q4 -->
                 <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
-                    <button @click="open = open === 4 ? null : 4" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset group" :aria-expanded="open === 4">
+                    <button @click="open = open === 4 ? null : 4" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 4">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-black">4</span>
                             <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">When do I pay the remaining balance for a pre-order?</h3>
@@ -87,7 +87,7 @@
 
                 <!-- Q5 -->
                 <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
-                    <button @click="open = open === 5 ? null : 5" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset group" :aria-expanded="open === 5">
+                    <button @click="open = open === 5 ? null : 5" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 5">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-black">5</span>
                             <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">What payment method is accepted?</h3>
@@ -103,7 +103,7 @@
 
                 <!-- Q6 -->
                 <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
-                    <button @click="open = open === 6 ? null : 6" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset group" :aria-expanded="open === 6">
+                    <button @click="open = open === 6 ? null : 6" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 6">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs font-black">6</span>
                             <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">Is a printed receipt provided after purchase?</h3>
@@ -119,7 +119,7 @@
 
                 <!-- Q7 -->
                 <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
-                    <button @click="open = open === 7 ? null : 7" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset group" :aria-expanded="open === 7">
+                    <button @click="open = open === 7 ? null : 7" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 7">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center text-xs font-black">7</span>
                             <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">How do I check the status of my order?</h3>
@@ -135,7 +135,7 @@
 
                 <!-- Q8 -->
                 <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
-                    <button @click="open = open === 8 ? null : 8" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset group" :aria-expanded="open === 8">
+                    <button @click="open = open === 8 ? null : 8" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 8">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xs font-black">8</span>
                             <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">Can I cancel my order?</h3>
@@ -151,7 +151,7 @@
 
                 <!-- Q9 -->
                 <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden transition-all">
-                    <button @click="open = open === 9 ? null : 9" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset group" :aria-expanded="open === 9">
+                    <button @click="open = open === 9 ? null : 9" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 9">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 flex items-center justify-center text-xs font-black">9</span>
                             <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">Why do I need to read the Terms and Conditions before paying?</h3>

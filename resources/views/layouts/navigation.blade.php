@@ -24,11 +24,15 @@
         ],
         [
             'label' => 'About',
-            'mobile_label' => 'About Us',
+            'mobile_label' => 'About',
             'href' => url('/#about'),
             'icon' => 'info',
-            'active' => request()->is('about'),
+            'active' => request()->is('about') || request()->routeIs('faq'),
             'show' => !$isAdmin,
+            'dropdown' => [
+                ['label' => 'About Us', 'href' => url('/#about'), 'icon' => 'info'],
+                ['label' => 'FAQ', 'href' => route('faq'), 'icon' => 'help-circle'],
+            ],
         ],
         [
             'label' => 'Compatibility',
@@ -36,7 +40,7 @@
             'href' => route('compatibility.view'),
             'icon' => 'search',
             'active' => request()->routeIs('compatibility.view'),
-            'show' => !$isAdmin,
+            'show' => true,
         ],
         [
             'label' => 'Pre-Order',
@@ -52,14 +56,6 @@
             'href' => url('/#contact'),
             'icon' => 'phone',
             'active' => request()->is('contact'),
-            'show' => !$isAdmin,
-        ],
-        [
-            'label' => 'FAQ',
-            'mobile_label' => 'FAQ',
-            'href' => route('faq'),
-            'icon' => 'help-circle',
-            'active' => request()->routeIs('faq'),
             'show' => !$isAdmin,
         ],
         [
@@ -100,9 +96,28 @@
 
                     @foreach($navItems as $item)
                         @if($item['show'])
-                            <a href="{{ $item['href'] }}" class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }}">
-                                <span>{{ $item['label'] }}</span>
-                            </a>
+                            @if(!empty($item['dropdown']))
+                                {{-- Dropdown nav item --}}
+                                <div class="relative" x-data="{ dropdownOpen: false }" @mouseenter="dropdownOpen = true" @mouseleave="dropdownOpen = false">
+                                    <button @click="dropdownOpen = !dropdownOpen" class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }} gap-1">
+                                        <span>{{ $item['label'] }}</span>
+                                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="dropdownOpen ? 'rotate-180' : ''"></i>
+                                    </button>
+                                    <div x-show="dropdownOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-1" x-cloak
+                                        class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-xl py-2 z-50">
+                                        @foreach($item['dropdown'] as $subItem)
+                                            <a href="{{ $subItem['href'] }}" class="flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                                <i data-lucide="{{ $subItem['icon'] }}" class="w-4 h-4"></i>
+                                                {{ $subItem['label'] }}
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @else
+                                <a href="{{ $item['href'] }}" class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }}">
+                                    <span>{{ $item['label'] }}</span>
+                                </a>
+                            @endif
                         @endif
                     @endforeach
                 </div>
@@ -116,13 +131,15 @@
                 </button>
 
                 @auth
-                {{-- Cart Icon --}}
+                @if(!$isAdmin)
+                {{-- Cart Icon (customers only) --}}
                 <a href="/cart" class="relative w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" aria-label="Shopping cart">
                     <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                     @if($cartCount > 0)
                         <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-black shadow-sm">{{ $cartCount > 9 ? '9+' : $cartCount }}</span>
                     @endif
                 </a>
+                @endif
                 @endauth
 
                 <!-- Dashboard Button -->
@@ -325,10 +342,31 @@
              <div class="p-4 space-y-1">
                  @foreach($navItems as $item)
                      @if($item['show'])
-                         <a href="{{ $item['href'] }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ $item['active'] ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors' }}">
-                             <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 mr-4"></i>
-                             {{ $item['mobile_label'] }}
-                         </a>
+                         @if(!empty($item['dropdown']))
+                             {{-- Dropdown group in mobile --}}
+                             <div x-data="{ subOpen: false }">
+                                 <button @click="subOpen = !subOpen" class="flex items-center justify-between w-full px-4 py-4 rounded-2xl text-base font-bold {{ $item['active'] ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors' }}">
+                                     <div class="flex items-center">
+                                         <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 mr-4"></i>
+                                         {{ $item['mobile_label'] }}
+                                     </div>
+                                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="subOpen ? 'rotate-180' : ''"></i>
+                                 </button>
+                                 <div x-show="subOpen" x-collapse x-cloak class="pl-8 mt-1 space-y-1">
+                                     @foreach($item['dropdown'] as $subItem)
+                                         <a href="{{ $subItem['href'] }}" class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                             <i data-lucide="{{ $subItem['icon'] }}" class="w-4 h-4 mr-3"></i>
+                                             {{ $subItem['label'] }}
+                                         </a>
+                                     @endforeach
+                                 </div>
+                             </div>
+                         @else
+                             <a href="{{ $item['href'] }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ $item['active'] ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors' }}">
+                                 <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 mr-4"></i>
+                                 {{ $item['mobile_label'] }}
+                             </a>
+                         @endif
                      @endif
                  @endforeach
 
