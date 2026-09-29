@@ -15,28 +15,47 @@
                 </div>
             </div>
 
-                <!-- Navigation Tabs -->
-                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-4 px-1 mt-2">
-                    @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'preorders' => 'Pre-orders', 'refunds' => 'Refund Requests', 'reports' => 'Reports'] as $id => $label)
-                        <button
-                            @click="activeTab = '{{ $id }}'"
-                            :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'"
-                            class="whitespace-nowrap py-3 px-6 rounded-xl font-black text-xs uppercase tracking-widest transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            {{ $label }}
-                            @if($id === 'refunds' && isset($pendingRefunds) && $pendingRefunds->count() > 0)
-                                <span class="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-[9px] font-black leading-none text-white bg-red-500 rounded-full">{{ $pendingRefunds->count() }}</span>
-                            @endif
-                        </button>
-                    @endforeach
-                </div>
             </div>
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="flex flex-col md:flex-row gap-8 items-start">
-                <!-- Main Content (Left) -->
-                <div class="w-full md:flex-1 space-y-8 min-w-0 order-2 md:order-1">
+                
+                <!-- Sidebar Navigation (Left) -->
+                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2">
+                    @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'preorders' => 'Pre-orders', 'refunds' => 'Refund Requests', 'reports' => 'Reports'] as $id => $label)
+                        <button
+                            @click="activeTab = '{{ $id }}'"
+                            :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'"
+                            class="w-full text-left py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-between group"
+                        >
+                            <span class="flex items-center gap-3">
+                                @php
+                                    $icons = [
+                                        'overview' => 'layout-dashboard',
+                                        'inventory' => 'package',
+                                        'sales' => 'credit-card',
+                                        'repairs' => 'wrench',
+                                        'preorders' => 'clipboard-list',
+                                        'refunds' => 'rotate-ccw',
+                                        'reports' => 'bar-chart-2'
+                                    ];
+                                @endphp
+                                <i data-lucide="{{ $icons[$id] }}" class="w-5 h-5 transition-transform group-hover:scale-110" :class="activeTab === '{{ $id }}' ? 'text-white' : 'text-gray-400 group-hover:text-indigo-500'"></i>
+                                {{ $label }}
+                            </span>
+                            
+                            @if($id === 'refunds' && isset($pendingRefunds) && $pendingRefunds->count() > 0)
+                                <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-red-500 rounded-full">{{ $pendingRefunds->count() }}</span>
+                            @else
+                                <i data-lucide="chevron-right" class="w-4 h-4 opacity-50" :class="activeTab === '{{ $id }}' ? 'text-white opacity-100' : 'text-gray-400'"></i>
+                            @endif
+                        </button>
+                    @endforeach
+                </div>
+
+                <!-- Main Content (Right) -->
+                <div class="w-full md:flex-1 space-y-8 min-w-0 order-2">
                     
                     <!-- Overview Tab -->
                     <div x-show="activeTab === 'overview'" x-transition class="space-y-8">

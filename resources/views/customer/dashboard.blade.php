@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
+    <div x-data="{ activeTab: 'overview' }" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
         <!-- Section Header -->
         <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,10 +20,37 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="flex flex-col md:flex-row gap-8 items-start">
                 
-                <!-- Main Content (Left) -->
-                <div class="w-full md:flex-1 space-y-8 min-w-0 order-2 md:order-1">
+                <!-- Sidebar Navigation (Left) -->
+                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2">
+                    @foreach(['overview' => 'Overview', 'repairs' => 'Track Repairs', 'preorders' => 'Pre-orders', 'purchases' => 'Purchase History'] as $id => $label)
+                        <button
+                            @click="activeTab = '{{ $id }}'"
+                            :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'"
+                            class="w-full text-left py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-between group"
+                        >
+                            <span class="flex items-center gap-3">
+                                @php
+                                    $icons = [
+                                        'overview' => 'layout-dashboard',
+                                        'repairs' => 'wrench',
+                                        'preorders' => 'clipboard-list',
+                                        'purchases' => 'shopping-bag'
+                                    ];
+                                @endphp
+                                <i data-lucide="{{ $icons[$id] }}" class="w-5 h-5 transition-transform group-hover:scale-110" :class="activeTab === '{{ $id }}' ? 'text-white' : 'text-gray-400 group-hover:text-indigo-500'"></i>
+                                {{ $label }}
+                            </span>
+                            <i data-lucide="chevron-right" class="w-4 h-4 opacity-50" :class="activeTab === '{{ $id }}' ? 'text-white opacity-100' : 'text-gray-400'"></i>
+                        </button>
+                    @endforeach
+                </div>
+
+                <!-- Main Content (Center) -->
+                <div class="w-full md:flex-1 space-y-8 min-w-0 order-2">
                     
-                    <!-- Welcome Hero Card -->
+                    <!-- Overview Tab -->
+                    <div x-show="activeTab === 'overview'" x-transition class="space-y-8">
+                        <!-- Welcome Hero Card -->
                     <div class="bg-indigo-600 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl shadow-indigo-300 dark:shadow-none">
                         <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
                         <div class="relative z-10">
@@ -76,6 +103,10 @@
                         </a>
                     </div>
 
+                    </div>
+
+                    <!-- Repairs Tab -->
+                    <div x-show="activeTab === 'repairs'" x-cloak class="space-y-8">
                     <!-- Repairs Table -->
                     <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                         <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
@@ -111,6 +142,10 @@
                         @endif
                     </div>
 
+                    </div>
+
+                    <!-- Pre-orders Tab -->
+                    <div x-show="activeTab === 'preorders'" x-cloak class="space-y-8">
                     <!-- Pre-orders Table -->
                     <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                         <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
@@ -153,6 +188,10 @@
                         @endif
                     </div>
 
+                    </div>
+
+                    <!-- Purchases Tab -->
+                    <div x-show="activeTab === 'purchases'" x-cloak class="space-y-8">
                     <!-- Purchase History Table -->
                     <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                         <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
@@ -235,8 +274,11 @@
                     </div>
                 </div>
 
-                <!-- Sidebar (Right) -->
-                <div class="w-full md:w-80 space-y-8 flex-shrink-0 order-1 md:order-2">
+                    </div>
+                </div>
+
+                <!-- Sidebar (Right) - Only show in overview -->
+                <div x-show="activeTab === 'overview'" x-transition class="w-full md:w-80 space-y-8 flex-shrink-0 order-3">
                     
                     <!-- Pro Tip -->
                     <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group">
