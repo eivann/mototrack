@@ -1,5 +1,21 @@
 <x-app-layout>
-    <div x-data="{ activeTab: 'overview' }" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
+    <div x-data="{ 
+        activeTab: 'overview',
+        recentActivities: {{ Js::from($recentActivities->map(fn($a) => ['id' => $a->id, 'title' => $a->data['title'], 'time' => $a->created_at->diffForHumans()])) }},
+        initEcho() {
+            if (window.Echo) {
+                window.Echo.private('App.Models.User.{{ auth()->id() }}')
+                    .notification((notification) => {
+                        this.recentActivities.unshift({
+                            id: notification.id,
+                            title: notification.title,
+                            time: 'Just now'
+                        });
+                        if (this.recentActivities.length > 5) this.recentActivities.pop();
+                    });
+            }
+        }
+    }" x-init="initEcho()" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
         <!-- Section Header -->
         <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
             <div class="w-full px-4 sm:px-8 lg:px-12">
@@ -391,19 +407,18 @@
                             Live Activity
                         </h3>
                         <div class="space-y-6">
-                            @forelse($recentActivities as $activity)
+                            <template x-for="activity in recentActivities" :key="activity.id">
                                 <div class="flex gap-4 group">
                                     <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 p-2 rounded-xl h-fit">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                                     </div>
                                     <div class="min-w-0">
-                                        <div class="text-xs font-black text-gray-900 dark:text-white truncate uppercase tracking-tight">{{ $activity->data['title'] }}</div>
-                                        <div class="text-[10px] font-bold text-gray-400 mt-0.5">{{ $activity->created_at->diffForHumans() }}</div>
+                                        <div class="text-xs font-black text-gray-900 dark:text-white truncate uppercase tracking-tight" x-text="activity.title"></div>
+                                        <div class="text-[10px] font-bold text-gray-400 mt-0.5" x-text="activity.time"></div>
                                     </div>
                                 </div>
-                            @empty
-                                <div class="text-center py-4 text-gray-400 text-xs font-bold italic">No recent activity</div>
-                            @endforelse
+                            </template>
+                            <div x-show="recentActivities.length === 0" style="display: none;" class="text-center py-4 text-gray-400 text-xs font-bold italic">No recent activity</div>
                         </div>
                     </div>
                 </div>

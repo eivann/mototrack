@@ -1,5 +1,33 @@
 <x-app-layout>
-    <div x-data="{ activeTab: 'overview' }" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
+    <div x-data="{ 
+        activeTab: 'overview',
+        recentActivities: {{ Js::from(auth()->user()->unreadNotifications->take(5)->map(fn($n) => ['id' => $n->id, 'title' => $n->data['title'] ?? 'Notification', 'message' => $n->data['message'] ?? '', 'time' => $n->created_at->diffForHumans(), 'is_repair' => str_contains(strtolower($n->data['title'] ?? ''), 'repair')])) }},
+        initEcho() {
+            if (window.Echo) {
+                window.Echo.private('App.Models.User.{{ auth()->id() }}')
+                    .notification((notification) => {
+                        this.recentActivities.unshift({
+                            id: notification.id,
+                            title: notification.title,
+                            message: notification.message,
+                            time: 'Just now',
+                            is_repair: (notification.title || '').toLowerCase().includes('repair')
+                        });
+                        if (this.recentActivities.length > 5) this.recentActivities.pop();
+                        
+                        // Re-render lucide icons for dynamically added ones
+                        if (window.lucide) {
+                            setTimeout(() => window.lucide.createIcons(), 50);
+                        }
+                    });
+            }
+        },
+        markRead(id) {
+            axios.post('/notifications/' + id + '/read').then(() => {
+                this.recentActivities = this.recentActivities.filter(n => n.id !== id);
+            });
+        }
+    }" x-init="initEcho()" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
         <!-- Section Header -->
         <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
             <div class="w-full px-4 sm:px-8 lg:px-12">
@@ -297,29 +325,25 @@
                             Recent Updates
                         </h3>
                         <div class="space-y-4">
-                            @if(auth()->user()->unreadNotifications->count() > 0)
-                                @foreach(auth()->user()->unreadNotifications->take(5) as $notification)
+                            <template x-for="(notification, index) in recentActivities" :key="notification.id">
+                                <div>
                                     <div class="flex gap-4 group">
                                         <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 p-2 rounded-xl h-fit shrink-0">
-                                            <i data-lucide="{{ str_contains(strtolower($notification->data['title'] ?? ''), 'repair') ? 'wrench' : 'package' }}" class="w-4 h-4"></i>
+                                            <i :data-lucide="notification.is_repair ? 'wrench' : 'package'" class="w-4 h-4"></i>
                                         </div>
                                         <div class="min-w-0 flex-1">
-                                            <div class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tight leading-tight">{{ $notification->data['title'] ?? 'Notification' }}</div>
-                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 leading-tight">{{ $notification->data['message'] ?? '' }}</div>
-                                            <div class="text-[9px] font-bold text-gray-400 mt-2">{{ $notification->created_at->diffForHumans() }}</div>
+                                            <div class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tight leading-tight" x-text="notification.title"></div>
+                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 leading-tight" x-text="notification.message"></div>
+                                            <div class="text-[9px] font-bold text-gray-400 mt-2" x-text="notification.time"></div>
                                         </div>
                                     </div>
-                                    <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="mt-2 text-right">
-                                        @csrf
-                                        <button type="submit" @click="hapticPulse()" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline py-3 px-4 -mr-4 inline-block focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded">Mark Read</button>
-                                    </form>
-                                    @if(!$loop->last)
-                                        <hr class="border-gray-100 dark:border-gray-800">
-                                    @endif
-                                @endforeach
-                            @else
-                                <div class="text-center py-4 text-gray-400 text-xs font-bold italic">No new updates</div>
-                            @endif
+                                    <div class="mt-2 text-right">
+                                        <button @click="markRead(notification.id); hapticPulse()" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline py-3 px-4 -mr-4 inline-block focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded">Mark Read</button>
+                                    </div>
+                                    <hr x-show="index < recentActivities.length - 1" class="border-gray-100 dark:border-gray-800 mt-4">
+                                </div>
+                            </template>
+                            <div x-show="recentActivities.length === 0" style="display:none;" class="text-center py-4 text-gray-400 text-xs font-bold italic">No new updates</div>
                         </div>
                     </div>
 
