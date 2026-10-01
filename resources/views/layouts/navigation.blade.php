@@ -71,7 +71,7 @@
 
 <div x-data="{ open: false }" class="sticky top-0 z-50 w-full">
 <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
-    <div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="w-full px-4 lg:px-6">
         <div class="flex justify-between items-center h-16 md:h-20 lg:h-[88px]">
             <div class="flex items-center shrink-0">
                 <!-- Logo -->
