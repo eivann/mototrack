@@ -69,27 +69,27 @@
     ];
 @endphp
 
-<div x-data="{ open: false }">
-<nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl sticky top-0 z-40 border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
+<div x-data="{ open: false }" class="sticky top-0 z-50 w-full">
+<nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16 md:h-20 lg:h-[88px]">
-            <div class="flex items-center">
+            <div class="flex items-center shrink-0">
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 xl:mr-10">
-                    <a href="{{ url('/') }}" class="flex items-center gap-3 xl:gap-4">
+                <div class="flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 lg:mr-6">
+                    <a href="{{ url('/') }}" class="flex items-center gap-2 lg:gap-3">
                         <img src="{{ asset('images/logo-light.svg') }}" alt="EM Parts" class="h-10 md:h-12 lg:h-14 w-auto object-contain transition-transform duration-500 block dark:hidden">
                         <img src="{{ asset('images/logo-dark.svg') }}" alt="EM Parts" class="h-10 md:h-12 lg:h-14 w-auto object-contain transition-transform duration-500 hidden dark:block">
                         <div class="hidden sm:flex flex-col leading-none">
-                            <span class="text-[16px] xl:text-[18px] font-black text-[#1a1f2c] dark:text-white uppercase tracking-tight">Edmar Motorcycle</span>
-                            <span class="text-[9px] font-bold tracking-[0.2em] text-indigo-600 dark:text-indigo-400 uppercase mt-1">Parts and Accessories</span>
+                            <span class="text-[14px] lg:text-[16px] font-black text-[#1a1f2c] dark:text-white uppercase tracking-tight">Edmar Motorcycle</span>
+                            <span class="text-[8px] font-bold tracking-[0.2em] text-indigo-600 dark:text-indigo-400 uppercase mt-1">Parts and Accessories</span>
                         </div>
                     </a>
-                </div>
+            </div>
 
-                <!-- Navigation Links -->
-                <div class="hidden xl:flex space-x-6 xl:space-x-8 h-full items-center ml-4">
+            <!-- Navigation Links -->
+            <div class="hidden lg:flex flex-1 justify-center space-x-4 lg:space-x-6 h-full items-center px-2 mx-4">
                     @php
-                        $linkClasses = "inline-flex items-center text-[13px] xl:text-[14px] font-bold transition-all duration-300 relative whitespace-nowrap";
+                        $linkClasses = "inline-flex items-center text-[12px] lg:text-[13px] font-bold transition-all duration-300 relative whitespace-nowrap";
                         $activeClasses = "text-indigo-600 dark:text-indigo-400";
                         $inactiveClasses = "text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white";
                     @endphp
@@ -121,9 +121,7 @@
                         @endif
                     @endforeach
                 </div>
-            </div>
-
-            <div class="hidden xl:flex xl:items-center gap-4 xl:gap-6">
+            <div class="hidden lg:flex lg:items-center gap-3 lg:gap-4 shrink-0">
                 {{-- Global Theme Toggle --}}
                 <button id="globalThemeToggle" aria-label="Toggle light/dark mode" title="Toggle Light/Dark Mode"
                     class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none">
@@ -295,7 +293,7 @@
             </div>
 
             <!-- Hamburger -->
-            <div class="-me-2 flex items-center xl:hidden">
+            <div class="-me-2 flex items-center lg:hidden">
                 <button @click="open = ! open" :aria-expanded="open" aria-label="Toggle navigation menu" aria-controls="mobile-nav" class="inline-flex items-center justify-center p-3 rounded-2xl text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
                     <i :class="{'hidden': open, 'block': ! open }" data-lucide="menu" class="w-6 h-6"></i>
                     <i :class="{'hidden': ! open, 'block': open }" data-lucide="x" class="w-6 h-6"></i>

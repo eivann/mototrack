@@ -40,7 +40,7 @@ class CustomerOrderController extends Controller
         Notification::send($owners, new StatusUpdated(
             'Order Cancelled',
             "Customer {$user->name} has cancelled their order for {$sale->item?->part_name}.",
-            "/sales"
+            "/dashboard?tab=sales"
         ));
 
         return back()->with('success', 'Order cancelled successfully.');
@@ -114,7 +114,7 @@ class CustomerOrderController extends Controller
         Notification::send($owners, new StatusUpdated(
             'Refund Requested',
             "Customer {$user->name} has requested a {$methodLabel} refund for {$sale->item?->part_name}.",
-            "/sales"
+            "/dashboard?tab=refunds"
         ));
 
         return back()->with('success', 'Refund request submitted successfully. We will review it shortly.');

@@ -53,8 +53,8 @@
                     @foreach(['overview' => 'Overview', 'repairs' => 'Track Repairs', 'preorders' => 'Pre-orders', 'purchases' => 'Purchase History'] as $id => $label)
                         <button
                             @click="activeTab = '{{ $id }}'"
-                            :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'"
-                            class="w-full text-left py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-between group"
+                            :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'"
+                            class="w-full text-left py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-600 dark:text-gray-300 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-between group"
                         >
                             <span class="flex items-center gap-3">
                                 @php
@@ -74,19 +74,19 @@
                 </div>
 
                 <!-- Main Content (Center) -->
-                <div class="w-full md:flex-1 space-y-8 min-w-0 order-2">
+                <div class="w-full md:flex-1 min-w-0 order-2">
                     
                     <!-- Overview Tab -->
                     <div x-show="activeTab === 'overview'" x-transition class="space-y-8">
                         <!-- Welcome Hero Card -->
-                    <div class="bg-indigo-600 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl shadow-indigo-300 dark:shadow-none">
+                    <div class="bg-indigo-600 rounded-[1.5rem] p-5 sm:p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-300 dark:shadow-none">
                         <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
                         <div class="relative z-10">
-                            <h3 class="text-4xl font-black tracking-tighter mb-4">Welcome back, {{ explode(' ', Auth::user()->name)[0] }}!</h3>
-                            <p class="text-indigo-100 text-lg max-w-md font-medium leading-relaxed mb-8">Ready to upgrade your ride? Track your active repairs, view pre-orders, and browse our massive catalog of premium parts.</p>
-                            <div class="flex flex-wrap gap-4">
-                                <a href="/browse" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-xl inline-block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Shop Now</a>
-                                <a href="/compatibility" class="px-8 py-4 bg-indigo-500/50 text-white border border-white/20 rounded-2xl font-black text-sm hover:bg-indigo-400 transition-all inline-block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Check Compatibility</a>
+                            <h3 class="text-xl font-black tracking-tighter mb-2">Welcome back, {{ explode(' ', Auth::user()->name)[0] }}!</h3>
+                            <p class="text-indigo-100 text-xs sm:text-sm max-w-md font-medium leading-relaxed mb-4">Ready to upgrade your ride? Track your active repairs, view pre-orders, and browse our massive catalog of premium parts.</p>
+                            <div class="flex flex-wrap gap-3">
+                                <a href="/browse" class="px-6 py-3 bg-white text-indigo-600 rounded-xl font-black text-xs hover:scale-105 transition-all shadow-md inline-block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Shop Now</a>
+                                <a href="/compatibility" class="px-6 py-3 bg-indigo-500/50 text-white border border-white/20 rounded-xl font-black text-xs hover:bg-indigo-400 transition-all inline-block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Check Compatibility</a>
                             </div>
                         </div>
                     </div>
@@ -153,7 +153,7 @@
                                                         {{ $repair->status ?? 'pending' }}
                                                     </span>
                                                 </td>
-                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">₱{{ number_format((float)($repair->cost ?? 0), 2) }}</td>
+                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">{{ ($repair->cost ?? 0) > 0 ? '₱'.number_format((float)($repair->cost), 2) : 'TBD' }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -196,9 +196,9 @@
                                                     </span>
                                                 </td>
                                                 <td class="p-6 text-right">
-                                                    <div class="font-black text-gray-900 dark:text-white mb-1">Total: ₱{{ number_format((float)($order->total ?? 0), 2) }}</div>
+                                                    <div class="font-black text-gray-900 dark:text-white mb-1">Total: {{ ($order->total ?? 0) > 0 ? '₱'.number_format((float)($order->total), 2) : 'TBD' }}</div>
                                                     <div class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">Paid DP: ₱{{ number_format((float)($order->down_payment ?? 0), 2) }}</div>
-                                                    <div class="text-xs text-amber-600 dark:text-amber-400 font-bold">Bal: ₱{{ number_format((float)(($order->total ?? 0) - ($order->down_payment ?? 0)), 2) }}</div>
+                                                    <div class="text-xs text-amber-600 dark:text-amber-400 font-bold">Bal: {{ ($order->total ?? 0) > 0 ? '₱'.number_format((float)(($order->total ?? 0) - ($order->down_payment ?? 0)), 2) : 'TBD' }}</div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -306,17 +306,9 @@
                 </div>
 
                 <!-- Sidebar (Right) - Only show in overview -->
-                <div x-show="activeTab === 'overview'" x-transition class="w-full md:w-80 space-y-8 flex-shrink-0 order-3">
+                <div x-show="activeTab === 'overview'" x-transition class="w-full md:w-80 space-y-8 flex-shrink-0 order-3 md:sticky md:top-28">
                     
-                    <!-- Pro Tip -->
-                    <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group">
-                        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-                        <h4 class="text-xl font-black mb-2 tracking-tighter uppercase">Rider Tip</h4>
-                        <p class="text-xs text-gray-300 mb-8 font-medium leading-relaxed">
-                            Not sure if a part fits your motorcycle model? Use our intelligent compatibility checker before purchasing to guarantee a perfect fit.
-                        </p>
-                        <a href="/compatibility" class="block text-center w-full py-4 bg-white text-gray-900 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all">Check Now</a>
-                    </div>
+
 
                     <!-- Live Notifications -->
                     <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800">

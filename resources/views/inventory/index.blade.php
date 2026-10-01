@@ -47,8 +47,8 @@
                             <label for="item-category" class="sr-only">Category</label>
                             <input id="item-category" name="category" x-model="category" list="inventory-category-suggestions" placeholder="Choose or type category" autocomplete="off" class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
                             <datalist id="inventory-category-suggestions">
-                                @foreach($categories as $category)
-                                    <option value="{{ $category }}"></option>
+                                @foreach($categories as $catOption)
+                                    <option value="{{ $catOption }}"></option>
                                 @endforeach
                             </datalist>
                         </div>

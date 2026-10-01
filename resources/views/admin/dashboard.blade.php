@@ -1,6 +1,6 @@
 <x-app-layout>
     <div x-data="{ 
-        activeTab: 'overview',
+        activeTab: new URLSearchParams(window.location.search).get('tab') || 'overview',
         recentActivities: {{ Js::from($recentActivities->map(fn($a) => ['id' => $a->id, 'title' => $a->data['title'], 'time' => $a->created_at->diffForHumans()])) }},
         initEcho() {
             if (window.Echo) {
@@ -42,8 +42,8 @@
                     @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'preorders' => 'Pre-orders', 'refunds' => 'Refund Requests', 'reports' => 'Reports'] as $id => $label)
                         <button
                             @click="activeTab = '{{ $id }}'"
-                            :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'"
-                            class="w-full text-left py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-between group"
+                            :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'"
+                            class="w-full text-left py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-600 dark:text-gray-300 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-between group"
                         >
                             <span class="flex items-center gap-3">
                                 @php
@@ -71,7 +71,7 @@
                 </div>
 
                 <!-- Main Content (Right) -->
-                <div class="w-full md:flex-1 space-y-8 min-w-0 order-2">
+                <div class="w-full md:flex-1 min-w-0 order-2">
                     
                     <!-- Overview Tab -->
                     <div x-show="activeTab === 'overview'" x-transition class="space-y-8">
@@ -89,14 +89,14 @@
                         </div>
 
                         <!-- Store Health (The Big Blue Card) -->
-                        <div class="bg-indigo-600 rounded-2xl sm:rounded-[3rem] p-6 sm:p-10 text-white relative overflow-hidden shadow-2xl shadow-indigo-300 dark:shadow-none">
+                        <div class="bg-indigo-600 rounded-2xl sm:rounded-[1.5rem] p-5 sm:p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-300 dark:shadow-none">
                             <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
                             <div class="relative z-10">
-                                <h3 class="text-4xl font-black tracking-tighter mb-4 italic">Operation Center</h3>
-                                <p class="text-indigo-100 text-lg max-w-md font-medium leading-relaxed mb-8">System is tracking <span class="text-white font-black underline">{{ $stats['activeRepairs'] }} service jobs</span>. Stock levels for {{ $stats['lowStockCount'] }} parts are currently critical.</p>
-                                <div class="flex flex-wrap gap-4">
-                                    <button @click="activeTab = 'repairs'" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Manage Jobs</button>
-                                    <button @click="activeTab = 'inventory'" class="px-8 py-4 bg-indigo-500/50 text-white border border-white/20 rounded-2xl font-black text-sm hover:bg-indigo-400 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Quick Audit</button>
+                                <h3 class="text-xl font-black tracking-tighter mb-2 italic">Operation Center</h3>
+                                <p class="text-indigo-100 text-xs sm:text-sm max-w-md font-medium leading-relaxed mb-4">System is tracking <span class="text-white font-black underline">{{ $stats['activeRepairs'] }} service jobs</span>. Stock levels for {{ $stats['lowStockCount'] }} parts are currently critical.</p>
+                                <div class="flex flex-wrap gap-3">
+                                    <button @click="activeTab = 'repairs'" class="px-6 py-3 bg-white text-indigo-600 rounded-xl font-black text-xs hover:scale-105 transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Manage Jobs</button>
+                                    <button @click="activeTab = 'inventory'" class="px-6 py-3 bg-indigo-500/50 text-white border border-white/20 rounded-xl font-black text-xs hover:bg-indigo-400 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Quick Audit</button>
                                 </div>
                             </div>
                         </div>
@@ -387,19 +387,7 @@
                 </div>
 
                 <!-- Sidebar (Right) -->
-                <div class="w-full md:w-80 space-y-8 flex-shrink-0 order-1 md:order-2">
-                    <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group">
-                        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-                        <h4 class="text-xl font-black mb-2 italic tracking-tighter uppercase">Pro Tip</h4>
-                        <p class="text-xs text-indigo-100 mb-8 font-medium leading-relaxed">
-                            @if($stats['lowStockCount'] > 0)
-                                Attention: <span class="text-white font-black underline">{{ $stats['lowStockCount'] }} parts</span> are running low. Tap below to see the full audit.
-                            @else
-                                Shop is operating at peak efficiency. No immediate restocks required.
-                            @endif
-                        </p>
-                        <button @click="activeTab = 'inventory'" class="w-full py-4 bg-white text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700">Audit Inventory</button>
-                    </div>
+                <div class="w-full md:w-80 space-y-8 flex-shrink-0 order-3 md:order-2">
 
                     <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800">
                         <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">

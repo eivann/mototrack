@@ -87,14 +87,13 @@ class CheckoutController extends Controller
             // P1-2: Only notify owners immediately for cash payments.
             // For online payments (gcash), owners are notified when payment
             // is confirmed — at the right time, after payment is received.
-            if ($paymentMethod === 'cash') {
-                $owners = User::owners();
-                Notification::send($owners, new StatusUpdated(
-                    'New Order Received',
-                    "Customer " . auth()->user()->name . " has placed a new order #{$transactionReference}.",
-                    "/sales/{$transactionReference}/receipt"
-                ));
-            }
+            $owners = User::owners();
+            $paymentNote = $paymentMethod === 'cash' ? '' : ' (Online Payment - Please verify receipt)';
+            Notification::send($owners, new StatusUpdated(
+                'New Order Received',
+                "Customer " . auth()->user()->name . " has placed a new order #{$transactionReference}{$paymentNote}.",
+                "/sales/{$transactionReference}/receipt"
+            ));
         }
 
         // For cash/walk-in payments, no external API is needed.
