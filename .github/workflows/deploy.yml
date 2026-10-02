@@ -21,16 +21,6 @@ jobs:
       - name: 📦 Install Composer Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: 🛠️ Install NPM Dependencies & Build Assets
-        run: |
-          npm install
-          npm run build
-
       - name: 🚀 Sync Files to VPS (rsync)
         uses: easingthemes/ssh-deploy@main
         env:
@@ -42,7 +32,7 @@ jobs:
           TARGET: "/var/www/mototrack"
           EXCLUDE: "/.git/, /.github/, /node_modules/, /.env, /storage/, /tests/"
 
-      - name: 🔄 Run Artisan Commands on VPS
+      - name: 🔄 Run Commands on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -51,8 +41,12 @@ jobs:
           script: |
             cd /var/www/mototrack
             
+            # Install Node modules and build assets on VPS so Vite can access .env
+            npm install
+            npm run build
+            
             # Ensure correct permissions for web server
-            chown -R www-data:www-data /var/www/mototrack/storage /var/www/mototrack/bootstrap/cache
+            chown -R www-data:www-data /var/www/mototrack/storage /var/www/mototrack/bootstrap/cache /var/www/mototrack/public/build
             
             # Run Laravel optimizations as the web server user
             sudo -u www-data php artisan migrate --force
