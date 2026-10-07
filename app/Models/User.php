@@ -48,6 +48,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'requires_password_change' => 'boolean',
+            'otp_expires_at' => 'datetime',
         ];
     }
 }
