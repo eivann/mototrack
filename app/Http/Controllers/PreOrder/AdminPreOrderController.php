@@ -25,7 +25,12 @@ class AdminPreOrderController extends Controller
         // inventory item can be resolved rather than silently skipping restock.
         $matchedByString = false;
 
-        DB::transaction(function () use ($preorder, &$matchedByString) {
+        DB::transaction(function () use (&$preorder, &$matchedByString) {
+            $preorder = PreOrder::lockForUpdate()->findOrFail($preorder->id);
+            if ($preorder->status !== 'pending') {
+                return;
+            }
+
             $item = null;
 
             if ($preorder->inventory_item_id) {
@@ -85,23 +90,6 @@ public function destroy(PreOrder $preorder)
     $preorder->delete();
 
     return redirect()->back()->with('success', 'Pre-order deleted successfully.');
-}
-
-public function markPaid(PreOrder $preorder)
-{
-    $preorder->is_paid = true;
-    $preorder->save();
-
-    // Notify customer
-    if ($preorder->customer && $preorder->customer->user) {
-        $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
-            'Down Payment Received',
-            "Your down payment for {$preorder->part_name} has been confirmed. We are now sourcing your part!",
-            '/customer/dashboard'
-        ));
-    }
-
-    return back()->with('success', 'Pre-order marked as paid!');
 }
 
 }

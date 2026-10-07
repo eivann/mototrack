@@ -42,7 +42,7 @@ class CommitOrder
     ): float {
         return DB::transaction(function () use (
             $lines, $transactionReference, $customerId,
-            $stockErrorPrefix, $tenderFor, $changeFor, $dispatchLowStockAlert
+            $stockErrorPrefix, $tenderFor, $changeFor, $dispatchLowStockAlert, $status
         ) {
             // Pass 1: lock stock and compute the true grand total.
             // Sort lines by ID to prevent deadlocks when locking rows

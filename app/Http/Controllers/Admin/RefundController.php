@@ -24,19 +24,36 @@ class RefundController extends Controller
             'admin_notes.required' => 'Please provide a reason for approving this refund.',
         ]);
 
-        $refundRequest = RefundRequest::findOrFail($id);
-        
-        $refundRequest->update([
-            'status' => OrderStatus::REFUND_APPROVED,
-            'admin_notes' => $request->admin_notes
-        ]);
+        $success = \Illuminate\Support\Facades\DB::transaction(function () use ($id, $request, &$refundRequest) {
+            $refundRequest = RefundRequest::lockForUpdate()->findOrFail($id);
+            if ($refundRequest->status !== OrderStatus::REFUND_PENDING) {
+                return false;
+            }
+            
+            $refundRequest->update([
+                'status' => OrderStatus::REFUND_APPROVED,
+                'admin_notes' => $request->admin_notes
+            ]);
 
-        // Audit Item #44: Only deduct from sales on confirmed approval
-        $refundRequest->sale->update(['status' => OrderStatus::SALE_REFUNDED]);
+            // Audit Item #44: Only deduct from sales on confirmed approval
+            $sale = Sale::lockForUpdate()->find($refundRequest->sale_id);
+            if ($sale && $sale->status !== OrderStatus::SALE_REFUNDED) {
+                $sale->update(['status' => OrderStatus::SALE_REFUNDED]);
 
-        // Restore stock if requested
-        if ($refundRequest->sale->item && $request->restock) {
-            $refundRequest->sale->item->increment('quantity', $refundRequest->sale->quantity);
+                // Restore stock if requested
+                if ($sale->inventory_item_id && $request->restock) {
+                    $item = \App\Models\InventoryItem::lockForUpdate()->find($sale->inventory_item_id);
+                    if ($item) {
+                        $item->increment('quantity', $sale->quantity);
+                    }
+                }
+            }
+
+            return true;
+        });
+
+        if (!$success) {
+            return back()->with('error', 'Refund is already processed.');
         }
 
         $user = $refundRequest->customer->user;
@@ -65,15 +82,28 @@ class RefundController extends Controller
             'admin_notes.required' => 'Please provide a reason for rejecting this refund.',
         ]);
 
-        $refundRequest = RefundRequest::findOrFail($id);
-        
-        $refundRequest->update([
-            'status' => OrderStatus::REFUND_REJECTED,
-            'admin_notes' => $request->admin_notes
-        ]);
+        $success = \Illuminate\Support\Facades\DB::transaction(function () use ($id, $request, &$refundRequest) {
+            $refundRequest = RefundRequest::lockForUpdate()->findOrFail($id);
+            if ($refundRequest->status !== OrderStatus::REFUND_PENDING) {
+                return false;
+            }
 
-        // Revert sale status back to completed since the refund was rejected
-        $refundRequest->sale->update(['status' => OrderStatus::SALE_COMPLETED]);
+            $refundRequest->update([
+                'status' => OrderStatus::REFUND_REJECTED,
+                'admin_notes' => $request->admin_notes
+            ]);
+            
+            $sale = Sale::lockForUpdate()->find($refundRequest->sale_id);
+            if ($sale && $sale->status !== OrderStatus::SALE_COMPLETED) {
+                $sale->update(['status' => OrderStatus::SALE_COMPLETED]);
+            }
+
+            return true;
+        });
+
+        if (!$success) {
+            return back()->with('error', 'Refund is already processed.');
+        }
 
         $user = $refundRequest->customer->user;
         if ($user) {

@@ -18,7 +18,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/preorders', [AdminPreOrderController::class, 'index'])->name('preorders.index');
         Route::post('/preorders/{preorder}/complete', [AdminPreOrderController::class, 'complete'])->name('preorders.complete');
         Route::post('/preorders/{preorder}/cancel', [AdminPreOrderController::class, 'cancel'])->name('preorders.cancel');
-        Route::post('/preorders/{preorder}/pay', [AdminPreOrderController::class, 'markPaid'])->name('preorders.pay');
+
         Route::delete('/preorders/{preorder}', [AdminPreOrderController::class, 'destroy'])->name('preorders.destroy');
     });
 });

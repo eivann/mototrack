@@ -85,19 +85,22 @@ class CustomerOrderController extends Controller
         ]);
 
         $user = auth()->user();
-        $sale = Sale::findOrFail($id);
-
-        if ($sale->customer_id !== $user->customer?->id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        // Audit Item #39: Refunds only allowed if NOT picked up yet
-        if (!$sale->canBeRefunded()) {
-            if ($sale->isPickedUp()) {
-                return back()->with('error', 'This item has already been picked up and cannot be refunded. For concerns about a picked-up item, please contact the shop directly.');
+        $success = \Illuminate\Support\Facades\DB::transaction(function () use ($id, $user, $request, &$photoPath, &$qrCodePath, &$sale) {
+            $sale = Sale::lockForUpdate()->findOrFail($id);
+            
+            if ($sale->customer_id !== $user->customer?->id) {
+                return false; // Unauthorized handled outside
             }
-            return back()->with('error', 'This order is not eligible for a refund. It may have already been refunded or is in an invalid state.');
-        }
+
+            // Audit Item #39: Refunds only allowed if NOT picked up yet
+            if (!$sale->canBeRefunded()) {
+                return false;
+            }
+
+            // Prevent multiple pending refunds
+            if (RefundRequest::where('sale_id', $sale->id)->whereIn('status', [OrderStatus::REFUND_PENDING, OrderStatus::REFUND_APPROVED])->exists()) {
+                return false;
+            }
 
         // Handle file uploads
         $photoPath = null;
@@ -110,19 +113,26 @@ class CustomerOrderController extends Controller
             $qrCodePath = $request->file('qr_code')->store('refund_qr_codes', 'public');
         }
 
-        RefundRequest::create([
-            'sale_id' => $sale->id,
-            'customer_id' => $user->customer->id,
-            'reason' => $request->reason,
-            'details' => $request->details,
-            'photo_path' => $photoPath,
-            'status' => OrderStatus::REFUND_PENDING,
-            'refund_method' => $request->refund_method,
-            'qr_code_path' => $qrCodePath,
-            'pickup_time' => $request->pickup_time,
-        ]);
+            RefundRequest::create([
+                'sale_id' => $sale->id,
+                'customer_id' => $user->customer->id,
+                'reason' => $request->reason,
+                'details' => $request->details,
+                'photo_path' => $photoPath,
+                'status' => OrderStatus::REFUND_PENDING,
+                'refund_method' => $request->refund_method,
+                'qr_code_path' => $qrCodePath,
+                'pickup_time' => $request->pickup_time,
+            ]);
 
-        $sale->update(['status' => OrderStatus::SALE_REFUND_REQUESTED]);
+            $sale->update(['status' => OrderStatus::SALE_REFUND_REQUESTED]);
+            
+            return true;
+        });
+
+        if (!$success) {
+            return back()->with('error', 'This order cannot be refunded right now. It may have already been refunded, picked up, or you are unauthorized.');
+        }
 
         $methodLabel = $request->refund_method === OrderStatus::METHOD_DIGITAL ? 'Digital (QR)' : 'On-site Pickup';
         $owners = User::owners();

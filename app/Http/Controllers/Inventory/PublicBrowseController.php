@@ -52,7 +52,8 @@ class PublicBrowseController extends Controller
             $items = InventoryItem::search($request->model)->take(20)->get();
             return response()->json($items);
         } catch (\Throwable $e) {
-            return response()->json(['error_debug' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
+            \Illuminate\Support\Facades\Log::error('Search parts error: ' . $e->getMessage());
+            return response()->json(['error' => 'An internal server error occurred.'], 500);
         }
     }
 
@@ -73,7 +74,8 @@ class PublicBrowseController extends Controller
 
             return response()->json($this->fieldSuggestions($field, $term));
         } catch (\Throwable $e) {
-            return response()->json(['error_debug' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
+            \Illuminate\Support\Facades\Log::error('Search suggestions error: ' . $e->getMessage());
+            return response()->json(['error' => 'An internal server error occurred.'], 500);
         }
     }
 

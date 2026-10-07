@@ -90,42 +90,34 @@
                                 Payment Method
                             </label>
 
-                            <!-- GCash QR Section -->
                             <div class="bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl p-6 text-center shadow-sm">
-                                <input type="hidden" name="payment_method" value="gcash">
-                                <div class="flex items-center justify-center gap-2 mb-4">
+                                <input type="hidden" name="payment_method" value="on_pickup">
+                                <div class="flex items-center justify-center gap-2 mb-2">
                                     <span class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
                                         <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                                     </span>
-                                    <span class="text-base font-bold text-gray-900 dark:text-white">GCash Payment</span>
+                                    <span class="text-base font-bold text-gray-900 dark:text-white">Pay on Pickup</span>
                                 </div>
-                                
-                                <div class="mx-auto bg-gray-50 dark:bg-gray-700 w-48 h-48 rounded-2xl flex flex-col items-center justify-center border border-gray-200 dark:border-gray-600 mb-4 p-4">
-                                    <svg class="w-16 h-16 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
-                                    </svg>
-                                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Scan QR Code</span>
-                                </div>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Please scan the QR code to send your payment. Once confirmed by our staff, your order will be processed.</p>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Your items will be reserved. Please pay at the shop when you pick up your order.</p>
                             </div>
                         </div>
 
                         <!-- TOTAL PAYMENT INFO -->
                         <div>
                             <label class="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                Total Payment Amount (100%)
+                                Total Reservation Amount
                                 <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 uppercase">Auto-calculated</span>
                             </label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <span class="text-gray-400 font-bold">₱</span>
                                 </div>
-                                <input type="number" name="amount_tendered" value="{{ number_format($grandTotal, 2, '.', '') }}" step="0.01" readonly
+                                <input type="number" name="amount_tendered" value="0" step="0.01" readonly
                                     class="w-full pl-10 pr-4 py-4 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl text-lg font-bold text-gray-500 dark:text-gray-400 cursor-not-allowed focus:outline-none">
                             </div>
                             <p class="text-[10px] text-gray-400 mt-2 italic flex items-start gap-1.5">
                                 <svg class="w-3 h-3 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Full payment of the grand total is required to process in-stock orders.
+                                Payment is purely on-site. The amount tendered online is zero.
                             </p>
                         </div>
 
@@ -213,8 +205,7 @@
                                         <div>
                                             <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. Payment & 24-Hour Policy</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>In-stock products require full payment via GCash upon checkout to confirm the order.</li>
-                                                <li>Pre-orders are purely reservation-based and are paid in full upon pickup at the shop.</li>
+                                                <li>In-stock products and pre-orders are purely reservation-based and are paid in full upon pickup at the shop.</li>
                                                 <li><strong class="text-red-500">24-Hour Policy:</strong> Reservations must be picked up and paid for within 24 hours, or they will be automatically canceled.</li>
                                             </ul>
                                         </div>

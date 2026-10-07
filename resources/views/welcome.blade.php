@@ -151,7 +151,7 @@
                         <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">Expert Mechanics</span></div>
                         <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">Fast Turnaround</span></div>
                         <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">Fair Pricing</span></div>
-                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">Gcash Payments</span></div>
+                        <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">On-site Payments</span></div>
                         <div class="flex items-center gap-3"><i data-lucide="check-circle" class="w-5 h-5 text-indigo-500"></i><span class="font-bold text-gray-300">15+ Years Experience</span></div>
                     </div>
                 </div>
@@ -220,11 +220,11 @@
                         </li>
                         <li class="flex items-start gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>
-                            <span class="text-gray-300 text-sm"><strong class="text-white">Available Products:</strong> 100% payment required for checkout</span>
+                            <span class="text-gray-300 text-sm"><strong class="text-white">Available Products:</strong> Pure reservation, pay upon pickup</span>
                         </li>
                         <li class="flex items-start gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>
-                            <span class="text-gray-300 text-sm"><strong class="text-white">Payment:</strong> Gcash Payment only accepted</span>
+                            <span class="text-gray-300 text-sm"><strong class="text-white">Payment:</strong> On-site payments only</span>
                         </li>
                         <li class="flex items-start gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>

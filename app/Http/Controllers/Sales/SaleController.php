@@ -111,6 +111,28 @@ class SaleController extends Controller
         ));
     }
 
+    public function complete($id)
+    {
+        DB::transaction(function () use ($id) {
+            $sales = Sale::lockForUpdate()->where('transaction_reference', $id)->get();
+            if ($sales->isEmpty()) {
+                abort(404, 'Reservation not found.');
+            }
+
+            foreach ($sales as $sale) {
+                if ($sale->status === 'pending') {
+                    $sale->update([
+                        'status' => 'completed',
+                        'amount_tendered' => $sale->total_price, // They paid
+                        'picked_up_at' => now()
+                    ]);
+                }
+            }
+        });
+
+        return redirect()->back()->with('success', 'Reservation marked as completed/paid!');
+    }
+
     public function destroy($id)
     {
         DB::transaction(function () use ($id) {
@@ -119,7 +141,7 @@ class SaleController extends Controller
                 ? InventoryItem::lockForUpdate()->find($sale->inventory_item_id)
                 : null;
 
-            if ($item) {
+            if ($item && !in_array($sale->status, ['cancelled', 'refunded'])) {
                 $item->increment('quantity', $sale->quantity);
                 $item->refresh();
                 if ($item->quantity > $item->low_stock_threshold) {

@@ -97,6 +97,8 @@
                                                     <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">Refunded</span>
                                                 @elseif($sale->status === \App\Enums\OrderStatus::SALE_COMPLETED)
                                                     <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">Purchased</span>
+                                                @elseif($sale->status === 'pending')
+                                                    <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400">Pending Pickup</span>
                                                 @endif
                                             </div>
                                             <div class="text-xs text-gray-400 dark:text-gray-500 font-normal mt-0.5">{{ $sale->item->brand ?? '' }} {{ $sale->item->model ?? '' }}</div>
@@ -110,6 +112,14 @@
                                             <div class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ $sale->created_at->format('h:i A') }}</div>
                                         </td>
                                         <td class="p-5 text-center">
+                                            @if($sale->status === 'pending' && $sale->transaction_reference)
+                                                <form action="{{ route('sales.complete', $sale->transaction_reference) }}" method="POST" class="inline-block" onsubmit="return confirm('Confirm payment received and item picked up?');">
+                                                    @csrf
+                                                    <button type="submit" class="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 mr-1">
+                                                        <i data-lucide="check-circle" class="w-4 h-4"></i> Complete
+                                                    </button>
+                                                </form>
+                                            @endif
                                             <a href="/sales/{{ $sale->id }}/receipt" aria-label="View receipt for {{ $sale->item->part_name ?? 'sale' }}" class="inline-flex items-center gap-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-green-400">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                                 Receipt
@@ -140,6 +150,8 @@
                                                 <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">Refunded</span>
                                             @elseif($sale->status === \App\Enums\OrderStatus::SALE_COMPLETED)
                                                 <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">Purchased</span>
+                                            @elseif($sale->status === 'pending')
+                                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400">Pending</span>
                                             @endif
                                         </div>
                                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ $sale->item->brand ?? '' }} {{ $sale->item->model ?? '' }}</p>
@@ -155,9 +167,19 @@
                                     </div>
                                     <div class="text-right">
                                         <p class="text-[10px] text-gray-400 uppercase font-black mb-1">{{ $sale->created_at->format('M d, Y') }}</p>
-                                        <a href="/sales/{{ $sale->id }}/receipt" class="text-xs font-bold text-green-600 dark:text-green-400 flex items-center justify-end gap-1">
-                                            View Receipt <i data-lucide="chevron-right" class="w-3 h-3"></i>
-                                        </a>
+                                        <div class="flex items-center justify-end gap-2">
+                                            @if($sale->status === 'pending' && $sale->transaction_reference)
+                                                <form action="{{ route('sales.complete', $sale->transaction_reference) }}" method="POST" class="inline-block" onsubmit="return confirm('Confirm payment received and item picked up?');">
+                                                    @csrf
+                                                    <button type="submit" class="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center justify-end gap-1">
+                                                        <i data-lucide="check-circle" class="w-3 h-3"></i> Complete
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            <a href="/sales/{{ $sale->id }}/receipt" class="text-xs font-bold text-green-600 dark:text-green-400 flex items-center justify-end gap-1">
+                                                View Receipt <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
