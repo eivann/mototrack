@@ -15,10 +15,6 @@
                     <div class="w-full sm:w-32 h-32 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center overflow-hidden shrink-0">
                         <img src="{{ Storage::url($item->image) }}" alt="{{ $item->part_name }}" class="max-w-full max-h-full object-contain p-2">
                     </div>
-                @else
-                    <div class="w-full sm:w-32 h-32 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-300 dark:text-indigo-700 shrink-0 border border-indigo-100 dark:border-indigo-800/30">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    </div>
                 @endif
                 
                 <div class="flex-1 min-w-0 w-full">
@@ -39,9 +35,7 @@
             <div class="p-6 sm:p-8 bg-white dark:bg-gray-800" x-data="{
                 price: {{ $item->price }},
                 qty: 1,
-                get total() { return this.price * this.qty; },
-                get downpayment() { return this.total * 0.50; },
-                get remaining() { return this.total - this.downpayment; }
+                get total() { return this.price * this.qty; }
             }" @qty-changed.window="qty = parseInt($event.detail.value) || 1">
                 
                 <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Price Breakdown</h4>
@@ -61,18 +55,10 @@
 
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
-                            <span class="text-sm font-bold text-blue-600 dark:text-blue-400">Required Downpayment (50%)</span>
-                            <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 uppercase tracking-wider">Pay Now</span>
-                        </div>
-                        <span class="text-lg font-black text-blue-600 dark:text-blue-400" x-text="`₱${downpayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`"></span>
-                    </div>
-
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-bold text-gray-900 dark:text-white">Remaining Balance (50%)</span>
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">Total Amount</span>
                             <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-gray-100 text-gray-600 dark:bg-gray-700 text-gray-400 uppercase tracking-wider">Pay on Pickup</span>
                         </div>
-                        <span class="text-lg font-black text-gray-900 dark:text-white" x-text="`₱${remaining.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`"></span>
+                        <span class="text-lg font-black text-gray-900 dark:text-white" x-text="`₱${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`"></span>
                     </div>
                 </div>
             </div>
@@ -102,50 +88,7 @@
                     class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 outline-none transition-all">
             </div>
 
-            <!-- Down Payment (Auto Calculated) -->
-            <div class="mb-4">
-                <label for="down_payment" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    Required Down Payment (50%)
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 uppercase">Auto-calculated</span>
-                </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span class="text-gray-500 font-bold">₱</span>
-                    </div>
-                    <input type="number" id="down_payment" name="down_payment" step="0.01" readonly
-                        class="w-full border border-gray-200 dark:border-gray-700 rounded-lg pl-8 pr-4 py-2 bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-bold outline-none cursor-not-allowed focus:outline-none">
-                </div>
-            </div>
 
-            <!-- PAYMENT METHOD -->
-            <div class="mb-4">
-                <label class="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">
-                    Payment Method
-                </label>
-
-                <label class="payment-card relative flex flex-col p-4 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl cursor-pointer transition-all select-none">
-                    <input type="radio" name="payment_method" value="gcash" checked class="sr-only">
-                    <span class="flex items-center gap-2 mb-2">
-                        <span class="w-4 h-4 rounded-full border border-blue-500 flex items-center justify-center bg-blue-500">
-                            <span class="w-2 h-2 rounded-full bg-white"></span>
-                        </span>
-                        <span class="text-sm font-bold text-gray-900 dark:text-white">GCash</span>
-                    </span>
-                    <span class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">Pay down payment via GCash</span>
-                    <span class="absolute top-2 right-2 text-[9px] font-extrabold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider scale-90">Xendit</span>
-                </label>
-            </div>
-
-            <!-- METHOD EXPLANATION BOX -->
-            <div id="payment-explanation" class="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-2xl p-5 flex gap-4 transition-all duration-300">
-                <div id="explanation-icon" class="bg-blue-600 p-2.5 rounded-xl h-fit text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                </div>
-                <div>
-                    <h4 id="explanation-title" class="font-black text-blue-900 dark:text-blue-300 uppercase tracking-tight text-xs">Secure GCash Payment</h4>
-                    <p id="explanation-desc" class="text-[11px] text-blue-700/70 dark:text-blue-400/70 mt-1 leading-relaxed">You will be securely redirected to Xendit's encrypted gateway to complete your transaction via GCash.</p>
-                </div>
-            </div>
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {

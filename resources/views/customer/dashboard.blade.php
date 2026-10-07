@@ -78,57 +78,48 @@
                     
                     <!-- Overview Tab -->
                     <div x-show="activeTab === 'overview'" x-transition class="space-y-8">
-                        <!-- Welcome Hero Card -->
-                    <div class="bg-indigo-600 rounded-[1.5rem] p-5 sm:p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-300 dark:shadow-none">
-                        <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-                        <div class="relative z-10">
-                            <h3 class="text-xl font-black tracking-tighter mb-2">Welcome back, {{ explode(' ', Auth::user()->name)[0] }}!</h3>
-                            <p class="text-indigo-100 text-xs sm:text-sm max-w-md font-medium leading-relaxed mb-4">Ready to upgrade your ride? Track your active repairs, view pre-orders, and browse our massive catalog of premium parts.</p>
-                            <div class="flex flex-wrap gap-3">
-                                <a href="/browse" class="px-6 py-3 bg-white text-indigo-600 rounded-xl font-black text-xs hover:scale-105 transition-all shadow-md inline-block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Shop Now</a>
-                                <a href="/compatibility" class="px-6 py-3 bg-indigo-500/50 text-white border border-white/20 rounded-xl font-black text-xs hover:bg-indigo-400 transition-all inline-block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Check Compatibility</a>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Welcome Hero Card (Takes up 2 columns on lg) -->
+                        <div class="lg:col-span-2 bg-indigo-600 rounded-[1.5rem] p-5 sm:p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-300 dark:shadow-none">
+                            <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+                            <div class="relative z-10">
+                                <h3 class="text-xl font-black tracking-tighter mb-2">Welcome back, {{ explode(' ', Auth::user()->name)[0] }}!</h3>
+                                <p class="text-indigo-100 text-xs sm:text-sm max-w-md font-medium leading-relaxed mb-4">Ready to upgrade your ride? Track your active repairs, view pre-orders, and browse our massive catalog of premium parts.</p>
+                                <div class="flex flex-wrap gap-3">
+                                    <a href="/browse" class="px-6 py-3 bg-white text-indigo-600 rounded-xl font-black text-xs hover:scale-105 transition-all shadow-md inline-block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Shop Now</a>
+                                    <a href="/compatibility" class="px-6 py-3 bg-indigo-500/50 text-white border border-white/20 rounded-xl font-black text-xs hover:bg-indigo-400 transition-all inline-block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Check Compatibility</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Quick Actions Grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <a href="/browse" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                            <div class="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shrink-0">
-                                <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+                        <!-- Live Notifications (Takes up 1 column on lg) -->
+                        <div class="bg-white dark:bg-gray-900 p-6 rounded-[1.5rem] shadow-sm border border-gray-100 dark:border-gray-800">
+                            <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-ping"></span>
+                                Recent Updates
+                            </h3>
+                            <div class="space-y-4 max-h-[250px] overflow-y-auto scrollbar-thin">
+                                <template x-for="(notification, index) in recentActivities" :key="notification.id">
+                                    <div>
+                                        <div class="flex gap-4 group">
+                                            <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 p-2 rounded-xl h-fit shrink-0">
+                                                <i :data-lucide="notification.is_repair ? 'wrench' : 'package'" class="w-4 h-4"></i>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tight leading-tight" x-text="notification.title"></div>
+                                                <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 leading-tight" x-text="notification.message"></div>
+                                                <div class="text-[9px] font-bold text-gray-400 mt-2" x-text="notification.time"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2 text-right">
+                                            <button @click="markRead(notification.id); hapticPulse()" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline py-2 px-3 inline-block focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded">Mark Read</button>
+                                        </div>
+                                        <hr x-show="index < recentActivities.length - 1" class="border-gray-100 dark:border-gray-800 mt-3">
+                                    </div>
+                                </template>
+                                <div x-show="recentActivities.length === 0" style="display:none;" class="text-center py-4 text-gray-400 text-xs font-bold italic">No new updates</div>
                             </div>
-                            <div>
-                                <h4 class="font-black text-lg text-gray-900 dark:text-white uppercase tracking-tight">Browse Parts</h4>
-                                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">View catalog</p>
-                            </div>
-                        </a>
-                        <a href="/compatibility" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            <div class="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform shrink-0">
-                                <i data-lucide="search" class="w-8 h-8"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-black text-lg text-gray-900 dark:text-white uppercase tracking-tight">Compatibility</h4>
-                                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Find your fit</p>
-                            </div>
-                        </a>
-                        <a href="/preorder-parts" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
-                            <div class="w-16 h-16 rounded-2xl bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center text-cyan-600 group-hover:scale-110 transition-transform shrink-0">
-                                <i data-lucide="clipboard-list" class="w-8 h-8"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-black text-lg text-gray-900 dark:text-white uppercase tracking-tight">Pre-Order</h4>
-                                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Request parts</p>
-                            </div>
-                        </a>
-                        <a href="/cart" class="group bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex items-center gap-6 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                            <div class="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
-                                <i data-lucide="shopping-cart" class="w-8 h-8"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-black text-lg text-gray-900 dark:text-white uppercase tracking-tight">My Cart</h4>
-                                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Checkout now</p>
-                            </div>
-                        </a>
+                        </div>
                     </div>
 
                     </div>
@@ -305,42 +296,7 @@
                     </div>
                 </div>
 
-                <!-- Sidebar (Right) - Only show in overview -->
-                <div x-show="activeTab === 'overview'" x-transition class="w-full md:w-80 space-y-8 flex-shrink-0 order-3 md:sticky md:top-28">
-                    
 
-
-                    <!-- Live Notifications -->
-                    <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800">
-                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-ping"></span>
-                            Recent Updates
-                        </h3>
-                        <div class="space-y-4">
-                            <template x-for="(notification, index) in recentActivities" :key="notification.id">
-                                <div>
-                                    <div class="flex gap-4 group">
-                                        <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 p-2 rounded-xl h-fit shrink-0">
-                                            <i :data-lucide="notification.is_repair ? 'wrench' : 'package'" class="w-4 h-4"></i>
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <div class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tight leading-tight" x-text="notification.title"></div>
-                                            <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 leading-tight" x-text="notification.message"></div>
-                                            <div class="text-[9px] font-bold text-gray-400 mt-2" x-text="notification.time"></div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-2 text-right">
-                                        <button @click="markRead(notification.id); hapticPulse()" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline py-3 px-4 -mr-4 inline-block focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded">Mark Read</button>
-                                    </div>
-                                    <hr x-show="index < recentActivities.length - 1" class="border-gray-100 dark:border-gray-800 mt-4">
-                                </div>
-                            </template>
-                            <div x-show="recentActivities.length === 0" style="display:none;" class="text-center py-4 text-gray-400 text-xs font-bold italic">No new updates</div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
             <!-- Refund Request Modal -->
             <div x-data="{
                 open: false,

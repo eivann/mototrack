@@ -86,31 +86,27 @@
 
                         <!-- PAYMENT METHOD -->
                         <div class="space-y-4">
-                            <label class="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                            <label class="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
                                 Payment Method
                             </label>
 
-                            <label class="payment-card relative flex flex-col p-4 bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl cursor-pointer transition-all select-none">
-                                <input type="radio" name="payment_method" value="gcash" checked class="sr-only">
-                                <span class="flex items-center gap-2 mb-2">
-                                    <span class="w-4 h-4 rounded-full border border-blue-500 flex items-center justify-center bg-blue-500">
-                                        <span class="w-2 h-2 rounded-full bg-white"></span>
+                            <!-- GCash QR Section -->
+                            <div class="bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl p-6 text-center shadow-sm">
+                                <input type="hidden" name="payment_method" value="gcash">
+                                <div class="flex items-center justify-center gap-2 mb-4">
+                                    <span class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                                     </span>
-                                    <span class="text-sm font-bold text-gray-900 dark:text-white">GCash</span>
-                                </span>
-                                <span class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">Fast checkout via GCash e-Wallet</span>
-                                <span class="absolute top-2 right-2 text-xs font-extrabold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider scale-90">Xendit</span>
-                            </label>
-                        </div>
-
-                        <!-- METHOD EXPLANATION BOX -->
-                        <div id="payment-explanation" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-2xl p-5 flex gap-4 transition-all duration-300">
-                            <div id="explanation-icon" class="bg-blue-600 p-2.5 rounded-xl h-fit text-white">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            </div>
-                            <div>
-                                <h4 id="explanation-title" class="font-black text-blue-900 dark:text-blue-300 uppercase tracking-tight text-sm">Secure GCash Payment</h4>
-                                <p id="explanation-desc" class="text-xs text-blue-700/70 dark:text-blue-400/70 mt-1 leading-relaxed">You will be securely redirected to Xendit's encrypted gateway to complete your transaction via GCash.</p>
+                                    <span class="text-base font-bold text-gray-900 dark:text-white">GCash Payment</span>
+                                </div>
+                                
+                                <div class="mx-auto bg-gray-50 dark:bg-gray-700 w-48 h-48 rounded-2xl flex flex-col items-center justify-center border border-gray-200 dark:border-gray-600 mb-4 p-4">
+                                    <svg class="w-16 h-16 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                                    </svg>
+                                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Scan QR Code</span>
+                                </div>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Please scan the QR code to send your payment. Once confirmed by our staff, your order will be processed.</p>
                             </div>
                         </div>
 
@@ -153,7 +149,7 @@
                                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                             <svg x-show="loading" class="animate-spin w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                             <svg x-show="!loading" class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            <span id="btn-text" x-text="agreed ? 'Pay with GCash' : 'Agree to Terms First'"></span>
+                            <span id="btn-text" x-text="agreed ? 'Place Order' : 'Agree to Terms First'"></span>
                         </button>
 
                         <!-- T&C MODAL -->
@@ -215,10 +211,10 @@
                                         </div>
 
                                         <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. Downpayment and Full Payment</h4>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. Payment</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>The downpayment is 50% of the product price, paid through GCash to confirm the order.</li>
-                                                <li>The remaining balance is paid upon pickup at the shop.</li>
+                                                <li>In-stock products require full payment via GCash upon checkout to confirm the order.</li>
+                                                <li>Pre-orders are purely reservation-based and are paid in full upon pickup at the shop.</li>
                                             </ul>
                                         </div>
 

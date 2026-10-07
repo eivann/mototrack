@@ -169,7 +169,7 @@
                     <i data-lucide="package" class="w-4 h-4"></i> Pre-Order System
                 </div>
                 <h2 class="text-4xl font-black tracking-tighter mb-4 text-gray-900 dark:text-white">Can't Find Your Part?</h2>
-                <p class="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-medium text-lg">We'll source it for you. Just place a pre-order with 50% down payment and we'll handle the rest.</p>
+                <p class="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-medium text-lg">We'll source it for you. Just place a pre-order reservation and we'll handle the rest.</p>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -185,8 +185,8 @@
                     <div class="flex gap-6 items-start bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-xl shrink-0">2</div>
                         <div>
-                            <h4 class="text-lg font-black text-gray-900 dark:text-white mb-1">Pay 50% Down Payment</h4>
-                            <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">We'll send a secure Gcash payment invoice directly to you.</p>
+                            <h4 class="text-lg font-black text-gray-900 dark:text-white mb-1">Confirm Reservation</h4>
+                            <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">We'll secure your order and notify you once it's confirmed.</p>
                         </div>
                     </div>
                     <div class="flex gap-6 items-start bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
@@ -199,8 +199,8 @@
                     <div class="flex gap-6 items-start bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-xl shrink-0">4</div>
                         <div>
-                            <h4 class="text-lg font-black text-gray-900 dark:text-white mb-1">Pick Up & Pay Balance</h4>
-                            <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">Pay the remaining 50% when you pick up at our shop.</p>
+                            <h4 class="text-lg font-black text-gray-900 dark:text-white mb-1">Pick Up & Pay</h4>
+                            <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">Pay the full amount when you pick up at our shop.</p>
                         </div>
                     </div>
                 </div>
@@ -212,7 +212,7 @@
                     <ul class="space-y-4 mb-10 relative z-10">
                         <li class="flex items-start gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>
-                            <span class="text-gray-300 text-sm"><strong class="text-white">Pre-Order:</strong> 50% down payment required via Gcash</span>
+                            <span class="text-gray-300 text-sm"><strong class="text-white">Pre-Order:</strong> Pure reservation, pay upon pickup</span>
                         </li>
                         <li class="flex items-start gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>

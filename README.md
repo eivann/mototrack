@@ -3,6 +3,13 @@
 > [!IMPORTANT]
 > **Premium UI Hybrid Active**: This project is currently on the `premium-ui` branch, which integrates the high-fidelity design from the React prototype into the Laravel functional core.
 
+## 🏗️ Domain-Driven Modular Architecture
+
+MotoTrack has been recently refactored from a standard flat Laravel structure into a **Domain-Driven Modular Architecture** for maximum scalability and maintainability.
+- **Controllers & Views** are grouped by their functional domain (e.g., `Inventory`, `Shop`, `Customer`, `PreOrder`, `Repair`, `Sales`).
+- **Service Layer**: Heavy business logic, integrations (e.g., Xendit, GCash), and session management are isolated into dedicated services (e.g., `CartService`, `PaymentService`) to adhere strictly to DRY principles.
+- **Modular Routes**: Each domain has its own routing file (e.g., `inventory.php`, `shop.php`) which is mapped within the core `web.php`.
+
 ## How to Revert to Original
 If you want to go back to the standard UI:
 1. Open your terminal in this directory.
@@ -95,6 +102,7 @@ Ensure the following keys are set in your `.env` file:
 - **PostgreSQL Optimization**: Optimized for Supabase cloud hosting.
 - **Database Transactions**: Ensures financial data integrity during POS and checkout operations.
 - **Optimized UI**: Minimalistic and efficient layout with persistent theme preference (LocalStorage).
+- **Service-Oriented Design**: Clean separation of concerns utilizing dedicated domain services.
 
 ## 📝 License
 This project was developed for the Capstone Project at Pandi, Bulacan.

@@ -96,36 +96,7 @@ class CheckoutController extends Controller
             ));
         }
 
-        // For cash/walk-in payments, no external API is needed.
-        if ($paymentMethod !== 'gcash') {
-            return redirect('/checkout/receipt')->with('success', 'Order placed successfully!');
-        }
-
-        // ── Step 2: Initiate external payment gateway ─────────────────
-        // The order is already saved and inventory reserved. If the
-        // gateway is unavailable, the order remains valid — the user
-        // receives recovery guidance instead of a misleading
-        // "checkout failed" error.
-        try {
-            $paymentAmount = $request->amount_tendered ?: $grandTotal;
-            $result = $this->paymentService->createInvoice(
-                $transactionReference,
-                $paymentAmount,
-                'MotoTrack Order ' . $transactionReference,
-                url('/checkout/receipt?trx=' . $transactionReference),
-                url('/shop/cart')
-            );
-            return redirect($result['invoice_url']);
-        } catch (\Throwable $e) {
-            report($e);
-
-            // Order exists and stock is reserved. Direct the user
-            // to the receipt with actionable recovery guidance.
-            return redirect('/checkout/receipt')->with('warning',
-                'Your order #' . $transactionReference . ' has been saved, but the payment gateway is temporarily unavailable. '
-                . 'Please try again from your dashboard or contact support.'
-            );
-        }
+        return redirect('/checkout/receipt')->with('success', 'Order placed successfully! Please present your payment to the staff.');
     }
 
     public function receipt(Request $request)

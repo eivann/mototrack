@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/browse', [PublicBrowseController::class, 'index'])->name('browse');
 Route::get('/search-parts', [PublicBrowseController::class, 'searchParts'])->middleware('throttle:300,1')->name('search.parts');
 Route::get('/inventory-suggestions', [PublicBrowseController::class, 'suggestions'])->middleware('throttle:300,1')->name('inventory.suggestions');
-Route::get('/compatibility', [PublicBrowseController::class, 'compatibilityForm'])->name('compatibility.view');
-Route::post('/compatibility', [PublicBrowseController::class, 'checkCompatibility'])->name('compatibility.check');
+
 
 Route::get('/debug-logs-temp-2026', function () {
     if (function_exists('opcache_reset')) {

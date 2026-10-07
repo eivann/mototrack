@@ -75,16 +75,40 @@
                     
                     <!-- Overview Tab -->
                     <div x-show="activeTab === 'overview'" x-transition class="space-y-8">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div class="bg-white dark:bg-gray-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all">
-                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Total Products</div>
-                                <div class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-4">{{ number_format($stats['totalProducts']) }}</div>
-                                <div class="flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 dark:bg-green-900/20 w-fit px-3 py-1 rounded-full italic">+12.5% this month</div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div class="bg-white dark:bg-gray-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all h-full">
+                                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Total Products</div>
+                                    <div class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-4">{{ number_format($stats['totalProducts']) }}</div>
+                                    <div class="flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 dark:bg-green-900/20 w-fit px-3 py-1 rounded-full italic">+12.5% this month</div>
+                                </div>
+                                <div class="bg-white dark:bg-gray-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all h-full">
+                                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Daily Revenue</div>
+                                    <div class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-4">₱{{ number_format($stats['todayRevenue'], 2) }}</div>
+                                    <div class="flex items-center gap-2 text-indigo-600 font-bold text-xs bg-indigo-50 dark:bg-indigo-900/20 w-fit px-3 py-1 rounded-full italic">Today's collection</div>
+                                </div>
                             </div>
-                            <div class="bg-white dark:bg-gray-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all">
-                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Daily Revenue</div>
-                                <div class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-4">₱{{ number_format($stats['todayRevenue'], 2) }}</div>
-                                <div class="flex items-center gap-2 text-indigo-600 font-bold text-xs bg-indigo-50 dark:bg-indigo-900/20 w-fit px-3 py-1 rounded-full italic">Today's collection</div>
+                            
+                            <!-- Live Activity -->
+                            <div class="bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 h-full">
+                                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-ping"></span>
+                                    Live Activity
+                                </h3>
+                                <div class="space-y-4 max-h-[150px] overflow-y-auto scrollbar-thin">
+                                    <template x-for="activity in recentActivities" :key="activity.id">
+                                        <div class="flex gap-4 group">
+                                            <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 p-2 rounded-xl h-fit shrink-0">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <div class="text-xs font-black text-gray-900 dark:text-white truncate uppercase tracking-tight" x-text="activity.title"></div>
+                                                <div class="text-[10px] font-bold text-gray-400 mt-0.5" x-text="activity.time"></div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <div x-show="recentActivities.length === 0" style="display: none;" class="text-center py-4 text-gray-400 text-xs font-bold italic">No recent activity</div>
+                                </div>
                             </div>
                         </div>
 
@@ -386,31 +410,6 @@
                     </div>
                 </div>
 
-                <!-- Sidebar (Right) -->
-                <div class="w-full md:w-80 space-y-8 flex-shrink-0 order-3 md:order-2">
-
-                    <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800">
-                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-ping"></span>
-                            Live Activity
-                        </h3>
-                        <div class="space-y-6">
-                            <template x-for="activity in recentActivities" :key="activity.id">
-                                <div class="flex gap-4 group">
-                                    <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 p-2 rounded-xl h-fit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <div class="text-xs font-black text-gray-900 dark:text-white truncate uppercase tracking-tight" x-text="activity.title"></div>
-                                        <div class="text-[10px] font-bold text-gray-400 mt-0.5" x-text="activity.time"></div>
-                                    </div>
-                                </div>
-                            </template>
-                            <div x-show="recentActivities.length === 0" style="display: none;" class="text-center py-4 text-gray-400 text-xs font-bold italic">No recent activity</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 

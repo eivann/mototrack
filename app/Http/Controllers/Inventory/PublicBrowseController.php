@@ -15,10 +15,15 @@ class PublicBrowseController extends Controller
         $query = InventoryItem::with('variations')->whereNull('parent_id');
         $search = trim((string) request('search'));
         $category = trim((string) request('category'));
+        $model = trim((string) request('model'));
         $sort = request('sort');
 
         if ($search !== '') {
             $query->search($search);
+        }
+
+        if ($model !== '') {
+            $query->where('model', 'like', "%{$model}%");
         }
 
         if ($category !== '') {

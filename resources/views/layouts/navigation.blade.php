@@ -34,14 +34,7 @@
                 ['label' => 'FAQ', 'href' => route('faq'), 'icon' => 'help-circle'],
             ],
         ],
-        [
-            'label' => 'Compatibility',
-            'mobile_label' => 'Compatibility Checker',
-            'href' => route('compatibility.view'),
-            'icon' => 'search',
-            'active' => request()->routeIs('compatibility.view'),
-            'show' => true,
-        ],
+
         [
             'label' => 'Pre-Order',
             'mobile_label' => 'Pre-orders',
