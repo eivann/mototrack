@@ -76,10 +76,20 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        if ($user->role === 'owner') {
-            return redirect(route('dashboard', absolute: false));
+        $otp = sprintf("%06d", mt_rand(100000, 999999));
+        $user->otp_code = $otp;
+        $user->otp_expires_at = now()->addMinutes(10);
+        $user->requires_password_change = false; // Fresh users don't need to change password
+        $user->save();
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\OtpMail($otp));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('OTP Email failed: ' . $e->getMessage());
         }
 
-        return redirect(route('customer.dashboard', absolute: false));
+        $request->session()->put('otp_verified', false);
+
+        return redirect()->route('otp.verify');
     }
 }

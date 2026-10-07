@@ -29,21 +29,25 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $intended = $request->session()->pull('url.intended');
-        $default = $request->user()->role === 'owner'
-            ? route('dashboard', absolute: false)
-            : route('customer.dashboard', absolute: false);
-
         if ($intended && $safeIntendedPath = $this->safeIntendedPath($intended)) {
-            return redirect()->to($safeIntendedPath);
+            $request->session()->put('url.intended', $safeIntendedPath);
         }
 
-        $request->session()->forget('url.intended');
+        $user = $request->user();
+        $otp = sprintf("%06d", mt_rand(100000, 999999));
+        $user->otp_code = $otp;
+        $user->otp_expires_at = now()->addMinutes(10);
+        $user->save();
 
-        if ($request->user()->role === 'owner') {
-            return redirect($default);
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\OtpMail($otp));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('OTP Email failed: ' . $e->getMessage());
         }
 
-        return redirect($default);
+        $request->session()->put('otp_verified', false);
+
+        return redirect()->route('otp.verify');
     }
 
     private function safeIntendedPath(string $url): ?string

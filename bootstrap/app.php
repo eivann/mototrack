@@ -16,6 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
        
        $middleware->alias([
         'owner' => \App\Http\Middleware\OwnerMiddleware::class,
+        'otp.verified' => \App\Http\Middleware\EnsureOtpVerified::class,
+        'password.changed' => \App\Http\Middleware\EnsurePasswordChanged::class,
+       ]);
+
+       $middleware->web(append: [
+        \App\Http\Middleware\EnsureOtpVerified::class,
+        \App\Http\Middleware\EnsurePasswordChanged::class,
        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -56,4 +56,13 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    // OTP Routes
+    Route::get('otp/verify', [\App\Http\Controllers\Auth\OtpController::class, 'show'])->name('otp.verify');
+    Route::post('otp/verify', [\App\Http\Controllers\Auth\OtpController::class, 'verify']);
+    Route::post('otp/resend', [\App\Http\Controllers\Auth\OtpController::class, 'resend'])->name('otp.resend');
+
+    // Force Password Change Route
+    Route::get('password/change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'show'])->name('password.change.view');
+    Route::post('password/change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'update'])->name('password.change.update');
 });
