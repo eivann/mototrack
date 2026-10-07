@@ -215,6 +215,10 @@
                             <span class="text-gray-300 text-sm"><strong class="text-white">Pre-Order:</strong> Pure reservation, pay upon pickup</span>
                         </li>
                         <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-red-400 shrink-0 mt-0.5"></i>
+                            <span class="text-gray-300 text-sm"><strong class="text-white text-red-400">24-Hour Policy:</strong> Reservations must be picked up and paid within 24 hours or they will be automatically canceled.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>
                             <span class="text-gray-300 text-sm"><strong class="text-white">Available Products:</strong> 100% payment required for checkout</span>
                         </li>

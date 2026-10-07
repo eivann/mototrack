@@ -211,10 +211,11 @@
                                         </div>
 
                                         <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. Payment</h4>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. Payment & 24-Hour Policy</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
                                                 <li>In-stock products require full payment via GCash upon checkout to confirm the order.</li>
                                                 <li>Pre-orders are purely reservation-based and are paid in full upon pickup at the shop.</li>
+                                                <li><strong class="text-red-500">24-Hour Policy:</strong> Reservations must be picked up and paid for within 24 hours, or they will be automatically canceled.</li>
                                             </ul>
                                         </div>
 
