@@ -34,8 +34,8 @@ class AuthenticatedSessionController extends Controller
         }
 
         $user = $request->user();
-        $otp = sprintf("%06d", mt_rand(100000, 999999));
-        $user->otp_code = $otp;
+        $otp = sprintf("%06d", random_int(100000, 999999));
+        $user->otp_code = \Illuminate\Support\Facades\Hash::make($otp);
         $user->otp_expires_at = now()->addMinutes(10);
         $user->save();
 

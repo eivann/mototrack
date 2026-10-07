@@ -38,9 +38,10 @@ class CheckoutService
             $transactionReference,
             $customerId,
             'Stock issue detected for: ',
-            fn (bool $isFirst, float $grandTotal) => $isFirst ? ($amountTenderedInput ?: $grandTotal) : 0,
-            fn (bool $isFirst, float $grandTotal) => $isFirst ? max(0, ($amountTenderedInput ?? 0) - $grandTotal) : 0,
-            dispatchLowStockAlert: false
+            fn (bool $isFirst, float $grandTotal) => 0, // No payment online
+            fn (bool $isFirst, float $grandTotal) => 0, // No change online
+            dispatchLowStockAlert: false,
+            status: 'pending'
         );
     }
 }

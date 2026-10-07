@@ -76,9 +76,6 @@
               @submit="if (!agreed) { $event.preventDefault(); return; } loading = true">
             @csrf
             <input type="hidden" name="inventory_item_id" value="{{ $item->id }}">
-            <input type="hidden" name="part_name" value="{{ $item->part_name }}">
-            <input type="hidden" name="model" value="{{ $item->model }}">
-            <input type="hidden" name="price" value="{{ $item->price }}">
 
             <!-- Quantity -->
             <div class="mb-4">
@@ -88,28 +85,6 @@
                     class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 outline-none transition-all">
             </div>
 
-
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                    const quantityInput = document.getElementById('quantity');
-                    const downPaymentInput = document.getElementById('down_payment');
-                    const itemPrice = {{ $item->price }};
-
-                    function calculateDownPayment() {
-                        const qty = parseInt(quantityInput.value) || 0;
-                        const total = qty * itemPrice;
-                        const downPayment = total * 0.50;
-                        downPaymentInput.value = downPayment.toFixed(2);
-                    }
-
-                    // Calculate initially
-                    calculateDownPayment();
-
-                    // Recalculate on input change
-                    quantityInput.addEventListener('input', calculateDownPayment);
-                });
-            </script>
 
             <!-- Google reCAPTCHA -->
             <div class="mb-4 flex flex-col items-center">
@@ -181,15 +156,15 @@
                              ">
                             <div>
                                 <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Order Details</h4>
-                                <ul class="space-y-2 list-disc list-inside"><li>Each order includes details on the amount paid, price, and product information.</li><li>For pre-orders, the downpayment amount and remaining balance will also be shown.</li></ul>
+                                <ul class="space-y-2 list-disc list-inside"><li>Each order includes details on the price and product information.</li><li>For pre-orders, the reservation status and price will also be shown.</li></ul>
                             </div>
                             <div>
                                 <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">2. Multiple Orders</h4>
                                 <ul class="space-y-2 list-disc list-inside"><li>Customers may place two or more orders at the same time, even if the products are different.</li><li>Each order is processed and tracked separately, with its own status under Order History.</li></ul>
                             </div>
                             <div>
-                                <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. Downpayment and Full Payment</h4>
-                                <ul class="space-y-2 list-disc list-inside"><li>The downpayment is 50% of the product price, paid through GCash to confirm the order.</li><li>The remaining balance is paid upon pickup at the shop.</li></ul>
+                                <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. Payment and Pickup</h4>
+                                <ul class="space-y-2 list-disc list-inside"><li>No online payment is required to reserve.</li><li>Payment is made in full upon pickup at the shop.</li></ul>
                             </div>
                             <div>
                                 <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">4. Compatibility Checker</h4>
@@ -197,7 +172,7 @@
                             </div>
                             <div>
                                 <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">5. Refund Policy</h4>
-                                <ul class="space-y-2 list-disc list-inside"><li><strong>Change of mind:</strong> A refund may still be requested even after full payment or downpayment, as long as the product has not yet been picked up from the shop.</li><li><strong>Damaged or defective product:</strong> A refund, replacement, or repair may be requested if the product received is damaged or defective, in accordance with the Consumer Act of the Philippines (RA 7394). Requests are subject to review to confirm the damage is a product defect and not caused by mishandling after pickup.</li></ul>
+                                <ul class="space-y-2 list-disc list-inside"><li><strong>Change of mind:</strong> A refund may still be requested after payment, as long as the product has not yet been taken from the shop premises.</li><li><strong>Damaged or defective product:</strong> A refund, replacement, or repair may be requested if the product received is damaged or defective, in accordance with the Consumer Act of the Philippines (RA 7394). Requests are subject to review to confirm the damage is a product defect and not caused by mishandling after pickup.</li></ul>
                             </div>
                             <div>
                                 <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">6. Cancellation</h4>

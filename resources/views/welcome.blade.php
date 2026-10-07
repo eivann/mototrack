@@ -121,7 +121,7 @@
                         <i data-lucide="clipboard-check" class="w-7 h-7"></i>
                     </div>
                     <h3 class="text-xl font-black text-gray-900 dark:text-white mb-3">Pre-Orders</h3>
-                    <p class="text-gray-500 dark:text-gray-400 font-medium text-sm leading-relaxed">Can't find what you need? Pre-order any custom part with a secure 50% down payment.</p>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium text-sm leading-relaxed">Can't find what you need? Pre-order any custom part and reserve it today.</p>
                 </div>
             </div>
         </div>

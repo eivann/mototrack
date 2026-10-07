@@ -63,7 +63,7 @@
                     <div x-show="open === 3" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
                             <p>Pre-order is used when a product is currently out of stock, so you reserve it ahead of restock instead of missing out.</p>
-                            <p>Select the product, click Pre-Order, then pay a 50% downpayment through GCash to confirm your reservation.</p>
+                            <p>Select the product, click Pre-Order, and your request will be submitted as a reservation. Payment is required only upon pickup.</p>
                         </div>
                     </div>
                 </div>
@@ -96,7 +96,7 @@
                     </button>
                     <div x-show="open === 5" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>Payment is made through GCash for both downpayment and full payment.</p>
+                            <p>Payment is made in-store via cash or other accepted methods when you pick up your reserved item.</p>
                         </div>
                     </div>
                 </div>
@@ -128,7 +128,7 @@
                     </button>
                     <div x-show="open === 7" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>Go to your account to see the current status, such as Pending, Downpayment Received, Ready for Pickup, or Completed.</p>
+                            <p>Go to your account to see the current status, such as Pending, Processing, Ready for Pickup, or Completed.</p>
                         </div>
                     </div>
                 </div>
@@ -144,7 +144,7 @@
                     </button>
                     <div x-show="open === 8" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>Yes, even if it is fully paid or has a downpayment, as long as you have not picked it up from the shop yet.</p>
+                            <p>Yes, as long as you have not picked it up from the shop yet.</p>
                         </div>
                     </div>
                 </div>

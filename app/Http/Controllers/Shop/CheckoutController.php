@@ -84,19 +84,15 @@ class CheckoutController extends Controller
                 '/customer/dashboard'
             ));
 
-            // P1-2: Only notify owners immediately for cash payments.
-            // For online payments (gcash), owners are notified when payment
-            // is confirmed — at the right time, after payment is received.
             $owners = User::owners();
-            $paymentNote = $paymentMethod === 'cash' ? '' : ' (Online Payment - Please verify receipt)';
             Notification::send($owners, new StatusUpdated(
-                'New Order Received',
-                "Customer " . auth()->user()->name . " has placed a new order #{$transactionReference}{$paymentNote}.",
+                'New Reservation Received',
+                "Customer " . auth()->user()->name . " has placed a new reservation #{$transactionReference}.",
                 "/sales/{$transactionReference}/receipt"
             ));
         }
 
-        return redirect('/checkout/receipt')->with('success', 'Order placed successfully! Please present your payment to the staff.');
+        return redirect('/checkout/receipt')->with('success', 'Reservation placed successfully! Please present this to the staff within 24 hours to pay and pick up.');
     }
 
     public function receipt(Request $request)

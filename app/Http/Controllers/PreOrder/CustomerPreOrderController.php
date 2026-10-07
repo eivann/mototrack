@@ -44,93 +44,46 @@ class CustomerPreOrderController extends Controller
 
     public function store(StorePreOrderRequest $request)
     {
-
         $user = auth()->user();
         $customer = Customer::firstOrCreate(
             ['user_id' => $user->id],
             ['name' => $user->name, 'email' => $user->email]
         );
 
-        $price = $request->price ?? 0;
+        $price = 0;
+        $partName = $request->part_name;
+        $model = $request->model ? ucwords($request->model) : null;
+
+        if ($request->inventory_item_id) {
+            $item = InventoryItem::findOrFail($request->inventory_item_id);
+            $price = $item->price;
+            $partName = $item->part_name;
+            $model = $item->model;
+        }
+
         $total = $price * $request->quantity;
-        $downPayment = $request->down_payment ?? 0;
 
         $preorder = PreOrder::create([
             'customer_id' => $customer->id,
             'inventory_item_id' => $request->inventory_item_id,
             'customer_name' => ucwords($user->name),
-            'part_name' => ucwords($request->part_name),
-            'model' => $request->model ? ucwords($request->model) : null,
+            'part_name' => ucwords($partName),
+            'model' => $model,
             'quantity' => $request->quantity,
             'price' => $price,
             'total' => $total,
-            'down_payment' => $downPayment,
+            'down_payment' => 0,
             'status' => 'pending',
             'is_paid' => false,
         ]);
 
-        if ($downPayment <= 0) {
-            $owners = User::owners();
-            Notification::send($owners, new StatusUpdated(
-                'New Custom Pre-order Request',
-                "Customer {$user->name} has requested a custom pre-order for {$request->part_name}.",
-                "/preorders"
-            ));
-            return redirect('/customer/dashboard')->with('success', 'Custom pre-order request submitted!');
-        }
+        $owners = User::owners();
+        Notification::send($owners, new StatusUpdated(
+            'New Pre-order Request',
+            "Customer {$user->name} has requested a pre-order for {$partName}.",
+            "/preorders"
+        ));
 
-        return $this->attempt(function () use ($preorder, $downPayment, $request) {
-            $externalId = 'PRE-' . $preorder->id . '-' . time();
-            $result = $this->paymentService->createInvoice(
-                $externalId,
-                $downPayment,
-                'Down Payment for Pre-order: ' . $request->part_name,
-                route('preorder.verify', ['id' => $preorder->id]),
-                url('/customer/dashboard?error=preorder_failed&id=' . $preorder->id)
-            );
-
-            $preorder->update([
-                'xendit_invoice_id' => $result['id'],
-                'xendit_invoice_url' => $result['invoice_url'],
-            ]);
-
-            return redirect($result['invoice_url']);
-        }, 'Pre-order saved but payment could not be initiated. Please contact support.');
-    }
-
-    public function verify($id)
-    {
-        $preorder = PreOrder::findOrFail($id);
-
-        // F-7: Ownership gate — only the customer who placed this pre-order
-        // may trigger payment verification. Without this check, any
-        // authenticated user could verify (and mark as paid) another
-        // user's pre-order by guessing the ID.
-        if ($preorder->customer?->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        if ($preorder->is_paid) {
-            return redirect()->route('customer.dashboard')->with('success', 'Payment already confirmed.');
-        }
-
-        return $this->attempt(function () use ($preorder) {
-            $invoice = $this->paymentService->getInvoiceStatus($preorder->xendit_invoice_id);
-
-            if ($invoice['status'] === 'SETTLED' || $invoice['status'] === 'PAID') {
-                $preorder->update(['is_paid' => true]);
-
-                $owners = User::owners();
-                Notification::send($owners, new StatusUpdated(
-                    'Pre-order Payment Received',
-                    "Customer " . auth()->user()->name . " has completed the down payment for {$preorder->part_name}.",
-                    "/preorders"
-                ));
-
-                return redirect()->route('customer.dashboard')->with('success', 'Payment confirmed!');
-            }
-
-            return redirect()->route('customer.dashboard')->with('info', 'Payment status: ' . $invoice['status']);
-        }, 'Payment verification failed. Please try again or contact support.');
+        return redirect('/customer/dashboard')->with('success', 'Pre-order request submitted! Please coordinate for pickup/payment.');
     }
 }

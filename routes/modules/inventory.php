@@ -11,17 +11,6 @@ Route::get('/search-parts', [PublicBrowseController::class, 'searchParts'])->mid
 Route::get('/inventory-suggestions', [PublicBrowseController::class, 'suggestions'])->middleware('throttle:300,1')->name('inventory.suggestions');
 
 
-Route::get('/debug-logs-temp-2026', function () {
-    if (function_exists('opcache_reset')) {
-        opcache_reset();
-    }
-    $files = glob(storage_path('logs/*.log'));
-    if (empty($files)) return 'No log file found.';
-    usort($files, function($a, $b) { return filemtime($a) < filemtime($b); });
-    $file = $files[0];
-    $lines = file($file);
-    return response("File: " . basename($file) . "\n\n" . implode("", array_slice($lines, -500)))->header('Content-Type', 'text/plain');
-});
 
 // Admin Routes
 Route::middleware(['auth', 'owner'])->group(function () {

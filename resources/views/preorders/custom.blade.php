@@ -52,18 +52,18 @@
                         </div>
                     </div>
 
-                    <!-- Down Payment Info -->
+                    <!-- Payment Info -->
                     <div>
                         <label class="block text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-2 flex items-center gap-2">
                             <div class="w-6 h-6 rounded-lg bg-yellow-50 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600">
                                 <i data-lucide="coins" class="w-3.5 h-3.5"></i>
                             </div>
-                            Required Down Payment (50%)
+                            Payment Details
                         </label>
                         <div class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 flex items-start gap-3">
                             <i data-lucide="info" class="w-5 h-5 text-blue-500 shrink-0 mt-0.5"></i>
                             <p class="text-xs font-bold text-gray-600 dark:text-gray-400 leading-relaxed">
-                                Because this is a custom request, the price is not yet determined. A strict <span class="text-blue-600 dark:text-blue-400 font-black">50% down payment</span> is required for all orders. You will receive an invoice via Xendit once our team verifies the total price of your requested part.
+                                Because this is a custom request, the price is not yet determined. Our team will verify availability and price. Payment is only required upon pickup at the shop.
                             </p>
                         </div>
                     </div>

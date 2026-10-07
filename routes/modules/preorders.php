@@ -12,7 +12,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/preorder/custom', [CustomerPreOrderController::class, 'customForm']); // Keep slash alias
     Route::get('/preorder/{id}', [CustomerPreOrderController::class, 'form'])->name('preorder.form');
     Route::post('/preorder/store', [CustomerPreOrderController::class, 'store'])->name('preorder.store');
-    Route::get('/preorder/verify/{id}', [CustomerPreOrderController::class, 'verify'])->name('preorder.verify');
 
     // Admin Pre-order Management
     Route::middleware(['owner'])->group(function () {

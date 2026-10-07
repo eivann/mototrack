@@ -17,7 +17,7 @@
                                 <th class="p-4 font-semibold">Order ID</th>
                                 <th class="p-4 font-semibold">Customer</th>
                                 <th class="p-4 font-semibold">Requested Part</th>
-                                <th class="p-4 font-semibold text-center">Down Payment</th>
+                                <th class="p-4 font-semibold text-center">Total Price</th>
                                 <th class="p-4 font-semibold text-center">Status</th>
                                 <th class="p-4 font-semibold text-right">Actions</th>
                             </tr>
@@ -35,7 +35,7 @@
                                     </div>
                                     <div class="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-1">Qty: {{ $order->quantity }}</div>
                                 </td>
-                                <td class="p-4 align-top text-center font-bold text-gray-900 dark:text-white">₱{{ number_format($order->down_payment, 2) }}</td>
+                                <td class="p-4 align-top text-center font-bold text-gray-900 dark:text-white">₱{{ number_format($order->total, 2) }}</td>
                                 <td class="p-4 align-top text-center">
                                     <x-status-badge :status="$order->status" />
                                 </td>

@@ -198,7 +198,7 @@
                                             <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Order Details</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
                                                 <li>Each order includes details on the amount paid, price, and product information.</li>
-                                                <li>For pre-orders, the downpayment amount and remaining balance will also be shown.</li>
+                                                <li>For pre-orders, the reservation status and price will also be shown.</li>
                                             </ul>
                                         </div>
 
@@ -230,7 +230,7 @@
                                         <div>
                                             <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">5. Refund Policy</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li><strong>Change of mind:</strong> A refund may still be requested even after full payment or downpayment, as long as the product has not yet been picked up from the shop.</li>
+                                                <li><strong>Change of mind:</strong> A refund may still be requested after payment, as long as the product has not yet been picked up from the shop.</li>
                                                 <li><strong>Damaged or defective product:</strong> A refund, replacement, or repair may be requested if the product received is damaged or defective, in accordance with the Consumer Act of the Philippines (RA 7394). Requests are subject to review to confirm the damage is a product defect and not caused by mishandling after pickup.</li>
                                             </ul>
                                         </div>

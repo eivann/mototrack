@@ -21,7 +21,7 @@ class OtpController extends Controller
 
         $user = auth()->user();
 
-        if ($user->otp_code === $request->otp_code && now()->lessThanOrEqualTo($user->otp_expires_at)) {
+        if (\Illuminate\Support\Facades\Hash::check($request->otp_code, $user->otp_code) && now()->lessThanOrEqualTo($user->otp_expires_at)) {
             $request->session()->put('otp_verified', true);
             $user->otp_code = null;
             $user->otp_expires_at = null;
@@ -46,8 +46,8 @@ class OtpController extends Controller
     public function resend(Request $request)
     {
         $user = auth()->user();
-        $otp = sprintf("%06d", mt_rand(100000, 999999));
-        $user->otp_code = $otp;
+        $otp = sprintf("%06d", random_int(100000, 999999));
+        $user->otp_code = \Illuminate\Support\Facades\Hash::make($otp);
         $user->otp_expires_at = now()->addMinutes(10);
         $user->save();
 

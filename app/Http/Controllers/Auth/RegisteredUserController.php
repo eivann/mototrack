@@ -76,8 +76,8 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        $otp = sprintf("%06d", mt_rand(100000, 999999));
-        $user->otp_code = $otp;
+        $otp = sprintf("%06d", random_int(100000, 999999));
+        $user->otp_code = Hash::make($otp);
         $user->otp_expires_at = now()->addMinutes(10);
         $user->requires_password_change = false; // Fresh users don't need to change password
         $user->save();

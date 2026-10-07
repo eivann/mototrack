@@ -1,0 +1,46 @@
+--- Page 1 ---
+ 
+-​
+yung header/navbar is ifix position sa landing page sa desktop and mobile kasi di 
+nakikita once na mag scroll down. see second pic, ganon dapat 
+ 
+ 
+
+--- Page 2 ---
+ 
+-​
+yung forgot password nawala, need yon, aayusin lang 
+ 
+-​
+yung sa admin and customer dashboard naka left side panels nalang. parang ganto 
+ 
+-​
+yung sa admin wala dapat yon cart icon since sa customer lang yon. siguro parang 
+ganito nalang sa taas, like iba ui nung admin dashboard sa customer dashboard  
+ 
+ 
+
+--- Page 3 ---
+ 
+-​
+yung faq is isama sa "about"  lagyan nalang ng drop down yung about sa header/navbar. 
+parang eto na nasa picture, yung sa may discover may arrow
+ 
+-​
+alisin yung highlights sa borders sa faq once clinick and sa iba if may ganung instances 
+din 
+ 
+ 
+ 
+
+--- Page 4 ---
+ 
+-​
+need ayusin yung faq para di ganto yung header/navbar. tapos yung left side panel need 
+ibahin  
+ 
+-​
+lagyan compat checker yung mismong admin panel. lagyan “compatibility” sa may 
+header/navbar dito sa admin 
+ 
+

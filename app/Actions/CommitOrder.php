@@ -37,7 +37,8 @@ class CommitOrder
         string $stockErrorPrefix,
         callable $tenderFor,
         callable $changeFor,
-        bool $dispatchLowStockAlert = false
+        bool $dispatchLowStockAlert = false,
+        string $status = 'completed'
     ): float {
         return DB::transaction(function () use (
             $lines, $transactionReference, $customerId,
@@ -78,6 +79,7 @@ class CommitOrder
                     'transaction_reference' => $transactionReference,
                     'amount_tendered' => $tenderFor($isFirst, $grandTotal),
                     'change' => $changeFor($isFirst, $grandTotal),
+                    'status' => $status,
                 ]);
 
                 $inventory->decrement('quantity', $quantity);

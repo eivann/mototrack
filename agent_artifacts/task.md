@@ -1,0 +1,6 @@
+- [x] Create migration for `parent_id` and `variation_name` on `inventory_items` table
+- [x] Update `InventoryItem` model relationships and `$fillable` fields
+- [x] Modify `PublicBrowseController` to filter by parent items and eager load variations
+- [x] Update frontend `browse.blade.php` to include variation selection UI
+- [x] Update Admin `InventoryController` and views for managing variations
+- [x] Deploy changes to VPS (Run migrations, clear caches)

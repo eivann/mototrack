@@ -22,19 +22,34 @@ class CustomerOrderController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if ($sale->status !== 'pending') {
-            return back()->with('error', 'Only pending orders can be cancelled. If you have already picked up the item, please request a refund instead.');
-        }
+        $reason = $request->input('reason', 'Customer changed their mind.');
+        
+        $success = \Illuminate\Support\Facades\DB::transaction(function () use ($id, $reason) {
+            $sale = Sale::lockForUpdate()->findOrFail($id);
+            
+            if ($sale->status !== 'pending') {
+                return false;
+            }
 
-        // Restore stock
-        if ($sale->item) {
-            $sale->item->increment('quantity', $sale->quantity);
-        }
+            // Restore stock
+            if ($sale->inventory_item_id) {
+                $inventory = \App\Models\InventoryItem::lockForUpdate()->find($sale->inventory_item_id);
+                if ($inventory) {
+                    $inventory->increment('quantity', $sale->quantity);
+                }
+            }
 
-        $sale->update([
-            'status' => 'cancelled',
-            'cancellation_reason' => $request->input('reason', 'Customer changed their mind.'),
-        ]);
+            $sale->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => $reason,
+            ]);
+
+            return true;
+        });
+
+        if (!$success) {
+            return back()->with('error', 'Only pending orders can be cancelled or this order was already processed. If you have already picked up the item, please request a refund instead.');
+        }
 
         $owners = User::owners();
         Notification::send($owners, new StatusUpdated(

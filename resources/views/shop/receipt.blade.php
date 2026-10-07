@@ -70,7 +70,7 @@
 
                 @if($orders->first() && $orders->first()->amount_tendered > 0)
                 <div class="flex justify-between items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    <span>{{ $orders->first()->amount_tendered >= $grandTotal ? 'Amount Paid:' : 'Down Payment:' }}</span>
+                    <span>Amount Paid:</span>
                     <span class="font-medium text-gray-900 dark:text-white">₱{{ number_format($orders->first()->amount_tendered, 2) }}</span>
                 </div>
                 @if($orders->first()->amount_tendered < $grandTotal)
