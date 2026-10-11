@@ -61,8 +61,10 @@
             </div>
 
             <div class="flex-1 relative mt-12 lg:mt-0 w-full max-w-lg lg:max-w-none mx-auto" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
-                <div class="absolute inset-0 bg-indigo-600/10 dark:bg-indigo-900/20 rounded-full blur-[100px] pointer-events-none -z-10"></div>
-                <img src="{{ asset('images/hero.jpg') }}" alt="Motorcycle Parts Shop" class="w-full h-auto drop-shadow-2xl relative z-10 hover:scale-[1.02] transition-transform duration-500" fetchpriority="high">
+                <picture>
+                    <source srcset="{{ asset('images/hero.webp') }}" type="image/webp">
+                    <img src="{{ asset('images/hero.jpg') }}" alt="Motorcycle Parts Shop" class="w-full h-auto drop-shadow-2xl relative z-10 hover:scale-[1.02] transition-transform duration-500" fetchpriority="high" width="1200" height="1600">
+                </picture>
                 
                 <!-- Floating badge -->
                 <div class="absolute -bottom-6 -left-6 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-20 flex items-center gap-4 animate-bounce" style="animation-duration: 3s;">
@@ -134,7 +136,10 @@
             <div class="flex flex-col lg:flex-row items-center gap-16">
                 <div class="flex-1 w-full relative">
                     <div class="absolute inset-0 bg-blue-600/20 rounded-[3rem] -rotate-6 transform scale-105 pointer-events-none"></div>
-                    <img src="{{ asset('images/about.jpg') }}" alt="Expert Mechanics" class="w-full h-auto rounded-[3rem] shadow-2xl relative z-10 border border-gray-700" loading="lazy">
+                    <picture>
+                        <source srcset="{{ asset('images/about.webp') }}" type="image/webp">
+                        <img src="{{ asset('images/about.jpg') }}" alt="Expert Mechanics" class="w-full h-auto rounded-[3rem] shadow-2xl relative z-10 border border-gray-700" loading="lazy" width="1200" height="1600">
+                    </picture>
                 </div>
                 
                 <div class="flex-1">
