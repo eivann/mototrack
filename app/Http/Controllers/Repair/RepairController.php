@@ -80,26 +80,48 @@ class RepairController extends Controller
         return back()->with('success', 'Repair job deleted.');
     }
 
-    public function markPaid(Repair $repair)
+    public function markPaid(Repair $repair, Request $request)
     {
         Gate::authorize('markPaid', $repair);
 
-        return $this->attempt(function () use ($repair) {
-            DB::transaction(function () use ($repair) {
-                $repair->is_paid = true;
-                $repair->save();
+        return $this->attempt(function () use ($repair, $request) {
+            $alreadyPaid = false;
+            $tendered = (float) $request->input('amount_tendered');
+
+            DB::transaction(function () use ($repair, $tendered, &$alreadyPaid) {
+                $lockedRepair = Repair::lockForUpdate()->find($repair->id);
+                
+                if ($lockedRepair->is_paid) {
+                    $alreadyPaid = true;
+                    return;
+                }
+
+                if ($tendered < (float) $lockedRepair->cost) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'amount_tendered' => 'Full cash payment is required.',
+                    ]);
+                }
+
+                $lockedRepair->is_paid = true;
+                $lockedRepair->save();
 
                 \App\Models\Sale::create([
                     'inventory_item_id' => null,
                     'quantity' => 1,
-                    'price' => $repair->cost,
-                    'total_price' => $repair->cost,
-                    'amount_tendered' => $repair->cost,
-                    'change' => 0,
-                    'customer_id' => $repair->customer_id,
+                    'price' => $lockedRepair->cost,
+                    'total_price' => $lockedRepair->cost,
+                    'amount_tendered' => $tendered,
+                    'change' => round($tendered - (float)$lockedRepair->cost, 2),
+                    'status' => 'completed',
+                    'customer_id' => $lockedRepair->customer_id,
+                    'payment_confirmed_at' => now(),
                     'transaction_reference' => 'REPAIR-' . strtoupper(Str::random(8)),
                 ]);
             });
+
+            if ($alreadyPaid) {
+                return back()->with('error', 'This repair has already been paid.');
+            }
 
             $owners = User::owners();
             Notification::send($owners, new StatusUpdated(

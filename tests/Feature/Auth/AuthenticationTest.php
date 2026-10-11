@@ -17,7 +17,7 @@ test('users can authenticate using the login screen', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect('/otp/verify');
 });
 
 test('customers authenticate to the customer dashboard by default', function () {
@@ -29,7 +29,7 @@ test('customers authenticate to the customer dashboard by default', function () 
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('customer.dashboard', absolute: false));
+    $response->assertRedirect('/otp/verify');
 });
 
 test('users can not authenticate with invalid password', function () {

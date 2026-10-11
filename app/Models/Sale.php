@@ -42,11 +42,16 @@ protected $fillable = [
     'status',
     'cancellation_reason',
     'picked_up_at',
+    'payment_confirmed_at',
+    'reserved_at',
+    'expires_at',
 ];
 
 protected $casts = [
     'payment_confirmed_at' => 'datetime',
     'picked_up_at' => 'datetime',
+    'reserved_at' => 'datetime',
+    'expires_at' => 'datetime',
 ];
 
 // ── Pickup & Refund Eligibility ─────────────────────────
@@ -65,11 +70,9 @@ public function isPickedUp(): bool
  */
 public function canBeRefunded(): bool
 {
-    return !$this->isPickedUp()
-        && in_array($this->status, [
-            OrderStatus::SALE_PENDING,
-            OrderStatus::SALE_COMPLETED,
-        ])
+    return $this->status === OrderStatus::SALE_COMPLETED
+        && $this->amount_tendered > 0
+        && $this->picked_up_at === null
         && $this->refundRequests()
             ->whereNotIn('status', [OrderStatus::REFUND_REJECTED, OrderStatus::REFUND_CANCELLED])
             ->doesntExist();

@@ -59,12 +59,13 @@ class RegisteredUserController extends Controller
             'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',
         ]);
 
-        $user = User::create([
+        $user = new User([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'customer',
         ]);
+        $user->role = 'customer';
+        $user->save();
 
         // Create the linked Customer profile (atomic — safe against double-submit)
         \App\Models\Customer::firstOrCreate(

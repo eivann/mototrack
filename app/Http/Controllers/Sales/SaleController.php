@@ -59,15 +59,22 @@ class SaleController extends Controller
                 $lines[] = ['id' => $cartItem['id'], 'quantity' => $cartItem['quantity']];
             }
 
-            $tendered = $request->amount_tendered;
+            $tendered = (float) $request->amount_tendered;
 
             $this->commitOrder->execute(
                 $lines,
                 $transactionReference,
                 null,
                 'Not enough stock for ',
-                fn (bool $isFirst, float $grandTotal) => $tendered,
-                fn (bool $isFirst, float $grandTotal) => $tendered - $grandTotal,
+                function (bool $isFirst, float $grandTotal) use ($tendered) {
+                    if ($tendered < $grandTotal) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'amount_tendered' => 'Insufficient cash received.',
+                        ]);
+                    }
+                    return $isFirst ? $tendered : 0;
+                },
+                fn (bool $isFirst, float $grandTotal) => $isFirst ? round($tendered - $grandTotal, 2) : 0,
                 dispatchLowStockAlert: true
             );
 
@@ -93,10 +100,27 @@ class SaleController extends Controller
 
         // Use DB aggregates to avoid loading all rows into memory for totals
         $totalsQuery = clone $baseQuery;
-        // Audit #3.5: Exclude refunded sales from total revenue
-        $totalSales = (clone $totalsQuery)
+        // Audit #3.5: Exclude refunded/unpaid sales from total revenue
+        $totalSales = Sale::query()
+            ->where(function($q) {
+                $q->where('status', 'completed')->orWhere('amount_tendered', '>', 0);
+            })
             ->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)
-            ->sum('total_price');
+            ->whereNotNull('payment_confirmed_at');
+
+        if ($request->from && $request->to) {
+            $totalSales->whereBetween('payment_confirmed_at', [$request->from, $request->to]);
+        }
+        if ($request->filter == 'today') {
+            $totalSales->whereDate('payment_confirmed_at', today());
+        } elseif ($request->filter == 'week') {
+            $totalSales->whereBetween('payment_confirmed_at', [now()->startOfWeek(), now()->endOfWeek()]);
+        } elseif ($request->filter == 'month') {
+            $totalSales->whereMonth('payment_confirmed_at', now()->month)->whereYear('payment_confirmed_at', now()->year);
+        }
+
+        $totalSales = $totalSales->sum('total_price');
+
         $totalTransactions = (clone $totalsQuery)->whereNotNull('transaction_reference')->distinct('transaction_reference')->count('transaction_reference')
                            + (clone $totalsQuery)->whereNull('transaction_reference')->count();
 
@@ -111,21 +135,48 @@ class SaleController extends Controller
         ));
     }
 
-    public function complete($id)
+    public function complete($id, Request $request)
     {
-        DB::transaction(function () use ($id) {
+        DB::transaction(function () use ($id, $request) {
             $sales = Sale::lockForUpdate()->where('transaction_reference', $id)->get();
             if ($sales->isEmpty()) {
                 abort(404, 'Reservation not found.');
             }
 
+            $tendered = (float) $request->input('amount_tendered');
+            $grandTotal = $sales->sum('total_price');
+            $isPending = false;
+
+            foreach ($sales as $sale) {
+                if ($sale->status === 'pending') {
+                    $isPending = true;
+                    if ($sale->expires_at && now()->greaterThan($sale->expires_at)) {
+                        abort(400, 'This reservation has expired and cannot be completed.');
+                    }
+                }
+            }
+
+            if (!$isPending) {
+                return; // already completed
+            }
+
+            if ($tendered < $grandTotal) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'amount_tendered' => 'Insufficient cash received for pickup completion.',
+                ]);
+            }
+
+            $isFirst = true;
             foreach ($sales as $sale) {
                 if ($sale->status === 'pending') {
                     $sale->update([
                         'status' => 'completed',
-                        'amount_tendered' => $sale->total_price, // They paid
-                        'picked_up_at' => now()
+                        'amount_tendered' => $isFirst ? $tendered : 0,
+                        'change' => $isFirst ? round($tendered - $grandTotal, 2) : 0,
+                        'picked_up_at' => now(),
+                        'payment_confirmed_at' => now()
                     ]);
+                    $isFirst = false;
                 }
             }
         });
@@ -137,22 +188,13 @@ class SaleController extends Controller
     {
         DB::transaction(function () use ($id) {
             $sale = Sale::lockForUpdate()->findOrFail($id);
-            $item = $sale->inventory_item_id
-                ? InventoryItem::lockForUpdate()->find($sale->inventory_item_id)
-                : null;
-
-            if ($item && !in_array($sale->status, ['cancelled', 'refunded'])) {
-                $item->increment('quantity', $sale->quantity);
-                $item->refresh();
-                if ($item->quantity > $item->low_stock_threshold) {
-                    $item->update(['low_stock_notified' => false]);
-                }
-            }
+            // Inventory is no longer affected by archiving/deletion.
+            // Cancellations/expirations must be handled via specific cancel endpoints.
 
             $sale->delete();
         });
 
-        return redirect()->back()->with('success', 'Sale archived and stock restored!');
+        return redirect()->back()->with('success', 'Sale archived successfully.');
     }
 
     public function receipt($id)

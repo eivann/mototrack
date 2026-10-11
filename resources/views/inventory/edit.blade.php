@@ -41,6 +41,8 @@
                     @csrf
                     @method('PUT')
                     
+                    <input type="hidden" name="expected_quantity" value="{{ $item->quantity }}">
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <!-- SKU -->
                         <div>

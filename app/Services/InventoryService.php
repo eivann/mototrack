@@ -13,7 +13,7 @@ class InventoryService
     public function store(array $data): InventoryItem
     {
         $item = InventoryItem::create($data);
-        Cache::forget('inventory_categories_v3');
+        Cache::forget(InventoryItem::CATEGORY_CACHE_KEY);
         return $item;
     }
 
@@ -23,15 +23,31 @@ class InventoryService
      */
     public function update(InventoryItem $item, array $data): InventoryItem
     {
-        $item->update($data);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($item, $data) {
+            $expected = (int) $data['expected_quantity'];
+            unset($data['expected_quantity']);
+            
+            $locked = InventoryItem::lockForUpdate()->findOrFail($item->id);
+            
+            if ($locked->quantity !== $expected) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'quantity' => 'Stock changed while editing. Reload and retry.',
+                ]);
+            }
+            
+            $locked->update($data);
 
-        if ($item->quantity > ($item->low_stock_threshold ?? 5)) {
-            $item->low_stock_notified = false;
-            $item->save();
-        }
+            if ($locked->quantity > ($locked->low_stock_threshold ?? 5)) {
+                $locked->low_stock_notified = false;
+            } else {
+                // Suppress alerts if manually set below threshold, since the admin already knows
+                $locked->low_stock_notified = true;
+            }
+            $locked->save();
 
-        Cache::forget('inventory_categories_v3');
-        return $item->fresh();
+            Cache::forget(InventoryItem::CATEGORY_CACHE_KEY);
+            return $locked->fresh();
+        });
     }
 
     /**
@@ -40,7 +56,7 @@ class InventoryService
     public function destroy(InventoryItem $item): void
     {
         $item->delete();
-        Cache::forget('inventory_categories_v3');
+        Cache::forget(InventoryItem::CATEGORY_CACHE_KEY);
     }
 
     /**

@@ -18,12 +18,14 @@ class PreOrder extends Model
     'price',
     'total',
     'is_paid',
-    'xendit_invoice_id',
-    'xendit_invoice_url',
+    'is_stocked',
+    'picked_up_at',
 ];
 
     protected $casts = [
         'is_paid' => 'boolean',
+        'is_stocked' => 'boolean',
+        'picked_up_at' => 'datetime',
     ];
 
     // Audit #12: no `protected $with` — views render the denormalized

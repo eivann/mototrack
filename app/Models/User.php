@@ -11,8 +11,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cache;
 
-#[Fillable(['name', 'email', 'password', 'role', 'google_id', 'otp_code', 'otp_expires_at', 'requires_password_change'])]
-#[Hidden(['password', 'remember_token'])]
+#[Fillable(['name', 'email', 'password'])]
+#[Hidden(['password', 'remember_token', 'otp_code'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */

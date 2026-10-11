@@ -16,6 +16,8 @@ Route::middleware('auth')->group(function () {
     // Admin Pre-order Management
     Route::middleware(['owner'])->group(function () {
         Route::get('/preorders', [AdminPreOrderController::class, 'index'])->name('preorders.index');
+        Route::post('/preorders/{preorder}/pay', [AdminPreOrderController::class, 'pay'])->name('preorders.pay');
+        Route::post('/preorders/{preorder}/stock', [AdminPreOrderController::class, 'stock'])->name('preorders.stock');
         Route::post('/preorders/{preorder}/complete', [AdminPreOrderController::class, 'complete'])->name('preorders.complete');
         Route::post('/preorders/{preorder}/cancel', [AdminPreOrderController::class, 'cancel'])->name('preorders.cancel');
 

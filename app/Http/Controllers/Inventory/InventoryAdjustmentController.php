@@ -52,6 +52,11 @@ class InventoryAdjustmentController extends Controller
             if ($request->action_taken === 'restocked') {
                 $item = InventoryItem::lockForUpdate()->findOrFail($request->inventory_item_id);
                 $item->increment('quantity', $request->quantity);
+                
+                if ($item->quantity > ($item->low_stock_threshold ?? 5)) {
+                    $item->low_stock_notified = false;
+                    $item->save();
+                }
             }
         });
 

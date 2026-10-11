@@ -6,7 +6,44 @@ on:
       - main # Or your default branch (e.g., master)
 
 jobs:
+  validate:
+    name: 🧪 Run Automated Tests & Validate Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+
+      - name: ⚡ Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+          coverage: none
+
+      - name: 📦 Install Composer Dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: 🔑 Generate App Key
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: 🧪 Execute PHP Test Suite
+        run: php artisan test
+
+      - name: ⚡ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 🔨 Validate Frontend Compilation
+        run: |
+          npm ci || npm install
+          npm run build
+
   deploy:
+    name: 🚀 Deploy to VPS
+    needs: validate
     runs-on: ubuntu-latest
 
     steps:

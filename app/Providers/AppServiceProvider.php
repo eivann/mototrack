@@ -25,15 +25,7 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\SessionCartRepository::class
         );
 
-        // Audit #2: payment gateway abstraction. A factory selects the concrete
-        // implementation by config so new providers can be added without
-        // touching controllers.
-        $this->app->bind(\App\Contracts\PaymentGateway::class, function ($app) {
-            return match (config('services.payment.provider')) {
-                // Add future providers here, e.g. 'paymongo' => new PaymongoGateway(),
-                default => $app->make(\App\Services\PaymentService::class),
-            };
-        });
+
 
         $this->app->singleton(\App\Services\SmsGatewayInterface::class, function ($app) {
             $twilioSid = config('services.twilio.sid');

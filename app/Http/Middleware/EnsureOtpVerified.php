@@ -16,7 +16,7 @@ class EnsureOtpVerified
     public function handle(Request $request, Closure $next): Response
     {
         if (auth()->check() && !$request->session()->get('otp_verified', false)) {
-            if (!$request->routeIs('otp.*') && !$request->routeIs('logout')) {
+            if (!$request->is('otp*') && !$request->routeIs('otp.*') && !$request->routeIs('logout')) {
                 return redirect()->route('otp.verify');
             }
         }

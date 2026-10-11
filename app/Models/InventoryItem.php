@@ -12,6 +12,8 @@ class InventoryItem extends Model
 
     protected $table = 'inventory_items';
 
+    public const CATEGORY_CACHE_KEY = 'inventory_categories_v4';
+
     // Audit #15: the inventory_items table has created_at/updated_at columns,
     // but this model intentionally does not maintain them (writes leave them
     // NULL). Do not order by those columns — use the monotonic `id` instead
@@ -132,7 +134,7 @@ class InventoryItem extends Model
     public function getImageUrlAttribute()
     {
         if ($this->image_path) {
-            return asset('images/' . $this->image_path);
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->image_path);
         }
         
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>';
@@ -149,7 +151,7 @@ class InventoryItem extends Model
      */
     public static function distinctCategories()
     {
-        return Cache::remember('inventory_categories_v4', now()->addHours(6), function () {
+        return Cache::remember(self::CATEGORY_CACHE_KEY, now()->addHours(6), function () {
             return static::query()
                 ->whereNotNull('category')
                 ->distinct()

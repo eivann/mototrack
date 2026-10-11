@@ -11,7 +11,7 @@ use App\Models\User;
 use App\Notifications\StatusUpdated;
 use App\Services\CartService;
 use App\Services\CheckoutService;
-use App\Contracts\PaymentGateway;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -21,7 +21,6 @@ class CheckoutController extends Controller
     use HandlesExceptions;
     public function __construct(
         protected CartService $cartService,
-        protected PaymentGateway $paymentService,
         protected CheckoutService $checkoutService
     ) {}
 
@@ -41,7 +40,6 @@ class CheckoutController extends Controller
 
         // H-6: Use ULID for collision-resistant, non-guessable transaction IDs
         $transactionReference = 'TRX-' . Str::ulid();
-        $paymentMethod = $request->payment_method;
 
         // Find or create customer profile
         $customerId = null;
@@ -54,6 +52,11 @@ class CheckoutController extends Controller
             $customerId = $customer->id;
         }
 
+        $lock = \Illuminate\Support\Facades\Cache::lock('checkout_' . session()->getId(), 10);
+        if (!$lock->get()) {
+            return back()->with('error', 'Your previous checkout request is still processing. Please wait.');
+        }
+
         // ── Step 1: Commit the order ──────────────────────────────────
         // The DB transaction is isolated from external payment API calls.
         // If this step fails, nothing was committed and the error message
@@ -63,15 +66,18 @@ class CheckoutController extends Controller
                 $cart,
                 $transactionReference,
                 $customerId,
-                $request->amount_tendered
+                0 // zero tender for reservation
             );
         } catch (\Throwable $e) {
+            $lock->release();
             report($e);
             $message = app()->hasDebugModeEnabled()
                 ? $e->getMessage()
                 : 'Checkout failed. Your cart has not been charged. Please try again.';
             return back()->with('error', $message);
         }
+
+        $lock->release();
 
         // ── Order committed — safe to clear cart and notify ───────────
         $this->cartService->clear();

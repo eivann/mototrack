@@ -3,7 +3,7 @@
 
     <!-- HEADER / SEARCH BAR (Sticky) -->
     <div class="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sticky top-16 md:top-20 lg:top-[88px] z-40 bg-white dark:bg-gray-900 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-6 pb-4 -mt-6 border-b border-gray-100 dark:border-gray-800">
-        <form method="GET" action="/browse" x-data="{ loading: false }" @submit="loading = true" class="w-full sm:flex-1 flex gap-2">
+        <form method="GET" action="/browse" x-data="browseFilters()" @submit="loading = true" class="w-full sm:flex-1 flex gap-2">
             <label for="browse-search" class="sr-only">Search parts</label>
             <input
                 id="browse-search"
@@ -67,9 +67,9 @@
         <!-- FILTER SIDEBAR -->
         <div id="filter-panel"
              :class="showFilters ? '' : 'hidden lg:block'"
-             class="lg:col-span-3">
-            <form method="GET" action="/browse" x-data="{ loading: false }" @submit="loading = true"
-                  class="bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm h-fit lg:sticky top-24">
+             class="lg:col-span-3 lg:sticky lg:top-[110px] lg:h-fit lg:self-start z-30">
+            <form method="GET" action="/browse" x-data="browseFilters()" @submit="loading = true"
+                  class="bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm">
                 <h2 class="font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-xs">Filters</h2>
                 <input type="hidden" name="search" value="{{ request('search') }}">
 
@@ -105,9 +105,15 @@
                         Compatibility Check
                     </label>
                     <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-2 leading-tight font-medium">Enter your motorcycle model to filter compatible parts (e.g., TMX 125).</p>
-                    <input type="text" id="filter-model" name="model" value="{{ request('model') }}"
-                           placeholder="Motorcycle Model..."
-                           class="w-full border-gray-200 dark:border-gray-600 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div class="relative">
+                        <select id="filter-model" name="model" x-model="model" class="w-full border-gray-200 dark:border-gray-600 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer">
+                            <option value="">All Models</option>
+                            <template x-for="m in models" :key="m">
+                                <option :value="m" x-text="m"></option>
+                            </template>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                    </div>
                 </div>
 
                 <button
@@ -245,6 +251,27 @@
                         .then(data => { this[target] = data; })
                         .catch(() => { this[target] = []; });
                 }, 180);
+            }
+        }
+    }
+
+    function browseFilters() {
+        return {
+            loading: false,
+            model: '{{ request('model') }}',
+            models: [],
+            
+            init() {
+                this.fetchModels();
+            },
+            
+            async fetchModels() {
+                try {
+                    const res = await fetch('/inventory-options?field=model');
+                    this.models = await res.json();
+                } catch (e) {
+                    this.models = [];
+                }
             }
         }
     }

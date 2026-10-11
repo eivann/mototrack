@@ -97,6 +97,38 @@ class PublicBrowseController extends Controller
         return response()->json($items);
     }
 
+    public function getOptions(Request $request)
+    {
+        try {
+            $field = $request->query('field');
+            $dependsOn = $request->query('depends_on', []);
+
+            $allowed = ['category', 'part_name', 'brand', 'model', 'sku'];
+            if (!in_array($field, $allowed, true)) {
+                return response()->json([]);
+            }
+
+            $query = InventoryItem::query()
+                ->select($field)
+                ->whereNotNull($field)
+                ->where($field, '!=', '');
+
+            if (is_array($dependsOn)) {
+                foreach ($dependsOn as $key => $val) {
+                    if (in_array($key, $allowed, true) && $val !== '' && $val !== null) {
+                        $query->where($key, $val);
+                    }
+                }
+            }
+
+            $options = $query->distinct()->orderBy($field)->pluck($field)->filter()->values();
+            return response()->json($options);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Get options error: ' . $e->getMessage());
+            return response()->json([], 500);
+        }
+    }
+
     private function searchSuggestions(string $term)
     {
         $columns = ['part_name', 'brand', 'model', 'sku'];

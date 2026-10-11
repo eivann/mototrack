@@ -10,21 +10,12 @@ use App\Models\PreOrder;
 use App\Models\User;
 use App\Models\Customer;
 use App\Notifications\StatusUpdated;
-use App\Contracts\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 
 class CustomerPreOrderController extends Controller
 {
     use HandlesExceptions;
-
-    protected $paymentService;
-
-    public function __construct(PaymentGateway $paymentService)
-    {
-        $this->paymentService = $paymentService;
-    }
-
     public function parts()
     {
         $items = InventoryItem::where('quantity', 0)->get();

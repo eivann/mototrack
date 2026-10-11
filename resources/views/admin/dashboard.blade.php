@@ -17,7 +17,7 @@
         }
     }" x-init="initEcho()" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
         <!-- Section Header -->
-        <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+        <div class="sticky top-[64px] md:top-[80px] lg:top-[88px] z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
             <div class="w-full px-4 sm:px-8 lg:px-12">
                 <div class="flex justify-between items-center py-4">
                     <div class="flex items-center gap-4">
@@ -38,7 +38,7 @@
             <div class="flex flex-col md:flex-row gap-8 items-start">
                 
                 <!-- Sidebar Navigation (Left) -->
-                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2">
+                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2 md:sticky md:top-[200px]">
                     @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'preorders' => 'Pre-orders', 'refunds' => 'Refund Requests', 'reports' => 'Reports'] as $id => $label)
                         <button
                             @click="activeTab = '{{ $id }}'"

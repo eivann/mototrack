@@ -46,16 +46,15 @@ return new class extends Migration
         }
 
         // Drop the existing plain index before adding the unique one.
-        // Wrapped in try/catch because the index name may differ across
-        // DB drivers (e.g., MySQL auto-creates an index for foreign keys
-        // with a different naming convention than Laravel's ->index()).
-        Schema::table('customers', function (Blueprint $table) {
-            try {
+        // Wrapped in try/catch because the index may be required by foreign key in MySQL
+        // or may not exist in SQLite/Postgres.
+        try {
+            Schema::table('customers', function (Blueprint $table) {
                 $table->dropIndex(['user_id']);
-            } catch (\Throwable $e) {
-                // Index may not exist or may have a non-standard name — safe to ignore.
-            }
-        });
+            });
+        } catch (\Throwable $e) {
+            // Index may not exist or cannot be dropped while FK exists in MySQL — safe to ignore.
+        }
 
         Schema::table('customers', function (Blueprint $table) {
             $table->unique('user_id');

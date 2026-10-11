@@ -19,8 +19,12 @@ class DashboardController extends Controller
                     'totalProducts' => InventoryItem::count(),
                     'lowStockCount' => InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')->count(),
                     'activeRepairs' => Repair::whereIn('status', ['pending', 'ongoing'])->count(),
-                    'todayRevenue' => Sale::whereDate('created_at', now()->today())->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)->sum('total_price'),
-                    'monthlyRevenue' => Sale::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)->sum('total_price'),
+                    'todayRevenue' => Sale::whereDate('payment_confirmed_at', now()->today())
+                        ->where(function($q) { $q->where('status', 'completed')->orWhere('amount_tendered', '>', 0); })
+                        ->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)->whereNotNull('payment_confirmed_at')->sum('total_price'),
+                    'monthlyRevenue' => Sale::whereMonth('payment_confirmed_at', now()->month)->whereYear('payment_confirmed_at', now()->year)
+                        ->where(function($q) { $q->where('status', 'completed')->orWhere('amount_tendered', '>', 0); })
+                        ->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)->whereNotNull('payment_confirmed_at')->sum('total_price'),
                     'totalSalesCount' => Sale::count(),
                     'completedRepairs' => Repair::where('status', 'completed')->count(),
                 ];
@@ -34,11 +38,13 @@ class DashboardController extends Controller
             $recentPreorders = \App\Models\PreOrder::latest()->take(10)->get();
 
             // Daily revenue for the last 30 days (Chart.js)
-            $dailyRevenue = Sale::selectRaw('DATE(created_at) as date, SUM(total_price) as revenue')
-                ->where('created_at', '>=', now()->subDays(30))
+            $dailyRevenue = Sale::selectRaw('DATE(payment_confirmed_at) as date, SUM(total_price) as revenue')
+                ->where('payment_confirmed_at', '>=', now()->subDays(30))
+                ->where(function($q) { $q->where('status', 'completed')->orWhere('amount_tendered', '>', 0); })
                 ->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)
-                ->groupByRaw('DATE(created_at)')
-                ->orderByRaw('DATE(created_at)')
+                ->whereNotNull('payment_confirmed_at')
+                ->groupByRaw('DATE(payment_confirmed_at)')
+                ->orderByRaw('DATE(payment_confirmed_at)')
                 ->pluck('revenue', 'date');
 
             // Fill in missing days with 0

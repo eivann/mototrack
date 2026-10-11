@@ -27,19 +27,30 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        // Also update the linked Customer phone number if provided
         $validated = $request->validated();
-        if (isset($validated['phone']) && $request->user()->customer) {
-            $request->user()->customer->update(['phone' => $validated['phone']]);
-        }
+        $user = $request->user();
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($user, $validated) {
+            $user->fill($validated);
+
+            if ($user->isDirty('email')) {
+                $user->email_verified_at = null;
+            }
+
+            $user->save();
+
+            // Also update the linked Customer phone number, name, and email
+            if ($user->customer) {
+                $customerData = [
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                ];
+                if (isset($validated['phone'])) {
+                    $customerData['phone'] = $validated['phone'];
+                }
+                $user->customer->update($customerData);
+            }
+        });
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

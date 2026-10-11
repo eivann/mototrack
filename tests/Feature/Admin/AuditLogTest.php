@@ -55,6 +55,7 @@ test('creating updating deleting audit trail-bound model generates audit logs', 
         'model' => 'Universal',
         'price' => 300.00,
         'quantity' => 20,
+        'expected_quantity' => 20,
         'low_stock_threshold' => 5,
     ]);
 

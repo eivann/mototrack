@@ -20,12 +20,12 @@ function makePreOrderCustomer(): Customer
     ]);
 }
 
-test('completing a linked pre-order restocks the referenced inventory item', function () {
+test('allocating stock to a pre-order decrements catalog inventory', function () {
     Notification::fake();
 
     $owner    = User::factory()->create(['role' => 'owner']);
     $customer = makePreOrderCustomer();
-    $item     = InventoryItem::create(['part_name' => 'Brake Pad', 'price' => 500, 'quantity' => 4]);
+    $item     = InventoryItem::create(['part_name' => 'Brake Pad', 'price' => 500, 'quantity' => 10]);
 
     $preorder = PreOrder::create([
         'customer_id'       => $customer->id,
@@ -36,74 +36,69 @@ test('completing a linked pre-order restocks the referenced inventory item', fun
         'price'             => 500,
         'total'             => 1500,
         'status'            => 'pending',
-        'is_paid'           => true,
+        'is_paid'           => false,
+        'is_stocked'        => false,
     ]);
 
-    $response = $this->actingAs($owner)->post(route('preorders.complete', $preorder));
+    $response = $this->actingAs($owner)->post(route('preorders.stock', $preorder));
 
     $response->assertRedirect();
     $response->assertSessionHas('success');
-    expect($item->fresh()->quantity)->toBe(7);
-    expect($preorder->fresh()->status)->toBe('completed');
+    expect($item->fresh()->quantity)->toBe(7); // 10 - 3
+    expect($preorder->fresh()->is_stocked)->toBeTrue();
 });
 
-test('completing a legacy pre-order restocks via part_name and model match', function () {
+test('cancelling a stocked pre-order restores the inventory', function () {
     Notification::fake();
 
     $owner    = User::factory()->create(['role' => 'owner']);
     $customer = makePreOrderCustomer();
-    $item     = InventoryItem::create([
-        'part_name' => 'Clutch Cable',
-        'model'     => 'Yamaha R1',
-        'price'     => 300,
-        'quantity'  => 2,
-    ]);
+    $item     = InventoryItem::create(['part_name' => 'Brake Pad', 'price' => 500, 'quantity' => 7]);
 
-    // No inventory_item_id — simulates a pre-order created before the FK existed.
     $preorder = PreOrder::create([
-        'customer_id'   => $customer->id,
-        'customer_name' => $customer->name,
-        'part_name'     => 'Clutch Cable',
-        'model'         => 'Yamaha R1',
-        'quantity'      => 5,
-        'price'         => 300,
-        'total'         => 1500,
-        'status'        => 'pending',
-        'is_paid'       => true,
+        'customer_id'       => $customer->id,
+        'inventory_item_id' => $item->id,
+        'customer_name'     => $customer->name,
+        'part_name'         => 'Brake Pad',
+        'quantity'          => 3,
+        'price'             => 500,
+        'total'             => 1500,
+        'status'            => 'pending',
+        'is_paid'           => false,
+        'is_stocked'        => true, // Already stocked
     ]);
 
-    $response = $this->actingAs($owner)->post(route('preorders.complete', $preorder));
+    $response = $this->actingAs($owner)->post(route('preorders.cancel', $preorder));
 
     $response->assertRedirect();
     $response->assertSessionHas('success');
-    expect($item->fresh()->quantity)->toBe(7);
+    expect($item->fresh()->quantity)->toBe(10); // Restored
+    expect($preorder->fresh()->status)->toBe('cancelled');
 });
 
-test('completing a custom pre-order with no matching item warns and leaves stock untouched', function () {
+test('completing a pre-order requires it to be paid and stocked', function () {
     Notification::fake();
 
     $owner    = User::factory()->create(['role' => 'owner']);
     $customer = makePreOrderCustomer();
-    $item     = InventoryItem::create(['part_name' => 'Air Filter', 'price' => 250, 'quantity' => 6]);
 
-    // Custom/sourced part: no FK and a part_name that matches nothing in the catalog.
     $preorder = PreOrder::create([
-        'customer_id'   => $customer->id,
-        'customer_name' => $customer->name,
-        'part_name'     => 'Custom Fairing Kit',
-        'quantity'      => 2,
-        'price'         => 8000,
-        'total'         => 16000,
-        'status'        => 'pending',
-        'is_paid'       => true,
+        'customer_id'       => $customer->id,
+        'customer_name'     => $customer->name,
+        'part_name'         => 'Brake Pad',
+        'quantity'          => 3,
+        'price'             => 500,
+        'total'             => 1500,
+        'status'            => 'pending',
+        'is_paid'           => false, // NOT PAID
+        'is_stocked'        => false, // NOT STOCKED
     ]);
 
     $response = $this->actingAs($owner)->post(route('preorders.complete', $preorder));
 
     $response->assertRedirect();
-    $response->assertSessionHas('warning');
-    expect($item->fresh()->quantity)->toBe(6); // untouched
-    expect($preorder->fresh()->status)->toBe('completed');
+    $response->assertSessionHas('error');
+    expect($preorder->fresh()->status)->toBe('pending');
 });
 
 test('deleting a referenced inventory item nulls the pre-order foreign key', function () {

@@ -15,31 +15,28 @@ class ExpireReservations extends Command
      */
     public function handle()
     {
-        $cutoff = now()->subHours(24);
-
+        // Retrieve pending sales where expires_at has passed
+        // Fallback to created_at + 24 hours if expires_at is null
         $expiredSales = \App\Models\Sale::where('status', 'pending')
-            ->where('created_at', '<', $cutoff)
+            ->where(function ($query) {
+                $query->where('expires_at', '<=', now())
+                      ->orWhere(function ($q) {
+                          $q->whereNull('expires_at')
+                            ->where('created_at', '<=', now()->subHours(24));
+                      });
+            })
             ->get();
 
         $count = 0;
+        $reservationService = app(\App\Services\ReservationService::class);
         foreach ($expiredSales as $sale) {
-            \Illuminate\Support\Facades\DB::transaction(function () use ($sale) {
-                // Lock the sale
-                $sale = \App\Models\Sale::lockForUpdate()->find($sale->id);
-                if ($sale->status === 'pending') {
-                    $sale->update([
-                        'status' => 'cancelled',
-                        'cancellation_reason' => 'Automatically expired after 24 hours',
-                    ]);
-
-                    // Restore stock
-                    $inventory = \App\Models\InventoryItem::lockForUpdate()->find($sale->inventory_item_id);
-                    if ($inventory) {
-                        $inventory->increment('quantity', $sale->quantity);
-                    }
+            try {
+                if ($reservationService->release($sale, 'Automatically expired after 24 hours', 'expired')) {
+                    $count++;
                 }
-            });
-            $count++;
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to expire reservation #{$sale->transaction_reference}: " . $e->getMessage());
+            }
         }
 
         $this->info("Expired {$count} reservations.");

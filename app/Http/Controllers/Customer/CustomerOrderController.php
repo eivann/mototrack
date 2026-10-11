@@ -24,28 +24,7 @@ class CustomerOrderController extends Controller
 
         $reason = $request->input('reason', 'Customer changed their mind.');
         
-        $success = \Illuminate\Support\Facades\DB::transaction(function () use ($id, $reason) {
-            $sale = Sale::lockForUpdate()->findOrFail($id);
-            
-            if ($sale->status !== 'pending') {
-                return false;
-            }
-
-            // Restore stock
-            if ($sale->inventory_item_id) {
-                $inventory = \App\Models\InventoryItem::lockForUpdate()->find($sale->inventory_item_id);
-                if ($inventory) {
-                    $inventory->increment('quantity', $sale->quantity);
-                }
-            }
-
-            $sale->update([
-                'status' => 'cancelled',
-                'cancellation_reason' => $reason,
-            ]);
-
-            return true;
-        });
+        $success = app(\App\Services\ReservationService::class)->release($sale, $reason);
 
         if (!$success) {
             return back()->with('error', 'Only pending orders can be cancelled or this order was already processed. If you have already picked up the item, please request a refund instead.');

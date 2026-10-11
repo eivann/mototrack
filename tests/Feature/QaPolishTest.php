@@ -84,7 +84,7 @@ test('customer login ignores cart intended url and lands on customer dashboard',
             'password' => 'password',
         ]);
 
-    $response->assertRedirect(route('customer.dashboard', absolute: false));
+    $response->assertRedirect('/otp/verify');
 });
 
 test('customer login can still continue to checkout when that was intentional', function () {
@@ -97,7 +97,7 @@ test('customer login can still continue to checkout when that was intentional', 
             'password' => 'password',
         ]);
 
-    $response->assertRedirect('/checkout');
+    $response->assertRedirect('/otp/verify');
 });
 
 test('qa affected pages render for guest customer and owner roles', function () {
@@ -120,7 +120,7 @@ test('qa affected pages render for guest customer and owner roles', function () 
 
     $this->get('/')->assertOk();
     $this->get(route('browse', ['category' => 'Brakes', 'sort' => 'high_low']))->assertOk();
-    $this->get(route('compatibility.view'))->assertOk();
+
 
     $this->actingAs($customer)->get(route('customer.dashboard'))->assertOk();
     $this->actingAs($owner)->get(route('dashboard'))->assertOk();

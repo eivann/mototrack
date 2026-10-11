@@ -41,15 +41,7 @@ return [
         ],
     ],
 
-    'xendit' => [
-        'secret_key' => env('XENDIT_SECRET_KEY'),
-        'public_key' => env('XENDIT_PUBLIC_KEY'),
-    ],
 
-    // Audit #2: selects the PaymentGateway implementation bound in AppServiceProvider.
-    'payment' => [
-        'provider' => env('PAYMENT_PROVIDER', 'default'),
-    ],
 
     'twilio' => [
         'sid' => env('TWILIO_SID'),

@@ -21,7 +21,7 @@ class NotificationCenterTest extends TestCase
     {
         $user = User::factory()->create();
         
-        $response = $this->actingAs($user)->get(route('notifications.index'));
+        $response = $this->actingAs($user)->withSession(['otp_verified' => true])->get(route('notifications.index'));
         
         $response->assertStatus(200);
         $response->assertViewIs('notifications.index');
@@ -50,7 +50,7 @@ class NotificationCenterTest extends TestCase
             ]);
         }
 
-        $response = $this->actingAs($user)->get(route('notifications.index'));
+        $response = $this->actingAs($user)->withSession(['otp_verified' => true])->get(route('notifications.index'));
 
         $response->assertStatus(200);
         // Should only show 15 per page (as defined in controller)

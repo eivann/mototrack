@@ -66,7 +66,7 @@
 <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
     <div class="w-full px-4 lg:px-6">
         <div class="flex justify-between items-center h-16 md:h-20 lg:h-[88px]">
-            <div class="flex items-center shrink-0">
+            <div class="flex items-center shrink-0 lg:flex-1 justify-start">
                 <!-- Logo -->
                 <div class="flex items-center transform hover:scale-105 transition-transform duration-300 mr-4 lg:mr-6">
                     <a href="{{ url('/') }}" class="flex items-center gap-2 lg:gap-3">
@@ -78,9 +78,10 @@
                         </div>
                     </a>
             </div>
+            </div>
 
             <!-- Navigation Links -->
-            <div class="hidden lg:flex flex-1 justify-center space-x-4 lg:space-x-6 h-full items-center px-2 mx-4">
+            <div class="hidden lg:flex justify-center space-x-4 lg:space-x-6 h-full items-center px-2 mx-4">
                     @php
                         $linkClasses = "inline-flex items-center text-[12px] lg:text-[13px] font-bold transition-all duration-300 relative whitespace-nowrap";
                         $activeClasses = "text-indigo-600 dark:text-indigo-400";
@@ -114,7 +115,7 @@
                         @endif
                     @endforeach
                 </div>
-            <div class="hidden lg:flex lg:items-center gap-3 lg:gap-4 shrink-0">
+            <div class="hidden lg:flex lg:flex-1 items-center justify-end gap-3 lg:gap-4 shrink-0">
                 {{-- Global Theme Toggle --}}
                 <button id="globalThemeToggle" aria-label="Toggle light/dark mode" title="Toggle Light/Dark Mode"
                     class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none">
@@ -305,7 +306,7 @@
          x-transition:leave="transition-opacity ease-linear duration-300"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-40 xl:hidden" 
+         class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-40 lg:hidden" 
          @click="open = false" 
          x-cloak></div>
 
@@ -317,7 +318,7 @@
          x-transition:leave="transition ease-in-out duration-300 transform"
          x-transition:leave-start="translate-x-0"
          x-transition:leave-end="translate-x-full"
-         class="fixed top-0 right-0 h-screen w-[85%] max-w-sm bg-white dark:bg-gray-900 shadow-2xl z-50 xl:hidden flex flex-col"
+         class="fixed top-0 right-0 h-screen w-[85%] max-w-sm bg-white dark:bg-gray-900 shadow-2xl z-50 lg:hidden flex flex-col"
          x-cloak>
          
          <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50 shrink-0">

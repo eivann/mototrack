@@ -55,12 +55,24 @@
                                         @endif
 
                                         @if($order->status == 'pending')
-                                            <form method="POST" action="/preorders/{{ $order->id }}/complete" onsubmit="return confirm('Mark this pre-order as completed?');">
+                                            @if(!$order->is_stocked)
+                                            <form method="POST" action="/preorders/{{ $order->id }}/stock" onsubmit="return confirm('Mark this pre-order as arrived/stocked?');">
                                                 @csrf
-                                                <button title="Mark Completed" aria-label="Mark pre-order as completed" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
+                                                <button title="Mark Arrived" aria-label="Mark pre-order as stocked" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                                </button>
+                                            </form>
+                                            @endif
+
+                                            @if($order->is_stocked && $order->is_paid)
+                                            <form method="POST" action="/preorders/{{ $order->id }}/complete" onsubmit="return confirm('Complete this pre-order? Make sure the customer is picking it up.');">
+                                                @csrf
+                                                <button title="Complete Pickup" aria-label="Mark pre-order as completed" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                 </button>
                                             </form>
+                                            @endif
+
                                             <form method="POST" action="/preorders/{{ $order->id }}/cancel" onsubmit="return confirm('Cancel this pre-order?');">
                                                 @csrf
                                                 <button title="Cancel Order" aria-label="Cancel pre-order" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">

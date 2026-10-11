@@ -20,6 +20,7 @@ class UpdateInventoryRequest extends FormRequest
             'brand'     => 'required|string|max:255',
             'model'     => 'required|string|max:255',
             'quantity'  => 'required|integer|min:0',
+            'expected_quantity' => 'required|integer|min:0',
             'price'     => 'required|numeric|min:0',
             'notes'     => 'nullable|string|max:1000',
             'image'     => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',

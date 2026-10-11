@@ -27,10 +27,19 @@ class CheckoutService
      */
     public function processTransaction(array $cart, $transactionReference, $customerId, $amountTenderedInput)
     {
-        // Normalize the associative cart (keyed by item id) into an ordered list.
+        // Normalize and aggregate duplicate SKUs in the cart.
         $lines = [];
+        $aggregated = [];
         foreach ($cart as $id => $item) {
-            $lines[] = ['id' => $id, 'quantity' => $item['quantity']];
+            if (!isset($aggregated[$id])) {
+                $aggregated[$id] = 0;
+            }
+            // Ensure positive integers with bounded maximum
+            $qty = max(1, min((int) $item['quantity'], 9999));
+            $aggregated[$id] += $qty;
+        }
+        foreach ($aggregated as $id => $qty) {
+            $lines[] = ['id' => (int) $id, 'quantity' => $qty];
         }
 
         return $this->commitOrder->execute(

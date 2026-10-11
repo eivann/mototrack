@@ -62,17 +62,21 @@ test('PreOrder model correctly mass-assigns and casts boolean is_paid', function
         'down_payment' => 500.00,
         'status' => 'Pending',
         'is_paid' => false,
+        'is_stocked' => false,
     ]);
 
     // Assert
     expect($preorder->id)->not->toBeNull()
         ->and($preorder->is_paid)->toBeFalse() // Verifies the boolean cast works on SQLite
+        ->and($preorder->is_stocked)->toBeFalse()
         ->and($preorder->down_payment)->toEqual(500.00);
 
-    // Update state to paid
+    // Update state to paid and stocked
     $preorder->is_paid = true;
+    $preorder->is_stocked = true;
     $preorder->save();
     
     $preorder->refresh();
-    expect($preorder->is_paid)->toBeTrue();
+    expect($preorder->is_paid)->toBeTrue()
+        ->and($preorder->is_stocked)->toBeTrue();
 });

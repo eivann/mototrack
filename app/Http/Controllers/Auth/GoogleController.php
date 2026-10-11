@@ -35,18 +35,20 @@ class GoogleController extends Controller
         if ($user) {
             // Update google_id if not already set
             if (!$user->google_id) {
-                $user->update(['google_id' => $googleUser->getId()]);
+                $user->google_id = $googleUser->getId();
+                $user->save();
             }
         } else {
             // Create a new user
-            $user = User::create([
+            $user = new User([
                 'name'              => $googleUser->getName(),
                 'email'             => $googleUser->getEmail(),
-                'google_id'         => $googleUser->getId(),
                 'password'          => bcrypt(Str::random(32)), // random unusable password
-                'role'              => 'customer',
-                'email_verified_at' => now(),
             ]);
+            $user->google_id = $googleUser->getId();
+            $user->role = 'customer';
+            $user->email_verified_at = now();
+            $user->save();
         }
 
         // CR-1: Ensure a Customer profile exists for every authenticated user.
@@ -59,11 +61,19 @@ class GoogleController extends Controller
 
         Auth::login($user, true);
 
-        // Redirect based on role
-        if ($user->role === 'owner') {
-            return redirect()->route('dashboard');
+        $otp = sprintf("%06d", random_int(100000, 999999));
+        $user->otp_code = \Illuminate\Support\Facades\Hash::make($otp);
+        $user->otp_expires_at = now()->addMinutes(10);
+        $user->save();
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\OtpMail($otp));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('OTP Email failed: ' . $e->getMessage());
         }
 
-        return redirect()->route('customer.dashboard');
+        session()->put('otp_verified', false);
+
+        return redirect()->route('otp.verify');
     }
 }

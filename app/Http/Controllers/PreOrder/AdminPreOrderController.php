@@ -16,62 +16,142 @@ class AdminPreOrderController extends Controller
     return view('preorders.admin_index', compact('preorders'));
 }
 
-    public function complete(PreOrder $preorder)
+    public function pay(Request $request, PreOrder $preorder)
     {
-        // Audit #10: restock against the linked catalog item when present.
-        // Fall back to the legacy part_name + model string match only for
-        // pre-orders created before the FK existed. Lock the row so concurrent
-        // completions can't double-increment, and warn the admin when no
-        // inventory item can be resolved rather than silently skipping restock.
-        $matchedByString = false;
+        $error = null;
+        $tendered = (float) $request->input('amount_tendered');
 
-        DB::transaction(function () use (&$preorder, &$matchedByString) {
-            $preorder = PreOrder::lockForUpdate()->findOrFail($preorder->id);
-            if ($preorder->status !== 'pending') {
+        DB::transaction(function () use ($preorder, $tendered, &$error) {
+            $lockedPreorder = PreOrder::lockForUpdate()->findOrFail($preorder->id);
+            if ($lockedPreorder->status !== 'pending') {
+                $error = 'Pre-order is not eligible for payment.';
+                return;
+            }
+            if ($lockedPreorder->is_paid) {
+                $error = 'This pre-order is already paid.';
+                return;
+            }
+            if ((float) $lockedPreorder->total <= 0 || $tendered < (float) $lockedPreorder->total) {
+                $error = 'Full cash payment is required.';
                 return;
             }
 
-            $item = null;
+            $lockedPreorder->is_paid = true;
+            $lockedPreorder->save();
 
-            if ($preorder->inventory_item_id) {
-                $item = InventoryItem::lockForUpdate()->find($preorder->inventory_item_id);
-            } elseif ($preorder->part_name) {
-                $item = InventoryItem::where('part_name', $preorder->part_name)
-                    ->where('model', $preorder->model)
-                    ->lockForUpdate()
-                    ->first();
-                $matchedByString = (bool) $item;
-            }
-
-            if ($item) {
-                $item->increment('quantity', $preorder->quantity);
-            }
-
-            $preorder->status = 'completed';
-            $preorder->save();
+            \App\Models\Sale::create([
+                'inventory_item_id' => $lockedPreorder->inventory_item_id,
+                'quantity' => $lockedPreorder->quantity,
+                'price' => $lockedPreorder->price,
+                'total_price' => $lockedPreorder->total,
+                'amount_tendered' => $tendered,
+                'change' => round($tendered - (float)$lockedPreorder->total, 2),
+                'status' => 'completed',
+                'customer_id' => $lockedPreorder->customer_id,
+                'payment_confirmed_at' => now(),
+                'transaction_reference' => 'PRE-' . strtoupper(\Illuminate\Support\Str::random(8)),
+            ]);
         });
 
-        // Notify customer
+        if ($error) {
+            return back()->with('error', $error);
+        }
+
+
+
         if ($preorder->customer && $preorder->customer->user) {
             $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
-                'Pre-order Ready!',
-                "Your pre-order for {$preorder->part_name} has arrived and is ready for pickup at the store!",
+                'Pre-order Payment Received',
+                "Your payment of ₱" . number_format($preorder->total, 2) . " for your pre-order ({$preorder->part_name}) has been confirmed.",
                 '/customer/dashboard'
             ));
         }
 
-        // Surface a no-restock situation so the owner can adjust stock manually.
-        if (!$preorder->inventory_item_id && !$matchedByString) {
-            return back()->with('warning', "Pre-order completed, but no matching inventory item was found for \"{$preorder->part_name}\" — stock was not adjusted. Please update inventory manually if needed.");
+        return back()->with('success', 'Payment recorded successfully!');
+    }
+
+    public function stock(PreOrder $preorder)
+    {
+        $alreadyStocked = false;
+        DB::transaction(function () use ($preorder, &$alreadyStocked) {
+            $order = PreOrder::lockForUpdate()->findOrFail($preorder->id);
+            if ($order->status !== 'pending' || $order->is_stocked) {
+                $alreadyStocked = true;
+                return;
+            }
+            if ($order->inventory_item_id) {
+                $item = InventoryItem::lockForUpdate()->findOrFail($order->inventory_item_id);
+                if ($item->quantity < $order->quantity) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'quantity' => 'Insufficient available stock to allocate.',
+                    ]);
+                }
+                $item->decrement('quantity', $order->quantity);
+            }
+            $order->is_stocked = true;
+            $order->save();
+        });
+
+        if ($alreadyStocked) {
+            return back()->with('error', 'Pre-order cannot be allocated again.');
         }
 
-        return back()->with('success', 'Pre-order completed!');
+        if ($preorder->customer && $preorder->customer->user) {
+            $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
+                'Pre-order Arrived',
+                "Your pre-order for {$preorder->part_name} has arrived at the store!",
+                '/customer/dashboard'
+            ));
+        }
+
+        return back()->with('success', 'Pre-order marked as stocked!');
+    }
+
+    public function complete(PreOrder $preorder)
+    {
+        $error = null;
+        DB::transaction(function () use ($preorder, &$error) {
+            $order = PreOrder::lockForUpdate()->findOrFail($preorder->id);
+            if ($order->status !== 'pending') {
+                $error = 'Only pending pre-orders can be completed.';
+                return;
+            }
+            if (!$order->is_paid || !$order->is_stocked) {
+                $error = 'Pre-order must be paid and stocked before completion.';
+                return;
+            }
+            $order->picked_up_at = now();
+            $order->status = 'completed';
+            $order->save();
+        });
+
+        if ($error) return back()->with('error', $error);
+
+        return back()->with('success', 'Pre-order completed and picked up!');
     }
 
     public function cancel(PreOrder $preorder)
     {
-        $preorder->status = 'cancelled';
-        $preorder->save();
+        $error = null;
+        DB::transaction(function () use ($preorder, &$error) {
+            $order = PreOrder::lockForUpdate()->findOrFail($preorder->id);
+            if ($order->status !== 'pending') {
+                $error = 'Only pending pre-orders can be cancelled.';
+                return;
+            }
+            if ($order->is_paid) {
+                $error = 'A paid pre-order requires a separate refund workflow.';
+                return;
+            }
+            if ($order->is_stocked && $order->inventory_item_id) {
+                $item = InventoryItem::lockForUpdate()->findOrFail($order->inventory_item_id);
+                $item->increment('quantity', $order->quantity);
+            }
+            $order->status = 'cancelled';
+            $order->save();
+        });
+
+        if ($error) return back()->with('error', $error);
 
         // Notify customer
         if ($preorder->customer && $preorder->customer->user) {

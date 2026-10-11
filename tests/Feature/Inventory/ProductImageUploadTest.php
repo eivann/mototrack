@@ -72,9 +72,13 @@ class ProductImageUploadTest extends TestCase
             'brand' => 'Honda',
             'model' => 'Click',
             'quantity' => 5,
+            'expected_quantity' => 5,
             'price' => 200.00,
             'image' => $newFile,
         ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('inventory.index'));
 
         $item->refresh();
         

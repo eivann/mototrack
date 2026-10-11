@@ -15,6 +15,8 @@ if [ ! -d ".git" ]; then
     git init
     git remote add origin https://github.com/eivann/mototrack.git
 fi
+git config --global --add safe.directory /var/www/mototrack
+git remote add origin https://github.com/eivann/mototrack.git || true
 git fetch origin main
 git reset --hard origin/main
 

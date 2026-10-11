@@ -40,18 +40,44 @@ class CommitOrder
         bool $dispatchLowStockAlert = false,
         string $status = 'completed'
     ): float {
+        $totals = [];
+        foreach ($lines as $line) {
+            $id = filter_var($line['id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            $quantity = filter_var($line['quantity'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+            if ($id === false || $quantity === false) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'cart' => 'Invalid inventory item or quantity.',
+                ]);
+            }
+
+            $totals[$id] = ($totals[$id] ?? 0) + $quantity;
+            if ($totals[$id] > 9999) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'cart' => 'Quantity exceeds the allowed limit.',
+                ]);
+            }
+        }
+        if (!$totals) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'cart' => 'Cart is empty.',
+            ]);
+        }
+        ksort($totals, SORT_NUMERIC);
+        $normalizedLines = [];
+        foreach ($totals as $id => $quantity) {
+            $normalizedLines[] = ['id' => $id, 'quantity' => $quantity];
+        }
+
         return DB::transaction(function () use (
-            $lines, $transactionReference, $customerId,
+            $normalizedLines, $transactionReference, $customerId,
             $stockErrorPrefix, $tenderFor, $changeFor, $dispatchLowStockAlert, $status
         ) {
             // Pass 1: lock stock and compute the true grand total.
-            // Sort lines by ID to prevent deadlocks when locking rows
-            usort($lines, fn($a, $b) => $a['id'] <=> $b['id']);
-            
             $grandTotal = 0;
             $locked = [];
 
-            foreach ($lines as $line) {
+            foreach ($normalizedLines as $line) {
                 $id = $line['id'];
                 $quantity = $line['quantity'];
                 $inventory = InventoryItem::lockForUpdate()->find($id);
@@ -80,6 +106,9 @@ class CommitOrder
                     'amount_tendered' => $tenderFor($isFirst, $grandTotal),
                     'change' => $changeFor($isFirst, $grandTotal),
                     'status' => $status,
+                    'reserved_at' => $status === 'pending' ? now() : null,
+                    'expires_at' => $status === 'pending' ? now()->addHours(24) : null,
+                    'payment_confirmed_at' => $status === 'completed' ? now() : null,
                 ]);
 
                 $inventory->decrement('quantity', $quantity);
