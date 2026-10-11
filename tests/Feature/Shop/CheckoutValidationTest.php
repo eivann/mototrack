@@ -11,6 +11,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Session::start();
+    config(['app.debug' => false]);
 });
 
 test('checkout rolls back database transaction if item is out of stock', function () {
