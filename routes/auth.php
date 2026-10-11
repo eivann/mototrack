@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::get('otp/verify', [\App\Http\Controllers\Auth\OtpController::class, 'show'])->name('otp.verify');
     Route::post('otp/verify', [\App\Http\Controllers\Auth\OtpController::class, 'verify'])->name('otp.verify.submit')->middleware('throttle:6,1');
     Route::post('otp/resend', [\App\Http\Controllers\Auth\OtpController::class, 'resend'])->middleware('throttle:3,1')->name('otp.resend');
+    Route::post('otp/update-email', [\App\Http\Controllers\Auth\OtpController::class, 'updateEmail'])->middleware('throttle:3,1')->name('otp.update-email');
 
     // Force Password Change Route
     Route::get('password/change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'show'])->name('password.change.view');

@@ -84,3 +84,30 @@ test('submitting invalid or expired OTP rejects verification', function () {
     $response->assertSessionHasErrors(['otp_code']);
     $this->assertNotEquals(true, session('otp_verified'));
 });
+
+test('unverified user can update their email address and receive a new OTP', function () {
+    \Illuminate\Support\Facades\Mail::fake();
+
+    $user = User::factory()->create([
+        'email' => 'wrong_email@example.com',
+    ]);
+
+    $response = $this->actingAs($user)
+        ->withSession(['otp_verified' => false])
+        ->post(route('otp.update-email'), [
+            'email' => 'correct_email@example.com',
+        ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('status');
+
+    $user->refresh();
+    expect($user->email)->toBe('correct_email@example.com')
+        ->and($user->otp_code)->not->toBeNull()
+        ->and($user->otp_expires_at)->not->toBeNull();
+
+    \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\OtpMail::class, function ($mail) {
+        return $mail->hasTo('correct_email@example.com');
+    });
+});
+
