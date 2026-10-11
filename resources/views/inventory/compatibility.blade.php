@@ -17,41 +17,26 @@
             </div>
 
             <!-- Search Area -->
-            <form id="compatForm" class="relative group z-20" x-data="compatDropdowns()">
+            <form id="compatForm" class="relative group z-20">
                 <div class="bg-white dark:bg-gray-800 rounded-[2rem] shadow-[0_8px_30px_rgba(82,68,225,0.15)] dark:shadow-none p-3 md:p-4 border border-gray-50 dark:border-gray-700">
                     <div class="flex flex-col md:flex-row items-end gap-3 md:gap-4">
                         <div class="flex-1 w-full relative">
-                            <label for="makeInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Make</label>
-                            <select id="makeInput" name="make" x-model="make" @change="fetchModels()" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors appearance-none cursor-pointer">
-                                <option value="">All Makes</option>
-                                <template x-for="m in makes" :key="m">
-                                    <option :value="m" x-text="m"></option>
-                                </template>
-                            </select>
-                            <i data-lucide="chevron-down" class="absolute right-4 bottom-4 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                            <label for="makeInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Make / Brand</label>
+                            <input type="text" id="makeInput" name="make" list="make-suggestions" autocomplete="off" placeholder="Type make (e.g. Honda, Yamaha)..." class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors">
+                            <datalist id="make-suggestions"></datalist>
                         </div>
                         <div class="flex-1 w-full relative">
                             <label for="modelInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Model</label>
-                            <select id="modelInput" name="model" x-model="model" @change="fetchParts()" :disabled="!make || models.length === 0" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors disabled:opacity-50 appearance-none cursor-pointer">
-                                <option value="">All Models</option>
-                                <template x-for="m in models" :key="m">
-                                    <option :value="m" x-text="m"></option>
-                                </template>
-                            </select>
-                            <i data-lucide="chevron-down" class="absolute right-4 bottom-4 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                            <input type="text" id="modelInput" name="model" list="model-suggestions" autocomplete="off" placeholder="Type model (e.g. TMX 125, NMAX)..." class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors">
+                            <datalist id="model-suggestions"></datalist>
                         </div>
                         <div class="flex-1 w-full relative">
                             <label for="yearInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Part Name</label>
                             <div class="flex items-center gap-2 relative">
-                                <select id="yearInput" name="part" x-model="part" :disabled="!model || parts.length === 0" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors disabled:opacity-50 appearance-none cursor-pointer">
-                                    <option value="">All Parts</option>
-                                    <template x-for="p in parts" :key="p">
-                                        <option :value="p" x-text="p"></option>
-                                    </template>
-                                </select>
-                                <i data-lucide="chevron-down" class="absolute right-4 bottom-4 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                <input type="text" id="yearInput" name="part" list="part-suggestions" autocomplete="off" placeholder="Type part (e.g. Brake Pad)..." class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors">
+                                <datalist id="part-suggestions"></datalist>
                                 <!-- Loading Spinner -->
-                                <div id="loadingSpinner" class="hidden absolute right-10 top-4">
+                                <div id="loadingSpinner" class="hidden absolute right-4 top-4">
                                     <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -254,7 +239,7 @@
                                 const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
                                 
                                 const imageHtml = item.image_url 
-                                    ? `<img src="${item.image_url}" alt="${item.part_name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">`
+                                    ? `<img src="${item.image_url}" alt="${item.part_name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNlY4YTIgMiAwIDAgMC0xLTEuNzNsLTctNGEyIDIgMCAwIDAtMiAwbC03IDRBMiAyIDAgMCAwIDMgOHY4YTIgMiAwIDAgMCAxIDEuNzNsNyA0YTIgMiAwIDAgMCAyIDBsNy00QTIgMiAwIDAgMCAyMSAxNnoiPjwvcGF0aD48cG9seWxpbmUgcG9pbnRzPSIzLjI3IDYuOTYgMTIgMTIuMDEgMjAuNzMgNi45NiI+PC9wb2x5bGluZT48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiPjwvbGluZT48L3N2Zz4=';">`
                                     : `<svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`;
 
                                 card.innerHTML = `
@@ -298,8 +283,19 @@
             compatForm.addEventListener('submit', triggerSearch);
         }
 
-        [makeInput, modelInput, yearInput].forEach(el => {
-            el.addEventListener('change', () => { setTimeout(triggerSearch, 50); });
+        [
+            { el: makeInput, field: 'brand', list: 'make-suggestions' },
+            { el: modelInput, field: 'model', list: 'model-suggestions' },
+            { el: yearInput, field: 'part_name', list: 'part-suggestions' }
+        ].forEach(({ el, field, list }) => {
+            if (el) {
+                el.addEventListener('input', (e) => {
+                    loadSuggestions(field, e.target.value, list);
+                    clearTimeout(timeout);
+                    timeout = setTimeout(triggerSearch, 400);
+                });
+                el.addEventListener('change', () => { setTimeout(triggerSearch, 50); });
+            }
         });
 
         // Auto-trigger search if query exists

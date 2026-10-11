@@ -67,7 +67,7 @@
         <!-- FILTER SIDEBAR -->
         <div id="filter-panel"
              :class="showFilters ? '' : 'hidden lg:block'"
-             class="lg:col-span-3 lg:sticky lg:top-[110px] lg:h-fit lg:self-start z-30">
+             class="lg:col-span-3 z-30">
             <form method="GET" action="/browse" x-data="browseFilters()" @submit="loading = true"
                   class="bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm">
                 <h2 class="font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-xs">Filters</h2>
@@ -106,13 +106,22 @@
                     </label>
                     <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-2 leading-tight font-medium">Enter your motorcycle model to filter compatible parts (e.g., TMX 125).</p>
                     <div class="relative">
-                        <select id="filter-model" name="model" x-model="model" class="w-full border-gray-200 dark:border-gray-600 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer">
-                            <option value="">All Models</option>
-                            <template x-for="m in models" :key="m">
-                                <option :value="m" x-text="m"></option>
+                        <input
+                            type="text"
+                            id="filter-model"
+                            name="model"
+                            value="{{ request('model') }}"
+                            placeholder="Type model (e.g. TMX 125)..."
+                            list="filter-model-suggestions"
+                            autocomplete="off"
+                            @input.debounce.250ms="loadSuggestions('model', $event.target.value, 'modelSuggestions')"
+                            class="w-full border-gray-200 dark:border-gray-600 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm"
+                        >
+                        <datalist id="filter-model-suggestions">
+                            <template x-for="suggestion in modelSuggestions" :key="suggestion.value">
+                                <option :value="suggestion.value"></option>
                             </template>
-                        </select>
-                        <i data-lucide="chevron-down" class="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                        </datalist>
                     </div>
                 </div>
 
@@ -146,7 +155,7 @@
                         selectedStock: {{ $item->quantity }} 
                      }">
                     <div class="aspect-square w-full rounded-lg overflow-hidden mb-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
-                        <img src="{{ $item->image_url }}" alt="{{ $item->part_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <img src="{{ $item->image_url }}" alt="{{ $item->part_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,{{ base64_encode('<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'400\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#9CA3AF\' stroke-width=\'1\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\'></path><polyline points=\'3.27 6.96 12 12.01 20.73 6.96\'></polyline><line x1=\'12\' y1=\'22.08\' x2=\'12\' y2=\'12\'></line></svg>') }}';">
                     </div>
                     <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-white">{{ $item->part_name }}</h3>
                     <p class="text-gray-500 dark:text-gray-400 text-sm">{{ $item->brand }} • {{ $item->model }}</p>
@@ -258,20 +267,23 @@
     function browseFilters() {
         return {
             loading: false,
-            model: '{{ request('model') }}',
-            models: [],
-            
-            init() {
-                this.fetchModels();
-            },
-            
-            async fetchModels() {
-                try {
-                    const res = await fetch('/inventory-options?field=model');
-                    this.models = await res.json();
-                } catch (e) {
-                    this.models = [];
+            modelSuggestions: [],
+            suggestionTimers: {},
+            loadSuggestions(field, value, target) {
+                clearTimeout(this.suggestionTimers[target]);
+                const query = (value || '').trim();
+                if (query.length < 1) {
+                    this[target] = [];
+                    return;
                 }
+                this.suggestionTimers[target] = setTimeout(() => {
+                    fetch(`{{ route('inventory.suggestions') }}?field=${encodeURIComponent(field)}&q=${encodeURIComponent(query)}`, {
+                        headers: { 'Accept': 'application/json' }
+                    })
+                        .then(response => response.ok ? response.json() : [])
+                        .then(data => { this[target] = data; })
+                        .catch(() => { this[target] = []; });
+                }, 180);
             }
         }
     }

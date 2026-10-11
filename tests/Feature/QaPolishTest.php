@@ -138,9 +138,29 @@ test('pos search prompt uses manual search wording instead of scanner language',
     $response->assertDontSee('scan', false);
 });
 
-test('compatibility page can be rendered by guest and authenticated users', function () {
+test('compatibility page can be rendered by guest and authenticated users with typed text inputs', function () {
     $response = $this->get(route('compatibility'));
     $response->assertOk();
     $response->assertSee('Compatibility Checker');
+    $response->assertSee('input type="text" id="makeInput"', false);
+    $response->assertSee('input type="text" id="modelInput"', false);
+    $response->assertSee('input type="text" id="yearInput"', false);
+});
+
+test('browse page uses typed text input for model and does not have sticky filter panel', function () {
+    $response = $this->get(route('browse'));
+    $response->assertOk();
+    $response->assertSee('id="filter-model"', false);
+    $response->assertSee('name="model"', false);
+    $response->assertDontSee('id="filter-panel" class="lg:col-span-3 lg:sticky', false);
+});
+
+test('inventory item resolves catalog image url to public images', function () {
+    $item = new InventoryItem([
+        'part_name' => 'Brake Cable',
+        'image_path' => 'products/imageforBrake Cable - Takasago - STX.jpg',
+    ]);
+
+    expect($item->image_url)->toContain('images/products/imageforBrake Cable - Takasago - STX.jpg');
 });
 
