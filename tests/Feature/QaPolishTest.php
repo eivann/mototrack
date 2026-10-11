@@ -137,3 +137,10 @@ test('pos search prompt uses manual search wording instead of scanner language',
     $response->assertDontSee('barcode', false);
     $response->assertDontSee('scan', false);
 });
+
+test('compatibility page can be rendered by guest and authenticated users', function () {
+    $response = $this->get(route('compatibility'));
+    $response->assertOk();
+    $response->assertSee('Compatibility Checker');
+});
+
