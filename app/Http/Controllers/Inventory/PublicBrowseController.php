@@ -38,7 +38,14 @@ class PublicBrowseController extends Controller
             $query->orderBy('price', 'desc');
         }
 
-        $items = $query->paginate(12)->withQueryString();
+        $total = null;
+        if ($search === '' && $model === '' && $category === '') {
+            $total = Cache::remember('inventory_parent_items_count_v1', now()->addMinutes(10), function () {
+                return InventoryItem::whereNull('parent_id')->count();
+            });
+        }
+
+        $items = $query->paginate(12, ['*'], 'page', null, $total)->withQueryString();
 
         $categories = InventoryItem::distinctCategories();
 

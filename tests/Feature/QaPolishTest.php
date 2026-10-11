@@ -161,6 +161,6 @@ test('inventory item resolves catalog image url to public images', function () {
         'image_path' => 'products/imageforBrake Cable - Takasago - STX.jpg',
     ]);
 
-    expect($item->image_url)->toContain('images/products/imageforBrake Cable - Takasago - STX.jpg');
+    expect($item->image_url)->toContain('images/products/imageforBrake%20Cable%20-%20Takasago%20-%20STX.jpg');
 });
 

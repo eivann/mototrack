@@ -142,23 +142,28 @@ class InventoryItem extends Model
             return $this->image_path;
         }
 
-        if (file_exists(public_path('images/' . $this->image_path))) {
-            return asset('images/' . $this->image_path);
+        $rawPath = ltrim($this->image_path, '/');
+        $encodePath = static function (string $path): string {
+            return implode('/', array_map('rawurlencode', explode('/', $path)));
+        };
+
+        if (file_exists(public_path('images/' . $rawPath))) {
+            return asset('images/' . $encodePath($rawPath));
         }
 
-        if (file_exists(public_path($this->image_path))) {
-            return asset($this->image_path);
+        if (file_exists(public_path($rawPath))) {
+            return asset($encodePath($rawPath));
         }
 
-        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($this->image_path)) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->image_path);
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($rawPath)) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($rawPath);
         }
 
-        if (str_starts_with($this->image_path, 'products/')) {
-            return asset('images/' . $this->image_path);
+        if (str_starts_with($rawPath, 'products/')) {
+            return asset('images/' . $encodePath($rawPath));
         }
 
-        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->image_path);
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($rawPath);
     }
 
     /**
