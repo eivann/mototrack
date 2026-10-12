@@ -62,8 +62,8 @@
                     </button>
                     <div x-show="open === 3" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>Pre-order is used when a product is currently out of stock, so you reserve it ahead of restock instead of missing out.</p>
-                            <p>Select the product, click Pre-Order, and your request will be submitted as a reservation. Payment is required only upon pickup.</p>
+                            <p>Pre-order is used when an item is currently out of stock or when you need a custom-sourced motorcycle part. Submitting a pre-order reserves the item without any upfront payment.</p>
+                            <p>You pay in cash at the shop counter only when you collect the arrived part.</p>
                         </div>
                     </div>
                 </div>
@@ -73,14 +73,14 @@
                     <button @click="open = open === 4 ? null : 4" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 4">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-black">4</span>
-                            <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">When do I pay the remaining balance for a pre-order?</h3>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">How does the 24-hour pickup deadline work?</h3>
                         </div>
                         <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 shrink-0 transition-transform duration-300" :class="open === 4 ? 'rotate-180 text-indigo-600' : ''"></i>
                     </button>
                     <div x-show="open === 4" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>The remaining balance is paid upon pickup, once the item has arrived and is ready at the shop.</p>
-                            <p>You will be notified through your account once your pre-ordered item is ready for pickup.</p>
+                            <p><strong>For in-stock reservations:</strong> Stock is allocated immediately at checkout. The 24-hour pickup countdown begins at the exact moment the reservation is placed.</p>
+                            <p><strong>For pre-orders:</strong> The 24-hour countdown begins <em>only after</em> the item physically arrives at our store and a readiness notification is recorded in your account.</p>
                         </div>
                     </div>
                 </div>
@@ -96,7 +96,7 @@
                     </button>
                     <div x-show="open === 5" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>Payment is made in-store via cash or other accepted methods when you pick up your reserved item.</p>
+                            <p>All payments are made in-store in cash when you pick up your reserved item. There is no online payment collection or online gateway.</p>
                         </div>
                     </div>
                 </div>
@@ -106,13 +106,13 @@
                     <button @click="open = open === 6 ? null : 6" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 6">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs font-black">6</span>
-                            <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">Is a printed receipt provided after purchase?</h3>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">Is an official receipt issued upon reservation?</h3>
                         </div>
                         <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 shrink-0 transition-transform duration-300" :class="open === 6 ? 'rotate-180 text-indigo-600' : ''"></i>
                     </button>
                     <div x-show="open === 6" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>No, the shop does not issue a printed receipt. A digital receipt is generated and saved under your Order History instead.</p>
+                            <p>Online reservations receive a "Reservation Acknowledgement — No Payment Collected — Not an Official Receipt". An official sales receipt is issued at the shop POS once cash payment is completed upon physical pickup.</p>
                         </div>
                     </div>
                 </div>
@@ -128,7 +128,7 @@
                     </button>
                     <div x-show="open === 7" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>Go to your account to see the current status, such as Pending, Processing, Ready for Pickup, or Completed.</p>
+                            <p>Log in to your customer dashboard to monitor active reservations, pre-orders, and repair service jobs in real time.</p>
                         </div>
                     </div>
                 </div>
@@ -138,13 +138,13 @@
                     <button @click="open = open === 8 ? null : 8" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 8">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xs font-black">8</span>
-                            <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">Can I cancel my order?</h3>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">Can I cancel my reservation?</h3>
                         </div>
                         <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 shrink-0 transition-transform duration-300" :class="open === 8 ? 'rotate-180 text-indigo-600' : ''"></i>
                     </button>
                     <div x-show="open === 8" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>Yes, as long as you have not picked it up from the shop yet.</p>
+                            <p>Yes. You can cancel any unpaid reservation directly from your dashboard prior to pickup. The reserved item is immediately released back to catalog stock.</p>
                         </div>
                     </div>
                 </div>
@@ -154,13 +154,13 @@
                     <button @click="open = open === 9 ? null : 9" class="w-full text-left px-6 sm:px-8 py-5 sm:py-6 flex items-center justify-between gap-4 focus:outline-none group" :aria-expanded="open === 9">
                         <div class="flex items-center gap-4 min-w-0">
                             <span class="shrink-0 w-8 h-8 rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 flex items-center justify-center text-xs font-black">9</span>
-                            <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">Why do I need to read the Terms and Conditions before paying?</h3>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">How are physical returns and refunds handled?</h3>
                         </div>
                         <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 shrink-0 transition-transform duration-300" :class="open === 9 ? 'rotate-180 text-indigo-600' : ''"></i>
                     </button>
                     <div x-show="open === 9" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>It explains the payment, refund, cancellation, and compatibility checker rules before your order is confirmed, since these directly affect your purchase.</p>
+                            <p>All returns and refunds must be presented in person at our physical shop with the official POS receipt. Our mechanics will inspect the item in accordance with Philippine consumer protection laws (RA 7394).</p>
                         </div>
                     </div>
                 </div>

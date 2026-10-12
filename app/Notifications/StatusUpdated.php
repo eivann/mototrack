@@ -13,9 +13,9 @@ class StatusUpdated extends Notification implements ShouldQueue, ShouldBroadcast
 {
     use Queueable;
 
-    protected $title;
-    protected $message;
-    protected $link;
+    public $title;
+    public $message;
+    public $link;
 
     /**
      * Create a new notification instance.

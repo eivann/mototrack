@@ -38,8 +38,17 @@
             <div class="flex flex-col md:flex-row gap-8 items-start">
                 
                 <!-- Sidebar Navigation (Left) -->
-                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2 md:sticky md:top-[200px]">
-                    @foreach(['overview' => 'Overview', 'inventory' => 'Inventory', 'sales' => 'POS & Sales', 'repairs' => 'Service Jobs', 'preorders' => 'Pre-orders', 'refunds' => 'Refund Requests', 'reports' => 'Reports'] as $id => $label)
+                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2 md:sticky md:top-[120px]">
+                    @foreach([
+                        'overview' => 'Overview',
+                        'inventory' => 'Inventory',
+                        'reservations' => 'Reservations',
+                        'sales' => 'POS & Sales',
+                        'repairs' => 'Service Jobs',
+                        'preorders' => 'Pre-orders',
+                        'refunds' => 'Returns & Cancellations',
+                        'reports' => 'Reports'
+                    ] as $id => $label)
                         <button
                             @click="activeTab = '{{ $id }}'"
                             :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'"
@@ -50,6 +59,7 @@
                                     $icons = [
                                         'overview' => 'layout-dashboard',
                                         'inventory' => 'package',
+                                        'reservations' => 'bookmark',
                                         'sales' => 'credit-card',
                                         'repairs' => 'wrench',
                                         'preorders' => 'clipboard-list',
@@ -61,13 +71,25 @@
                                 {{ $label }}
                             </span>
                             
-                            @if($id === 'refunds' && isset($pendingRefunds) && $pendingRefunds->count() > 0)
+                            @if($id === 'reservations' && isset($pendingReservations) && $pendingReservations->count() > 0)
+                                <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-amber-500 rounded-full">{{ $pendingReservations->count() }}</span>
+                            @elseif($id === 'refunds' && isset($pendingRefunds) && $pendingRefunds->count() > 0)
                                 <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-red-500 rounded-full">{{ $pendingRefunds->count() }}</span>
                             @else
                                 <i data-lucide="chevron-right" class="w-4 h-4 opacity-50" :class="activeTab === '{{ $id }}' ? 'text-white opacity-100' : 'text-gray-400'"></i>
                             @endif
                         </button>
                     @endforeach
+
+                    <div class="pt-2">
+                        <a href="{{ route('compatibility') }}" target="_blank" class="w-full text-left py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 shadow-sm hover:bg-indigo-100/70 transition-all flex items-center justify-between group">
+                            <span class="flex items-center gap-3">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
+                                Compatibility
+                            </span>
+                            <i data-lucide="external-link" class="w-4 h-4 opacity-60"></i>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Main Content (Right) -->
@@ -188,18 +210,38 @@
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left">
+                                    <thead class="bg-gray-50/50 dark:bg-gray-800/30 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                        <tr>
+                                            <th class="p-6">Motorcycle & Requested Issue</th>
+                                            <th class="p-6">Customer</th>
+                                            <th class="p-6">Status</th>
+                                            <th class="p-6 text-right">Cost</th>
+                                        </tr>
+                                    </thead>
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
-                                        @foreach($activeServiceJobs as $job)
+                                        @forelse($activeServiceJobs as $job)
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                                                <td class="p-6 font-bold text-gray-900 dark:text-white">{{ $job->bike_model }}</td>
                                                 <td class="p-6">
-                                                    <span class="px-4 py-1 rounded-full {{ $job->status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600' }} font-black text-[10px] uppercase tracking-widest">
+                                                    <div class="font-bold text-gray-900 dark:text-white">{{ $job->bike_model }}</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                        <span class="font-semibold text-indigo-600 dark:text-indigo-400">Issue:</span> {{ $job->issue }}
+                                                    </div>
+                                                </td>
+                                                <td class="p-6">
+                                                    <div class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ $job->customer_name ?? $job->customer?->name ?? 'Walk-in Customer' }}</div>
+                                                </td>
+                                                <td class="p-6">
+                                                    <span class="px-3 py-1 rounded-full {{ $job->status === 'pending' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300' }} font-black text-[10px] uppercase tracking-widest">
                                                         {{ $job->status === 'ongoing' ? 'Ongoing' : $job->status }}
                                                     </span>
                                                 </td>
                                                 <td class="p-6 font-black text-gray-900 dark:text-white text-right">₱{{ number_format($job->cost, 2) }}</td>
                                             </tr>
-                                        @endforeach
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="p-8 text-center text-gray-400 font-bold italic">No active repairs in progress.</td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -243,11 +285,85 @@
                         </div>
                     </div>
 
-                    <!-- Refunds Tab -->
+                    <!-- Reservations Tab -->
+                    <div x-show="activeTab === 'reservations'" x-cloak class="space-y-6">
+                        <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                            <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Customer Reservations</h3>
+                                    <p class="text-xs text-gray-400 font-bold mt-1">Pending in-stock reservations awaiting 24-hour in-store payment and pickup</p>
+                                </div>
+                                <span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full font-black text-xs uppercase tracking-wider">
+                                    {{ $pendingReservations->count() }} Pending
+                                </span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="bg-gray-50/50 dark:bg-gray-800/30 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                        <tr>
+                                            <th class="p-6">Item & Reference</th>
+                                            <th class="p-6">Customer</th>
+                                            <th class="p-6">Qty & Total</th>
+                                            <th class="p-6">24h Pickup Deadline</th>
+                                            <th class="p-6 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                                        @forelse($pendingReservations as $res)
+                                            @php $deadline = $res->expires_at ?? ($res->reserved_at ? $res->reserved_at->addHours(24) : $res->created_at->addHours(24)); @endphp
+                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                                <td class="p-6">
+                                                    <div class="font-bold text-gray-900 dark:text-white">{{ $res->item?->part_name ?? 'Unknown Item' }}</div>
+                                                    <div class="text-[10px] font-mono text-gray-400 uppercase mt-0.5">{{ $res->transaction_reference }}</div>
+                                                </td>
+                                                <td class="p-6">
+                                                    <div class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ $res->customer?->name ?? 'Online Customer' }}</div>
+                                                    <div class="text-xs text-gray-400">{{ $res->customer?->phone ?? $res->customer?->email ?? '' }}</div>
+                                                </td>
+                                                <td class="p-6 font-black text-gray-900 dark:text-white">
+                                                    <div>x{{ $res->quantity }} • ₱{{ number_format($res->total_price, 2) }}</div>
+                                                </td>
+                                                <td class="p-6">
+                                                    @if(now()->lt($deadline))
+                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300 font-black text-[10px] uppercase tracking-wider">
+                                                            <i data-lucide="clock" class="w-3 h-3"></i> {{ $deadline->diffForHumans() }}
+                                                        </span>
+                                                        <div class="text-[10px] text-gray-400 font-bold mt-1">{{ $deadline->format('M d, h:i A') }}</div>
+                                                    @else
+                                                        <span class="px-3 py-1 rounded-full bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-black text-[10px] uppercase tracking-wider">
+                                                            Expired
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                                <td class="p-6 text-right">
+                                                    <a href="{{ route('sales.receipt', $res->transaction_reference) }}" class="inline-flex items-center gap-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+                                                        <i data-lucide="receipt" class="w-3.5 h-3.5"></i> Complete / View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="p-12 text-center text-gray-400 font-bold italic">No active customer reservations.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Returns & Cancellations Tab -->
                     <div x-show="activeTab === 'refunds'" x-cloak class="space-y-6">
                         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                             <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                                <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Pending Refund Requests</h3>
+                                <div>
+                                    <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Returns & Cancellations</h3>
+                                    <p class="text-xs text-gray-400 font-bold mt-1">Manage physical POS counter returns, damaged items, and reservation cancellations</p>
+                                </div>
+                                <a href="{{ route('inventory.adjustments.index') }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2">
+                                    <i data-lucide="package-minus" class="w-4 h-4"></i>
+                                    POS Returns & Adjustments
+                                </a>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left" x-data="{ expandedRefund: null }">

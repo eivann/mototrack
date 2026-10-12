@@ -15,6 +15,30 @@
             'show' => true,
         ],
         [
+            'label' => 'Browse Parts',
+            'mobile_label' => 'Browse Parts',
+            'href' => route('browse'),
+            'icon' => 'package',
+            'active' => request()->routeIs('browse'),
+            'show' => true,
+        ],
+        [
+            'label' => 'Compatibility',
+            'mobile_label' => 'Compatibility Checker',
+            'href' => route('compatibility'),
+            'icon' => 'check-circle-2',
+            'active' => request()->routeIs('compatibility*'),
+            'show' => true,
+        ],
+        [
+            'label' => 'Pre-Order',
+            'mobile_label' => 'Pre-orders',
+            'href' => route('preorder.parts'),
+            'icon' => 'clipboard-list',
+            'active' => request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*'),
+            'show' => !$isAdmin,
+        ],
+        [
             'label' => 'Services',
             'mobile_label' => 'Services',
             'href' => url('/#services'),
@@ -33,15 +57,6 @@
                 ['label' => 'About Us', 'href' => url('/#about'), 'icon' => 'info'],
                 ['label' => 'FAQ', 'href' => route('faq'), 'icon' => 'help-circle'],
             ],
-        ],
-
-        [
-            'label' => 'Pre-Order',
-            'mobile_label' => 'Pre-orders',
-            'href' => route('preorder.parts'),
-            'icon' => 'clipboard-list',
-            'active' => request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*'),
-            'show' => !$isAdmin,
         ],
         [
             'label' => 'Contact',

@@ -155,28 +155,43 @@
                                 if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) { scrolledToBottom = true; }
                              ">
                             <div>
-                                <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Order Details</h4>
-                                <ul class="space-y-2 list-disc list-inside"><li>Each order includes details on the price and product information.</li><li>For pre-orders, the reservation status and price will also be shown.</li></ul>
+                                <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Pre-Order & Reservation Details</h4>
+                                <ul class="space-y-2 list-disc list-inside">
+                                    <li>Pre-orders submit a reservation for out-of-stock items. No online payment is collected.</li>
+                                    <li>Full payment is made in cash at the store counter upon physical pickup.</li>
+                                </ul>
                             </div>
                             <div>
                                 <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">2. Multiple Orders</h4>
-                                <ul class="space-y-2 list-disc list-inside"><li>Customers may place two or more orders at the same time, even if the products are different.</li><li>Each order is processed and tracked separately, with its own status under Order History.</li></ul>
+                                <ul class="space-y-2 list-disc list-inside">
+                                    <li>Customers may submit multiple pre-orders or reservations. Each is tracked separately on your customer dashboard.</li>
+                                </ul>
                             </div>
                             <div>
-                                <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. Payment and Pickup</h4>
-                                <ul class="space-y-2 list-disc list-inside"><li>No online payment is required to reserve.</li><li>Payment is made in full upon pickup at the shop.</li></ul>
+                                <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. 24-Hour Pickup Rule for Pre-Orders</h4>
+                                <ul class="space-y-2 list-disc list-inside">
+                                    <li>Pre-ordered parts are sourced from our suppliers.</li>
+                                    <li>The 24-hour pickup countdown begins <em>strictly after</em> the item physically arrives at our shop and a readiness notification is sent to your account.</li>
+                                    <li>Unclaimed items after the 24-hour window are released to general inventory.</li>
+                                </ul>
                             </div>
                             <div>
                                 <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">4. Compatibility Checker</h4>
-                                <ul class="space-y-2 list-disc list-inside"><li>The compatibility checker only checks products and brands currently available in Edmar Motorcycle Parts and Accessories' inventory.</li><li>It is not a general compatibility checker for all motorcycle parts or brands worldwide, and results only apply to items listed on this website.</li></ul>
+                                <ul class="space-y-2 list-disc list-inside">
+                                    <li>The compatibility checker verifies fitment against actual motorcycle specifications recorded in our database.</li>
+                                </ul>
                             </div>
                             <div>
-                                <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">5. Refund Policy</h4>
-                                <ul class="space-y-2 list-disc list-inside"><li><strong>Change of mind:</strong> A refund may still be requested after payment, as long as the product has not yet been taken from the shop premises.</li><li><strong>Damaged or defective product:</strong> A refund, replacement, or repair may be requested if the product received is damaged or defective, in accordance with the Consumer Act of the Philippines (RA 7394). Requests are subject to review to confirm the damage is a product defect and not caused by mishandling after pickup.</li></ul>
+                                <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">5. Cancellation</h4>
+                                <ul class="space-y-2 list-disc list-inside">
+                                    <li>You may cancel a pre-order from your dashboard at any time prior to collection at the shop.</li>
+                                </ul>
                             </div>
                             <div>
-                                <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">6. Cancellation</h4>
-                                <ul class="space-y-2 list-disc list-inside"><li>Orders may be cancelled before pickup at the shop.</li><li>Cancellation after pickup is no longer allowed and instead follows the refund policy above.</li></ul>
+                                <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">6. Returns & POS Refunds</h4>
+                                <ul class="space-y-2 list-disc list-inside">
+                                    <li>All completed purchases and refunds are transacted in cash at the physical shop counter. Items must be inspected in person with the official POS receipt.</li>
+                                </ul>
                             </div>
                             <div class="text-center pt-4 pb-2">
                                 <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">— End of Terms —</p>

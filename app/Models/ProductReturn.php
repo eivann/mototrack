@@ -10,7 +10,24 @@ class ProductReturn extends Model
 {
     use HasAuditTrail;
 
-    protected $fillable = ['inventory_item_id', 'customer_id', 'quantity', 'action_taken', 'notes'];
+    protected $fillable = [
+        'sale_id',
+        'inventory_item_id',
+        'customer_id',
+        'quantity',
+        'refund_amount',
+        'action_taken',
+        'notes',
+    ];
+
+    protected $casts = [
+        'refund_amount' => 'decimal:2',
+    ];
+
+    public function sale(): BelongsTo
+    {
+        return $this->belongsTo(Sale::class);
+    }
 
     public function item(): BelongsTo
     {

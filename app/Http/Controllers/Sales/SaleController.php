@@ -100,26 +100,36 @@ class SaleController extends Controller
 
         // Use DB aggregates to avoid loading all rows into memory for totals
         $totalsQuery = clone $baseQuery;
-        // Audit #3.5: Exclude refunded/unpaid sales from total revenue
-        $totalSales = Sale::query()
+        // Net Sales Calculation: Gross confirmed revenue minus confirmed ProductReturn refunds.
+        // Handles partial refunds, multi-item transactions, and full returns without removing unrelated collected revenue.
+        $grossSalesQuery = Sale::query()
             ->where(function($q) {
-                $q->where('status', 'completed')->orWhere('amount_tendered', '>', 0);
+                $q->where('status', 'completed')
+                  ->orWhere('status', \App\Enums\OrderStatus::SALE_REFUNDED)
+                  ->orWhere('amount_tendered', '>', 0);
             })
-            ->where('status', '!=', \App\Enums\OrderStatus::SALE_REFUNDED)
             ->whereNotNull('payment_confirmed_at');
 
+        $refundsQuery = \App\Models\ProductReturn::query()->whereNotNull('refund_amount');
+
         if ($request->from && $request->to) {
-            $totalSales->whereBetween('payment_confirmed_at', [$request->from, $request->to]);
+            $grossSalesQuery->whereBetween('payment_confirmed_at', [$request->from, $request->to]);
+            $refundsQuery->whereBetween('created_at', [$request->from, $request->to]);
         }
         if ($request->filter == 'today') {
-            $totalSales->whereDate('payment_confirmed_at', today());
+            $grossSalesQuery->whereDate('payment_confirmed_at', today());
+            $refundsQuery->whereDate('created_at', today());
         } elseif ($request->filter == 'week') {
-            $totalSales->whereBetween('payment_confirmed_at', [now()->startOfWeek(), now()->endOfWeek()]);
+            $grossSalesQuery->whereBetween('payment_confirmed_at', [now()->startOfWeek(), now()->endOfWeek()]);
+            $refundsQuery->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
         } elseif ($request->filter == 'month') {
-            $totalSales->whereMonth('payment_confirmed_at', now()->month)->whereYear('payment_confirmed_at', now()->year);
+            $grossSalesQuery->whereMonth('payment_confirmed_at', now()->month)->whereYear('payment_confirmed_at', now()->year);
+            $refundsQuery->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
         }
 
-        $totalSales = $totalSales->sum('total_price');
+        $grossSales = (float) $grossSalesQuery->sum('total_price');
+        $totalRefunds = (float) $refundsQuery->sum('refund_amount');
+        $totalSales = max(0, $grossSales - $totalRefunds);
 
         $totalTransactions = (clone $totalsQuery)->whereNotNull('transaction_reference')->distinct('transaction_reference')->count('transaction_reference')
                            + (clone $totalsQuery)->whereNull('transaction_reference')->count();

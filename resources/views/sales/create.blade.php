@@ -105,7 +105,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <span class="text-gray-500 dark:text-gray-400 font-bold sm:text-lg">₱</span>
                                     </div>
-                                    <input id="amount-tendered" type="number" x-model.number="amountTendered" min="0" max="999999" class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 text-gray-900 dark:text-white font-bold text-lg" placeholder="0.00">
+                                    <input id="amount-tendered" type="number" step="0.01" x-model.number="amountTendered" min="0" max="999999" class="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 text-gray-900 dark:text-white font-bold text-lg" placeholder="0.00">
                                 </div>
                                 <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-200 dark:border-gray-600" x-show="amountTendered > 0">
                                     <span class="text-gray-600 dark:text-gray-400 font-semibold">Change</span>
@@ -221,6 +221,10 @@
                     }
                     if (this.amountTendered < this.cartTotal) {
                         alert("Amount tendered is less than the total.");
+                        return;
+                    }
+                    if (this.amountTendered > 999999) {
+                        alert("Amount tendered cannot exceed ₱999,999.00.");
                         return;
                     }
                     this.checkoutLoading = true;

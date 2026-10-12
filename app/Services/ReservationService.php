@@ -13,14 +13,17 @@ class ReservationService
      */
     public function release(Sale $sale, string $reason, string $status = 'cancelled'): bool
     {
-        return DB::transaction(function () use ($sale, $reason, $status) {
+        $shouldNotify = false;
+        $customer = null;
+
+        $released = DB::transaction(function () use ($sale, $reason, $status, &$shouldNotify, &$customer) {
             $lockedSale = Sale::lockForUpdate()->find($sale->id);
 
             if (!$lockedSale || $lockedSale->status !== 'pending') {
                 return false;
             }
 
-            // Restore stock
+            // Restore stock exactly once
             if ($lockedSale->inventory_item_id) {
                 $inventory = InventoryItem::lockForUpdate()->find($lockedSale->inventory_item_id);
                 if ($inventory) {
@@ -33,7 +36,34 @@ class ReservationService
                 'cancellation_reason' => $reason,
             ]);
 
+            $shouldNotify = true;
+            $customer = $lockedSale->customer;
+
             return true;
         });
+
+        if ($released && $shouldNotify) {
+            $title = $status === 'expired' ? 'Reservation Expired' : 'Reservation Cancelled';
+            $message = "Reservation #{$sale->transaction_reference} has been {$status}. Reason: {$reason}.";
+
+            // Notify customer
+            if ($customer && $customer->user) {
+                $customer->user->notify(new \App\Notifications\StatusUpdated(
+                    $title,
+                    $message,
+                    '/customer/dashboard'
+                ));
+            }
+
+            // Notify owners
+            $owners = \App\Models\User::owners();
+            \Illuminate\Support\Facades\Notification::send($owners, new \App\Notifications\StatusUpdated(
+                $title,
+                $message,
+                '/admin/dashboard?tab=reservations'
+            ));
+        }
+
+        return $released;
     }
 }

@@ -40,11 +40,30 @@ class RefundController extends Controller
             if ($sale && $sale->status !== OrderStatus::SALE_REFUNDED) {
                 $sale->update(['status' => OrderStatus::SALE_REFUNDED]);
 
-                // Restore stock if requested
-                if ($sale->inventory_item_id && $request->restock) {
-                    $item = \App\Models\InventoryItem::lockForUpdate()->find($sale->inventory_item_id);
-                    if ($item) {
-                        $item->increment('quantity', $sale->quantity);
+                if ($sale->inventory_item_id) {
+                    // Record auditable ProductReturn linked to the sale
+                    \App\Models\ProductReturn::create([
+                        'sale_id'           => $sale->id,
+                        'inventory_item_id' => $sale->inventory_item_id,
+                        'customer_id'       => $sale->customer_id,
+                        'quantity'          => $sale->quantity,
+                        'refund_amount'     => $sale->total_price,
+                        'action_taken'      => $request->restock ? 'restocked' : 'discarded',
+                        'notes'             => 'In-store Refund: ' . $request->admin_notes,
+                    ]);
+
+                    // Restore stock if requested, or log as damaged write-off
+                    if ($request->restock) {
+                        $item = \App\Models\InventoryItem::lockForUpdate()->find($sale->inventory_item_id);
+                        if ($item) {
+                            $item->increment('quantity', $sale->quantity);
+                        }
+                    } else {
+                        \App\Models\DamagedItem::create([
+                            'inventory_item_id' => $sale->inventory_item_id,
+                            'quantity'          => $sale->quantity,
+                            'notes'             => 'Refund Write-Off: ' . $request->admin_notes,
+                        ]);
                     }
                 }
             }

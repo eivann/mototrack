@@ -73,7 +73,8 @@ class AdminPreOrderController extends Controller
     public function stock(PreOrder $preorder)
     {
         $alreadyStocked = false;
-        DB::transaction(function () use ($preorder, &$alreadyStocked) {
+        $order = null;
+        DB::transaction(function () use ($preorder, &$alreadyStocked, &$order) {
             $order = PreOrder::lockForUpdate()->findOrFail($preorder->id);
             if ($order->status !== 'pending' || $order->is_stocked) {
                 $alreadyStocked = true;
@@ -96,15 +97,73 @@ class AdminPreOrderController extends Controller
             return back()->with('error', 'Pre-order cannot be allocated again.');
         }
 
-        if ($preorder->customer && $preorder->customer->user) {
-            $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
-                'Pre-order Arrived',
-                "Your pre-order for {$preorder->part_name} has arrived at the store!",
-                '/customer/dashboard'
-            ));
+        $notified = false;
+        if ($order && $order->customer && $order->customer->user) {
+            try {
+                $now = now();
+                $expiresAt = $now->copy()->addHours(24);
+                $deadlineStr = $expiresAt->format('M d, Y h:i A');
+
+                $order->customer->user->notify(new \App\Notifications\StatusUpdated(
+                    'Pre-order Arrived — Ready for Pickup',
+                    "Your pre-order for {$order->part_name} has arrived at the store! Please pick up and pay within 24 hours (Deadline: {$deadlineStr}).",
+                    '/customer/dashboard'
+                ));
+
+                $order->ready_notified_at = $now;
+                $order->pickup_expires_at = $expiresAt;
+                $order->save();
+                $notified = true;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to notify customer for pre-order #{$order->id}: " . $e->getMessage());
+            }
         }
 
-        return back()->with('success', 'Pre-order marked as stocked!');
+        if ($notified) {
+            return back()->with('success', 'Pre-order marked as stocked! 24-hour pickup deadline started.');
+        }
+
+        return back()->with('warning', 'Pre-order marked as stocked, but customer readiness notification could not be delivered immediately. 24-hour collection deadline will start when notification is delivered.');
+    }
+
+    public function resendReadyNotification(PreOrder $preorder)
+    {
+        if (!$preorder->is_stocked || $preorder->status !== 'pending') {
+            return back()->with('error', 'Pre-order must be in stocked pending state.');
+        }
+
+        if (!$preorder->customer || !$preorder->customer->user) {
+            return back()->with('error', 'Customer user account not found.');
+        }
+
+        try {
+            $now = now();
+            // Safe deadline handling: Preserve existing deadline on retries; only initialize if never set
+            $isFirstNotification = empty($preorder->pickup_expires_at);
+            $expiresAt = $isFirstNotification ? $now->copy()->addHours(24) : $preorder->pickup_expires_at;
+            $deadlineStr = $expiresAt->format('M d, Y h:i A');
+
+            $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
+                'Pre-order Arrived — Ready for Pickup',
+                "Your pre-order for {$preorder->part_name} has arrived at the store! Please pick up and pay within 24 hours (Deadline: {$deadlineStr}).",
+                '/customer/dashboard'
+            ));
+
+            if ($isFirstNotification) {
+                $preorder->ready_notified_at = $now;
+                $preorder->pickup_expires_at = $expiresAt;
+            }
+            $preorder->save();
+
+            $msg = $isFirstNotification
+                ? 'Readiness notification sent and 24-hour pickup deadline activated.'
+                : 'Readiness notification resent. Existing 24-hour pickup deadline preserved.';
+
+            return back()->with('success', $msg);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to resend readiness notification for pre-order #{$preorder->id}: " . $e->getMessage());
+            return back()->with('error', 'Failed to deliver notification. Please try again.');
+        }
     }
 
     public function complete(PreOrder $preorder)
@@ -133,7 +192,8 @@ class AdminPreOrderController extends Controller
     public function cancel(PreOrder $preorder)
     {
         $error = null;
-        DB::transaction(function () use ($preorder, &$error) {
+        $order = null;
+        DB::transaction(function () use ($preorder, &$error, &$order) {
             $order = PreOrder::lockForUpdate()->findOrFail($preorder->id);
             if ($order->status !== 'pending') {
                 $error = 'Only pending pre-orders can be cancelled.';
@@ -143,9 +203,14 @@ class AdminPreOrderController extends Controller
                 $error = 'A paid pre-order requires a separate refund workflow.';
                 return;
             }
-            if ($order->is_stocked && $order->inventory_item_id) {
-                $item = InventoryItem::lockForUpdate()->findOrFail($order->inventory_item_id);
-                $item->increment('quantity', $order->quantity);
+            if ($order->is_stocked) {
+                if ($order->inventory_item_id) {
+                    $item = InventoryItem::lockForUpdate()->find($order->inventory_item_id);
+                    if ($item) {
+                        $item->increment('quantity', $order->quantity);
+                    }
+                }
+                $order->is_stocked = false;
             }
             $order->status = 'cancelled';
             $order->save();
@@ -154,10 +219,10 @@ class AdminPreOrderController extends Controller
         if ($error) return back()->with('error', $error);
 
         // Notify customer
-        if ($preorder->customer && $preorder->customer->user) {
-            $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
+        if ($order && $order->customer && $order->customer->user) {
+            $order->customer->user->notify(new \App\Notifications\StatusUpdated(
                 'Pre-order Cancelled',
-                "Your pre-order for {$preorder->part_name} has been cancelled.",
+                "Your pre-order for {$order->part_name} has been cancelled.",
                 '/customer/dashboard'
             ));
         }

@@ -1,13 +1,17 @@
+@php
+    $isPaid = ($sales->first()->payment_confirmed_at !== null || $sales->first()->status === 'completed');
+@endphp
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Official Receipt - {{ $transactionId }}</title>
+    <title>{{ $isPaid ? 'POS Sales Receipt' : 'Reservation Acknowledgement' }} - {{ $transactionId }}</title>
     <style>
         body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 12px; color: #333; }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
         .title { font-size: 24px; font-weight: bold; margin: 0; text-transform: uppercase; }
         .subtitle { font-size: 10px; color: #666; letter-spacing: 1px; }
+        .disclaimer-banner { margin-top: 8px; padding: 6px; background-color: #fef3c7; border: 1px solid #f59e0b; font-weight: bold; font-size: 10px; color: #92400e; text-transform: uppercase; }
         .meta-table { width: 100%; margin-bottom: 20px; }
         .meta-table td { padding: 5px 0; }
         .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
@@ -24,7 +28,13 @@
     <div class="header">
         <h1 class="title">MOTOTRACK</h1>
         <div class="subtitle">EDMAR MOTORCYCLE PARTS & ACCESSORIES</div>
-        <p style="margin-top: 5px;">Official Transaction Receipt</p>
+        @if($isPaid)
+            <p style="margin-top: 5px; font-weight: bold;">POS Sales Receipt — Cash Payment</p>
+        @else
+            <div class="disclaimer-banner">
+                Reservation Acknowledgement — No Payment Collected — Not an Official Receipt
+            </div>
+        @endif
     </div>
 
     <table class="meta-table">
@@ -71,8 +81,13 @@
     </table>
 
     <div class="footer">
-        Thank you for your business!<br>
-        This receipt is system generated.
+        @if($isPaid)
+            Thank you for your business!<br>
+            POS Sales Receipt — Paid in Full at POS.
+        @else
+            <strong>Reservation Acknowledgement — No Payment Collected — Not an Official Receipt</strong><br>
+            Please present this acknowledgement at the counter within 24 hours to complete payment and claim your items.
+        @endif
     </div>
 </body>
 </html>

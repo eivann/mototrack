@@ -1,4 +1,4 @@
-@props(['reference', 'date', 'title' => 'MOTOTRACK'])
+@props(['reference', 'date', 'title' => 'MOTOTRACK', 'isPaid' => true])
 
 <div class="bg-white dark:bg-gray-800 w-full max-w-md shadow-2xl rounded-sm overflow-hidden border border-gray-100 dark:border-gray-700 transition-colors duration-300" id="printableArea">
     <!-- Receipt Header -->
@@ -11,6 +11,15 @@
         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Pandi, Bulacan, Philippines</p>
         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Ref #: <span class="font-bold text-gray-800 dark:text-gray-200">{{ $reference }}</span></p>
         <p class="text-xs text-gray-400 dark:text-gray-500">Date: {{ $date }}</p>
+        @if(!$isPaid)
+            <div class="mt-3 py-1.5 px-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wide">
+                Reservation Acknowledgement — No Payment Collected — Not an Official Receipt
+            </div>
+        @else
+            <div class="mt-3 py-1 px-3 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-700 rounded text-[11px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wide">
+                POS Sales Receipt — Paid in Cash
+            </div>
+        @endif
     </div>
 
     <!-- Receipt Body -->
@@ -20,9 +29,13 @@
 
     <!-- Footer -->
     <div class="p-8 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <p class="font-medium text-gray-600 dark:text-gray-400 mb-1">Thank you for your purchase!</p>
-        <p>Please keep this receipt for returns/exchange.</p>
-        <p class="mt-4 opacity-50 text-[10px] uppercase tracking-widest font-black text-red-500 dark:text-red-400">*** This is not an official receipt ***</p>
-        <p class="mt-2 opacity-50 text-[10px] uppercase tracking-widest">Powered by MotoTrack</p>
+        @if($isPaid)
+            <p class="font-medium text-gray-600 dark:text-gray-400 mb-1">Thank you for your purchase!</p>
+            <p>Please keep this sales receipt for returns/exchange within 7 days.</p>
+        @else
+            <p class="font-semibold text-amber-600 dark:text-amber-400 mb-1">Reservation Acknowledgement — No Payment Collected — Not an Official Receipt</p>
+            <p>Please present this acknowledgement at the counter within 24 hours to pay and claim your reserved items.</p>
+        @endif
+        <p class="mt-4 opacity-50 text-[10px] uppercase tracking-widest">Powered by MotoTrack</p>
     </div>
 </div>

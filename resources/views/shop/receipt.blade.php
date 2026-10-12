@@ -17,8 +17,11 @@
                 <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white tracking-wider">MOTOTRACK</h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Pandi, Bulacan, Philippines</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Receipt #: <span class="font-bold text-gray-800 dark:text-gray-200">{{ $trx ?? 'TRX-' . rand(1000,9999) }}</span></p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Reservation Ref #: <span class="font-bold text-gray-800 dark:text-gray-200">{{ $trx ?? 'TRX-' . rand(1000,9999) }}</span></p>
                 <p class="text-xs text-gray-400 dark:text-gray-500">Date: {{ now()->format('M d, Y h:i A') }}</p>
+                <div class="mt-4 py-2 px-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wide">
+                    Reservation Acknowledgement — No Payment Collected — Not an Official Receipt
+                </div>
             </div>
 
             <!-- Receipt Items -->
@@ -84,8 +87,8 @@
 
             <!-- Footer -->
             <div class="p-6 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-gray-700">
-                <p class="font-medium text-gray-600 dark:text-gray-400 mb-1">Thank you for your purchase!</p>
-                <p>Please keep this receipt for returns/exchange.</p>
+                <p class="font-bold text-amber-700 dark:text-amber-400 mb-1">Reservation Acknowledgement — No Payment Collected — Not an Official Receipt</p>
+                <p>Please present this document to the counter within 24 hours to pay and pick up your items.</p>
                 <p class="mt-4 opacity-50 text-[10px] uppercase tracking-widest">POWERED BY MOTOTRACK</p>
             </div>
         </div>

@@ -64,12 +64,12 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- FILTER SIDEBAR -->
+        <!-- FILTER SIDEBAR (Sticky on Desktop, Collapsible on Mobile) -->
         <div id="filter-panel"
              :class="showFilters ? '' : 'hidden lg:block'"
-             class="lg:col-span-3 z-30">
+             class="lg:col-span-3 lg:sticky lg:top-44 lg:self-start z-30">
             <form method="GET" action="/browse" x-data="browseFilters()" @submit="loading = true"
-                  class="bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm">
+                  class="bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto">
                 <h2 class="font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-xs">Filters</h2>
                 <input type="hidden" name="search" value="{{ request('search') }}">
 
@@ -218,8 +218,12 @@
                     </div>
                 </div>
             @empty
-                <div class="col-span-full py-12 text-center">
-                    <p class="text-gray-500 dark:text-gray-400">No items found matching your criteria.</p>
+                <div class="col-span-full py-12 text-center bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-8 shadow-sm">
+                    <p class="text-gray-500 dark:text-gray-400 font-medium">No in-stock items found matching your criteria.</p>
+                    <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Looking for out-of-stock or special order parts?</p>
+                    <a href="{{ route('preorder.parts') }}" class="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all shadow-md">
+                        Browse Pre-order Parts →
+                    </a>
                 </div>
             @endforelse
 

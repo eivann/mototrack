@@ -12,6 +12,7 @@ Route::get('/check-compatibility', [PublicBrowseController::class, 'checkCompati
 Route::get('/search-parts', [PublicBrowseController::class, 'searchParts'])->middleware('throttle:300,1')->name('search.parts');
 Route::get('/inventory-suggestions', [PublicBrowseController::class, 'suggestions'])->middleware('throttle:300,1')->name('inventory.suggestions');
 Route::get('/inventory-options', [PublicBrowseController::class, 'getOptions'])->middleware('throttle:300,1')->name('inventory.options');
+Route::get('/compatibility-options', [PublicBrowseController::class, 'getCompatibilityOptions'])->middleware('throttle:300,1')->name('compatibility.options');
 
 
 

@@ -6,26 +6,30 @@ use Illuminate\Database\Eloquent\Model;
 
 class PreOrder extends Model
 {
-   protected $fillable = [
-    'customer_name',
-    'customer_id',
-    'inventory_item_id',
-    'part_name',
-    'model',
-    'quantity',
-    'down_payment',
-    'status',
-    'price',
-    'total',
-    'is_paid',
-    'is_stocked',
-    'picked_up_at',
-];
+    protected $fillable = [
+        'customer_name',
+        'customer_id',
+        'inventory_item_id',
+        'part_name',
+        'model',
+        'quantity',
+        'down_payment',
+        'status',
+        'price',
+        'total',
+        'is_paid',
+        'is_stocked',
+        'picked_up_at',
+        'ready_notified_at',
+        'pickup_expires_at',
+    ];
 
     protected $casts = [
         'is_paid' => 'boolean',
         'is_stocked' => 'boolean',
         'picked_up_at' => 'datetime',
+        'ready_notified_at' => 'datetime',
+        'pickup_expires_at' => 'datetime',
     ];
 
     // Audit #12: no `protected $with` — views render the denormalized

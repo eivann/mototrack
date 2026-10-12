@@ -59,7 +59,7 @@ class AppServiceProvider extends ServiceProvider
 
         \Illuminate\Support\Facades\Schema::defaultStringLength(191);
 
-        if (config('app.env') === 'production') {
+        if (config('app.env') === 'production' && (!isset($_SERVER['SERVER_PORT']) || $_SERVER['SERVER_PORT'] != 8000)) {
             URL::forceScheme('https');
         }
 

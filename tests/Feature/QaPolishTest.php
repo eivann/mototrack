@@ -35,6 +35,37 @@ test('browse keeps category and sort filters together', function () {
     $response->assertSee('value="Brakes" selected', false);
 });
 
+test('catalog displays only in-stock products while out-of-stock items are discoverable via preorder parts', function () {
+    $inStock = InventoryItem::create([
+        'category' => 'Brakes',
+        'part_name' => 'In-Stock Brake Pad',
+        'brand' => 'Honda',
+        'model' => 'Click',
+        'quantity' => 10,
+        'price' => 300,
+    ]);
+
+    $outOfStock = InventoryItem::create([
+        'category' => 'Engine',
+        'part_name' => 'Rare Out-of-Stock Piston',
+        'brand' => 'Yamaha',
+        'model' => 'Sniper',
+        'quantity' => 0,
+        'price' => 1500,
+    ]);
+
+    $browse = $this->get(route('browse'));
+    $browse->assertOk();
+    $browse->assertSee('In-Stock Brake Pad');
+    $browse->assertDontSee('Rare Out-of-Stock Piston');
+
+    $user = User::factory()->create(['role' => 'customer']);
+    $preorderParts = $this->actingAs($user)->get(route('preorder.parts'));
+    $preorderParts->assertOk();
+    $preorderParts->assertSee('Rare Out-of-Stock Piston');
+    $preorderParts->assertDontSee('In-Stock Brake Pad');
+});
+
 test('inventory suggestions are scoped to the requested field', function () {
     InventoryItem::create([
         'category' => 'Brakes',
@@ -138,21 +169,22 @@ test('pos search prompt uses manual search wording instead of scanner language',
     $response->assertDontSee('scan', false);
 });
 
-test('compatibility page can be rendered by guest and authenticated users with typed text inputs', function () {
+test('compatibility page can be rendered by guest and authenticated users with dependent dropdowns', function () {
     $response = $this->get(route('compatibility'));
     $response->assertOk();
     $response->assertSee('Compatibility Checker');
-    $response->assertSee('input type="text" id="makeInput"', false);
-    $response->assertSee('input type="text" id="modelInput"', false);
-    $response->assertSee('input type="text" id="yearInput"', false);
+    $response->assertSee('select id="makeSelect"', false);
+    $response->assertSee('select id="modelSelect"', false);
+    $response->assertSee('select id="yearSelect"', false);
+    $response->assertSee('input type="text" id="partInput"', false);
 });
 
-test('browse page uses typed text input for model and does not have sticky filter panel', function () {
+test('browse page uses typed text input for model and has sticky filter panel on desktop', function () {
     $response = $this->get(route('browse'));
     $response->assertOk();
     $response->assertSee('id="filter-model"', false);
     $response->assertSee('name="model"', false);
-    $response->assertDontSee('id="filter-panel" class="lg:col-span-3 lg:sticky', false);
+    $response->assertSee('lg:sticky', false);
 });
 
 test('inventory item resolves catalog image url to public images', function () {

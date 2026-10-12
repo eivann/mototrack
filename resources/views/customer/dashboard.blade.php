@@ -185,6 +185,18 @@
                                                     <span class="px-3 py-1 rounded-lg {{ strtolower($order->status ?? 'pending') === 'pending' ? 'bg-yellow-50 text-yellow-600' : (in_array(strtolower($order->status ?? 'pending'), ['completed','done','ready']) ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600') }} font-black text-[10px] uppercase tracking-widest">
                                                         {{ $order->status ?? 'pending' }}
                                                     </span>
+                                                    @if($order->is_stocked && $order->pickup_expires_at && !in_array($order->status, ['completed', 'cancelled']))
+                                                        @if(now()->lt($order->pickup_expires_at))
+                                                            <div class="mt-2 flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-md">
+                                                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                                <span>Pickup: {{ $order->pickup_expires_at->diffForHumans() }}</span>
+                                                            </div>
+                                                        @else
+                                                            <div class="mt-2 text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-md">
+                                                                Pickup Window Expired
+                                                            </div>
+                                                        @endif
+                                                    @endif
                                                 </td>
                                                 <td class="p-6 text-right">
                                                     <div class="font-black text-gray-900 dark:text-white mb-1">Total: {{ ($order->total ?? 0) > 0 ? '₱'.number_format((float)($order->total), 2) : 'TBD' }}</div>
@@ -259,17 +271,32 @@
                                                                         </span>
                                                                     </div>
                                                                     <div class="text-xs text-gray-500 font-bold">Qty: {{ $item->quantity }} <span class="mx-2">•</span> ₱{{ number_format($item->total_price, 2) }}</div>
+                                                                    @if($item->status === 'pending')
+                                                                        @php $deadline = $item->expires_at ?? ($item->reserved_at ? $item->reserved_at->addHours(24) : $item->created_at->addHours(24)); @endphp
+                                                                        @if(now()->lt($deadline))
+                                                                            <div class="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                                                                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                                                <span>24h Pickup Deadline: {{ $deadline->diffForHumans() }} (by {{ $deadline->format('M d, h:i A') }})</span>
+                                                                            </div>
+                                                                        @else
+                                                                            <div class="mt-1 text-[11px] font-bold text-red-600">
+                                                                                Reservation window expired
+                                                                            </div>
+                                                                        @endif
+                                                                    @endif
                                                                 </div>
                                                                 <div class="flex gap-2">
                                                                     @if($item->status === 'pending')
-                                                                        <form action="{{ route('customer.order.cancel', $item->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this item?');">
+                                                                        <form action="{{ route('customer.order.cancel', $item->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this reservation? Stock will be released immediately.');">
                                                                             @csrf
-                                                                            <button type="submit" class="px-4 py-2 text-xs font-black text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-xl transition-colors uppercase tracking-widest focus:outline-none">Cancel</button>
+                                                                            <button type="submit" class="px-4 py-2 text-xs font-black text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-xl transition-colors uppercase tracking-widest focus:outline-none">Cancel Reservation</button>
                                                                         </form>
-                                                                    @elseif($item->canBeRefunded())
-                                                                        <button type="button" @click="$dispatch('open-refund-modal', { id: {{ $item->id }}, name: '{{ addslashes($item->item?->part_name) }}' })" class="px-4 py-2 text-xs font-black text-orange-600 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 rounded-xl transition-colors uppercase tracking-widest focus:outline-none">Refund</button>
                                                                     @elseif($item->isPickedUp() && in_array($item->status, ['completed']))
-                                                                        <span class="px-4 py-2 text-xs font-black text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-xl uppercase tracking-widest cursor-not-allowed" title="Picked-up items cannot be refunded">Picked Up</span>
+                                                                        <span class="px-3 py-1.5 text-[10px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl uppercase tracking-widest" title="Completed In-Store">Picked Up</span>
+                                                                    @elseif($item->status === 'cancelled')
+                                                                        <span class="px-3 py-1.5 text-[10px] font-black text-red-600 bg-red-50 dark:bg-red-900/30 rounded-xl uppercase tracking-widest">Cancelled</span>
+                                                                    @elseif($item->status === 'refunded')
+                                                                        <span class="px-3 py-1.5 text-[10px] font-black text-orange-600 bg-orange-50 dark:bg-orange-900/30 rounded-xl uppercase tracking-widest">Refunded (In-Store)</span>
                                                                     @endif
                                                                 </div>
                                                             </div>
@@ -295,110 +322,6 @@
 
                     </div>
                 </div>
-
-
-            <!-- Refund Request Modal -->
-            <div x-data="{
-                open: false,
-                saleId: null,
-                itemName: '',
-                submitting: false,
-                refundMethod: '',
-                init() {
-                    window.addEventListener('open-refund-modal', (e) => {
-                        this.saleId = e.detail.id;
-                        this.itemName = e.detail.name;
-                        this.refundMethod = '';
-                        this.open = true;
-                    });
-                }
-            }" @keydown.escape.window="open = false" x-cloak>
-                <div x-show="open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="open = false" x-transition.opacity></div>
-                    <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 dark:border-gray-700 max-h-[90vh] overflow-y-auto"
-                         x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
-                        <div class="p-6 sm:p-8 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
-                            <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Request Refund</h3>
-                            <p class="text-xs text-gray-500 font-bold mt-1" x-text="'Item: ' + itemName"></p>
-                        </div>
-                        <form :action="'/orders/' + saleId + '/refund'" method="POST" enctype="multipart/form-data" @submit="submitting = true">
-                            @csrf
-                            <div class="p-6 sm:p-8 space-y-6">
-                                {{-- Reason for Refund --}}
-                                <div>
-                                    <label class="block text-sm font-black text-gray-900 dark:text-white mb-2 uppercase tracking-widest">Reason for Refund</label>
-                                    <select name="reason" required class="w-full border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold p-3">
-                                        <option value="" disabled selected class="text-gray-400">Select a reason...</option>
-                                        <option value="Change of Mind">Change of Mind</option>
-                                        <option value="No Longer Needed">No Longer Needed</option>
-                                        <option value="Found Better Price">Found Better Price</option>
-                                        <option value="Ordered by Mistake">Ordered by Mistake</option>
-                                        <option value="Damaged or Defective">Damaged or Defective (Requires photo)</option>
-                                        <option value="Wrong Item Received">Wrong Item Received</option>
-                                        <option value="Other">Other (Please specify in details)</option>
-                                    </select>
-                                </div>
-
-                                {{-- Refund Method Selection --}}
-                                <div>
-                                    <label class="block text-sm font-black text-gray-900 dark:text-white mb-3 uppercase tracking-widest">Refund Method</label>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <label class="relative cursor-pointer">
-                                            <input type="radio" name="refund_method" value="digital" x-model="refundMethod" class="peer sr-only" required>
-                                            <div class="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-2xl text-center transition-all peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/30 hover:border-gray-300">
-                                                <i data-lucide="smartphone" class="w-6 h-6 mx-auto mb-2 text-gray-400 peer-checked:text-indigo-600"></i>
-                                                <div class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Digital</div>
-                                                <div class="text-[10px] text-gray-400 font-bold mt-1">Upload QR Code</div>
-                                            </div>
-                                        </label>
-                                        <label class="relative cursor-pointer">
-                                            <input type="radio" name="refund_method" value="on_site" x-model="refundMethod" class="peer sr-only">
-                                            <div class="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-2xl text-center transition-all peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/30 hover:border-gray-300">
-                                                <i data-lucide="store" class="w-6 h-6 mx-auto mb-2 text-gray-400 peer-checked:text-indigo-600"></i>
-                                                <div class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">On-site</div>
-                                                <div class="text-[10px] text-gray-400 font-bold mt-1">Pick up at store</div>
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                {{-- Digital Refund: QR Code Upload --}}
-                                <div x-show="refundMethod === 'digital'" x-transition>
-                                    <label class="block text-sm font-black text-gray-900 dark:text-white mb-2 uppercase tracking-widest">Upload QR Code <span class="text-red-500">*</span></label>
-                                    <p class="text-[10px] text-gray-500 font-bold mb-3">Upload your payment QR code (GCash, Maya, etc.) so the owner can send your refund.</p>
-                                    <input type="file" name="qr_code" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-widest file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-400 transition-colors">
-                                </div>
-
-                                {{-- On-site Refund: Pickup Time --}}
-                                <div x-show="refundMethod === 'on_site'" x-transition>
-                                    <label class="block text-sm font-black text-gray-900 dark:text-white mb-2 uppercase tracking-widest">Pickup Time <span class="text-red-500">*</span></label>
-                                    <p class="text-[10px] text-gray-500 font-bold mb-3">Select when you will visit the store to pick up your refund.</p>
-                                    <input type="datetime-local" name="pickup_time" class="w-full border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold p-3" min="{{ now()->addHour()->format('Y-m-d\TH:i') }}">
-                                </div>
-
-                                {{-- Additional Details --}}
-                                <div>
-                                    <label class="block text-sm font-black text-gray-900 dark:text-white mb-2 uppercase tracking-widest">Additional Details</label>
-                                    <textarea name="details" rows="3" class="w-full border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm p-3" placeholder="Please describe the issue..."></textarea>
-                                </div>
-
-                                {{-- Photo Evidence --}}
-                                <div>
-                                    <label class="block text-sm font-black text-gray-900 dark:text-white mb-2 uppercase tracking-widest">Photo Evidence (Optional)</label>
-                                    <input type="file" name="photo" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-widest file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-400 transition-colors">
-                                </div>
-                            </div>
-                            <div class="p-6 sm:p-8 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex justify-end gap-3">
-                                <button type="button" @click="open = false" class="px-6 py-3 text-sm font-black text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors uppercase tracking-widest focus:outline-none">Cancel</button>
-                                <button type="submit" :disabled="submitting" class="px-6 py-3 text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors uppercase tracking-widest shadow-lg shadow-indigo-200 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center gap-2">
-                                    <span x-show="submitting">Submitting...</span>
-                                    <span x-show="!submitting">Submit Request</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
 
         </div>
     </div>

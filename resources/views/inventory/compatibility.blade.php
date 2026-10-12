@@ -19,24 +19,32 @@
             <!-- Search Area -->
             <form id="compatForm" class="relative group z-20">
                 <div class="bg-white dark:bg-gray-800 rounded-[2rem] shadow-[0_8px_30px_rgba(82,68,225,0.15)] dark:shadow-none p-3 md:p-4 border border-gray-50 dark:border-gray-700">
-                    <div class="flex flex-col md:flex-row items-end gap-3 md:gap-4">
-                        <div class="flex-1 w-full relative">
-                            <label for="makeInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Make / Brand</label>
-                            <input type="text" id="makeInput" name="make" list="make-suggestions" autocomplete="off" placeholder="Type make (e.g. Honda, Yamaha)..." class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors">
-                            <datalist id="make-suggestions"></datalist>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 items-end">
+                        <div class="w-full relative">
+                            <label for="makeSelect" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-2 mb-1.5">Make / Brand</label>
+                            <select id="makeSelect" name="make" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors text-sm">
+                                <option value="">All Makes / Brands</option>
+                            </select>
                         </div>
-                        <div class="flex-1 w-full relative">
-                            <label for="modelInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Model</label>
-                            <input type="text" id="modelInput" name="model" list="model-suggestions" autocomplete="off" placeholder="Type model (e.g. TMX 125, NMAX)..." class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors">
-                            <datalist id="model-suggestions"></datalist>
+                        <div class="w-full relative">
+                            <label for="modelSelect" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-2 mb-1.5">Model</label>
+                            <select id="modelSelect" name="model" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors text-sm">
+                                <option value="">All Models</option>
+                            </select>
                         </div>
-                        <div class="flex-1 w-full relative">
-                            <label for="yearInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-4 mb-1.5">Part Name</label>
+                        <div class="w-full relative">
+                            <label for="yearSelect" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-2 mb-1.5">Year</label>
+                            <select id="yearSelect" name="year" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors text-sm">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="w-full relative">
+                            <label for="partInput" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-2 mb-1.5">Part Name</label>
                             <div class="flex items-center gap-2 relative">
-                                <input type="text" id="yearInput" name="part" list="part-suggestions" autocomplete="off" placeholder="Type part (e.g. Brake Pad)..." class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-5 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors">
+                                <input type="text" id="partInput" name="part" list="part-suggestions" autocomplete="off" placeholder="Part (e.g. Brake Pad)..." class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors text-sm">
                                 <datalist id="part-suggestions"></datalist>
                                 <!-- Loading Spinner -->
-                                <div id="loadingSpinner" class="hidden absolute right-4 top-4">
+                                <div id="loadingSpinner" class="hidden absolute right-3 top-3">
                                     <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -44,12 +52,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="w-full md:w-auto mt-2 md:mt-0">
-                            <button type="submit" class="w-full md:w-auto bg-[#5244e1] hover:bg-[#4336bf] text-white font-bold rounded-2xl px-8 py-3.5 flex items-center justify-center gap-2 transition-all shadow-md ring-2 ring-indigo-500 dark:ring-indigo-400 ring-offset-2 dark:ring-offset-gray-800">
-                                <i data-lucide="search" class="w-5 h-5"></i>
-                                Search
-                            </button>
-                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button type="submit" class="w-full sm:w-auto bg-[#5244e1] hover:bg-[#4336bf] text-white font-bold rounded-2xl px-8 py-3.5 flex items-center justify-center gap-2 transition-all shadow-md ring-2 ring-indigo-500 dark:ring-indigo-400 ring-offset-2 dark:ring-offset-gray-800">
+                            <i data-lucide="search" class="w-5 h-5"></i>
+                            Check Compatibility
+                        </button>
                     </div>
                 </div>
 
@@ -74,15 +82,37 @@
     </style>
 
     <script>
-        const makeInput = document.getElementById('makeInput');
-        const modelInput = document.getElementById('modelInput');
-        const yearInput = document.getElementById('yearInput');
+        const makeSelect = document.getElementById('makeSelect');
+        const modelSelect = document.getElementById('modelSelect');
+        const yearSelect = document.getElementById('yearSelect');
+        const partInput = document.getElementById('partInput');
         const resultsBox = document.getElementById('resultsBox');
         const spinner = document.getElementById('loadingSpinner');
         const toastContainer = document.getElementById('toast-container');
         const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
         let timeout = null;
         const suggestionTimers = {};
+
+        async function loadSelectOptions(type, params = {}, selectElement, defaultText) {
+            if (!selectElement) return;
+            const currentVal = selectElement.value;
+            try {
+                const queryParams = new URLSearchParams({ type, ...params });
+                const res = await fetch(`{{ route('compatibility.options') }}?${queryParams.toString()}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                selectElement.innerHTML = `<option value="">${defaultText}</option>`;
+                data.forEach(val => {
+                    const opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = val;
+                    if (val === currentVal) opt.selected = true;
+                    selectElement.appendChild(opt);
+                });
+            } catch (e) {
+                console.error('Error loading options:', e);
+            }
+        }
 
         function loadSuggestions(field, value, datalistId) {
             clearTimeout(suggestionTimers[datalistId]);
@@ -186,7 +216,11 @@
             if (e && e.type === 'submit') e.preventDefault();
             
             clearTimeout(timeout);
-            const query = `${makeInput.value} ${modelInput.value} ${yearInput.value}`.trim();
+            const makeVal = makeSelect ? makeSelect.value.trim() : '';
+            const modelVal = modelSelect ? modelSelect.value.trim() : '';
+            const yearVal = yearSelect ? yearSelect.value.trim() : '';
+            const partVal = partInput ? partInput.value.trim() : '';
+            const query = `${makeVal} ${modelVal} ${yearVal} ${partVal}`.trim();
 
             if (query.length < 2) {
                 resultsBox.innerHTML = '';
@@ -196,7 +230,14 @@
             spinner.classList.remove('hidden');
 
             timeout = setTimeout(() => {
-                fetch(`/search-parts?model=${encodeURIComponent(query)}`, {
+                const searchParams = new URLSearchParams({
+                    make: makeVal,
+                    model: modelVal,
+                    year: yearVal,
+                    part: partVal
+                });
+
+                fetch(`{{ route('compatibility.check') }}?${searchParams.toString()}`, {
                     headers: { 'Accept': 'application/json' }
                 })
                     .then(res => {
@@ -283,24 +324,46 @@
             compatForm.addEventListener('submit', triggerSearch);
         }
 
-        [
-            { el: makeInput, field: 'brand', list: 'make-suggestions' },
-            { el: modelInput, field: 'model', list: 'model-suggestions' },
-            { el: yearInput, field: 'part_name', list: 'part-suggestions' }
-        ].forEach(({ el, field, list }) => {
-            if (el) {
-                el.addEventListener('input', (e) => {
-                    loadSuggestions(field, e.target.value, list);
-                    clearTimeout(timeout);
-                    timeout = setTimeout(triggerSearch, 400);
-                });
-                el.addEventListener('change', () => { setTimeout(triggerSearch, 50); });
-            }
-        });
+        // Verified dependent dropdown options linkage
+        if (makeSelect) {
+            makeSelect.addEventListener('change', async () => {
+                const makeVal = makeSelect.value.trim();
+                await loadSelectOptions('models', { make: makeVal }, modelSelect, 'All Models');
+                await loadSelectOptions('years', { make: makeVal, model: modelSelect.value.trim() }, yearSelect, 'All Years');
+                triggerSearch();
+            });
+        }
 
-        // Auto-trigger search if query exists
-        document.addEventListener('DOMContentLoaded', () => {
-            if (makeInput.value || modelInput.value || yearInput.value) {
+        if (modelSelect) {
+            modelSelect.addEventListener('change', async () => {
+                const makeVal = makeSelect ? makeSelect.value.trim() : '';
+                const modelVal = modelSelect.value.trim();
+                await loadSelectOptions('years', { make: makeVal, model: modelVal }, yearSelect, 'All Years');
+                triggerSearch();
+            });
+        }
+
+        if (yearSelect) {
+            yearSelect.addEventListener('change', () => {
+                triggerSearch();
+            });
+        }
+
+        if (partInput) {
+            partInput.addEventListener('input', (e) => {
+                loadSuggestions('part_name', e.target.value, 'part-suggestions');
+                clearTimeout(timeout);
+                timeout = setTimeout(triggerSearch, 300);
+            });
+            partInput.addEventListener('change', () => { setTimeout(triggerSearch, 50); });
+        }
+
+        // Auto-load verified makes and auto-trigger search if query exists
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadSelectOptions('makes', {}, makeSelect, 'All Makes / Brands');
+            await loadSelectOptions('models', {}, modelSelect, 'All Models');
+            await loadSelectOptions('years', {}, yearSelect, 'All Years');
+            if ((makeSelect && makeSelect.value) || (modelSelect && modelSelect.value) || (yearSelect && yearSelect.value) || (partInput && partInput.value)) {
                 triggerSearch();
             }
         });

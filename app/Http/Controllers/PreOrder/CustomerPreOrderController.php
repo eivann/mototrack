@@ -30,6 +30,9 @@ class CustomerPreOrderController extends Controller
     public function form($id)
     {
         $item = InventoryItem::findOrFail($id);
+        if ($item->quantity > 0) {
+            return redirect()->route('browse')->with('info', "{$item->part_name} is in stock and available for immediate reservation.");
+        }
         return view('preorders.form', compact('item'));
     }
 
@@ -45,9 +48,12 @@ class CustomerPreOrderController extends Controller
         $partName = $request->part_name;
         $model = $request->model ? ucwords($request->model) : null;
 
-        if ($request->inventory_item_id) {
+        if ($request->filled('inventory_item_id')) {
             $item = InventoryItem::findOrFail($request->inventory_item_id);
-            $price = $item->price;
+            if ($item->quantity > 0) {
+                return redirect()->route('browse')->with('error', 'This item is in stock and available for immediate reservation.');
+            }
+            $price = (float) $item->price;
             $partName = $item->part_name;
             $model = $item->model;
         }

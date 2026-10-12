@@ -30,6 +30,11 @@ public function refundRequests()
     return $this->hasMany(RefundRequest::class);
 }
 
+public function productReturns()
+{
+    return $this->hasMany(ProductReturn::class);
+}
+
 protected $fillable = [
     'inventory_item_id',
     'customer_id',

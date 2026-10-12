@@ -8,3 +8,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 \Illuminate\Support\Facades\Schedule::command('reservations:expire')->everyMinute()->withoutOverlapping();
+\Illuminate\Support\Facades\Schedule::command('preorders:expire')->everyMinute()->withoutOverlapping();

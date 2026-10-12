@@ -63,7 +63,7 @@
             </div>
 
             <div class="bg-gray-50 dark:bg-gray-900/50 p-6 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
-                <span class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest text-xs">Final Total</span>
+                <span class="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest text-xs">Estimated Total Due on Pickup</span>
                 <span class="text-2xl font-black text-blue-600 dark:text-blue-400">₱{{ number_format($grandTotal, 2) }}</span>
             </div>
         </div>
@@ -84,41 +84,22 @@
                           @submit="if (!agreed) { $event.preventDefault(); return; } loading = true">
                         @csrf
 
-                        <!-- PAYMENT METHOD -->
-                        <div class="space-y-4">
-                            <label class="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
-                                Payment Method
-                            </label>
-
-                            <div class="bg-white dark:bg-gray-800 border-2 border-blue-500 rounded-xl p-6 text-center shadow-sm">
-                                <input type="hidden" name="payment_method" value="on_pickup">
-                                <div class="flex items-center justify-center gap-2 mb-2">
-                                    <span class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-                                        <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                                    </span>
-                                    <span class="text-base font-bold text-gray-900 dark:text-white">Pay on Pickup</span>
+                        <!-- IN-STORE CASH PAYMENT NOTICE (No Online Payment Collected) -->
+                        <input type="hidden" name="payment_method" value="on_pickup">
+                        <div class="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-xl p-5 text-left">
+                            <div class="flex items-start gap-3.5">
+                                <div class="w-9 h-9 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
                                 </div>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Your items will be reserved. Please pay at the shop when you pick up your order.</p>
-                            </div>
-                        </div>
-
-                        <!-- TOTAL PAYMENT INFO -->
-                        <div>
-                            <label class="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                Total Reservation Amount
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 uppercase">Auto-calculated</span>
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <span class="text-gray-400 font-bold">₱</span>
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">Pay Upon In-Store Pickup</h3>
+                                    <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
+                                        No payment is collected online. Your items will be held for <strong class="text-blue-600 dark:text-blue-400">24 hours</strong>. Please present your reservation acknowledgement and tender cash payment (<strong class="text-gray-900 dark:text-white">₱{{ number_format($grandTotal, 2) }}</strong>) at the physical store counter upon claim.
+                                    </p>
                                 </div>
-                                <input type="number" name="amount_tendered" value="0" step="0.01" readonly
-                                    class="w-full pl-10 pr-4 py-4 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl text-lg font-bold text-gray-500 dark:text-gray-400 cursor-not-allowed focus:outline-none">
                             </div>
-                            <p class="text-[10px] text-gray-400 mt-2 italic flex items-start gap-1.5">
-                                <svg class="w-3 h-3 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Payment is purely on-site. The amount tendered online is zero.
-                            </p>
                         </div>
 
                         <!-- TERMS & CONDITIONS CHECKBOX -->
@@ -141,7 +122,7 @@
                                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                             <svg x-show="loading" class="animate-spin w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                             <svg x-show="!loading" class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            <span id="btn-text" x-text="agreed ? 'Place Order' : 'Agree to Terms First'"></span>
+                            <span id="btn-text" x-text="agreed ? 'Place Reservation' : 'Agree to Terms First'"></span>
                         </button>
 
                         <!-- T&C MODAL -->
@@ -187,50 +168,48 @@
                                          ">
 
                                         <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Order Details</h4>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Reservation & Order Details</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>Each order includes details on the amount paid, price, and product information.</li>
-                                                <li>For pre-orders, the reservation status and price will also be shown.</li>
+                                                <li>Online checkout creates an unpaid stock reservation acknowledgement, holding available items exclusively for you.</li>
+                                                <li>No online payment is collected during checkout. Full payment is made in cash at the physical shop counter upon pickup.</li>
                                             </ul>
                                         </div>
 
                                         <div>
                                             <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">2. Multiple Orders</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>Customers may place two or more orders at the same time, even if the products are different.</li>
-                                                <li>Each order is processed and tracked separately, with its own status under Order History.</li>
+                                                <li>Customers may reserve multiple parts concurrently. Each reservation is tracked with its own status under your customer dashboard.</li>
                                             </ul>
                                         </div>
 
                                         <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. Payment & 24-Hour Policy</h4>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. 24-Hour Pickup Policies</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>In-stock products and pre-orders are purely reservation-based and are paid in full upon pickup at the shop.</li>
-                                                <li><strong class="text-red-500">24-Hour Policy:</strong> Reservations must be picked up and paid for within 24 hours, or they will be automatically canceled.</li>
+                                                <li><strong class="text-indigo-600 dark:text-indigo-400">In-Stock Reservations:</strong> In-stock items are allocated immediately. The 24-hour pickup countdown begins upon reservation creation. Unclaimed reservations automatically expire, releasing stock back to the catalog.</li>
+                                                <li><strong class="text-amber-500">Pre-Orders:</strong> Pre-ordered items are ordered from suppliers. The 24-hour pickup countdown begins <em>only after</em> the item physically arrives at our shop and a readiness notification is sent to your account.</li>
                                             </ul>
                                         </div>
 
                                         <div>
                                             <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">4. Compatibility Checker</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>The compatibility checker only checks products and brands currently available in Edmar Motorcycle Parts and Accessories' inventory.</li>
-                                                <li>It is not a general compatibility checker for all motorcycle parts or brands worldwide, and results only apply to items listed on this website.</li>
+                                                <li>The compatibility checker evaluates parts against database records of verified motorcycles in our inventory system.</li>
+                                                <li>Please ensure your make, model, and year match your vehicle before reserving.</li>
                                             </ul>
                                         </div>
 
                                         <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">5. Refund Policy</h4>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">5. Cancellation Policy</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li><strong>Change of mind:</strong> A refund may still be requested after payment, as long as the product has not yet been picked up from the shop.</li>
-                                                <li><strong>Damaged or defective product:</strong> A refund, replacement, or repair may be requested if the product received is damaged or defective, in accordance with the Consumer Act of the Philippines (RA 7394). Requests are subject to review to confirm the damage is a product defect and not caused by mishandling after pickup.</li>
+                                                <li>You may cancel an unpaid reservation at any time prior to pickup directly through your customer dashboard with immediate stock restoration.</li>
                                             </ul>
                                         </div>
 
                                         <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">6. Cancellation</h4>
+                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">6. Returns & Physical Refunds</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>Orders may be cancelled before pickup at the shop.</li>
-                                                <li>Cancellation after pickup is no longer allowed and instead follows the refund policy above.</li>
+                                                <li>Purchases are completed in cash at the store POS. All returns, exchanges, or defect claims must be presented in person at the physical shop counter with the official receipt.</li>
+                                                <li>Defective items are inspected by shop technicians in accordance with the Consumer Act of the Philippines (RA 7394) and processed as either a resellable return or damaged write-off.</li>
                                             </ul>
                                         </div>
 

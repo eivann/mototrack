@@ -5,6 +5,7 @@
         <x-receipt-card 
             :reference="$sales->first()->transaction_reference ?? 'TRX-OLD-' . $sales->first()->id" 
             :date="$sales->first()->created_at->format('M d, Y h:i A')"
+            :is-paid="$sales->first()->payment_confirmed_at !== null || $sales->first()->status === 'completed'"
         >
             <table class="w-full text-sm">
                 <thead>
