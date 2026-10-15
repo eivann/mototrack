@@ -1,5 +1,5 @@
 <x-app-layout>
-<div class="max-w-4xl mx-auto p-6">
+<div class="max-w-6xl mx-auto p-4 sm:p-6">
 
     <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Checkout</h2>
 
@@ -12,9 +12,11 @@
     @endif
 
     @if(session('cart') && count($cart) > 0)
-    <div class="space-y-8">
+    {{-- Two columns on desktop so the summary and payment are visible together
+         without scrolling; stacks to a single column on mobile. --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <!-- ORDER SUMMARY -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden lg:sticky lg:top-24">
             <!-- Desktop Table -->
             <div class="hidden md:block">
                 <table class="w-full text-left border-collapse">
@@ -69,15 +71,15 @@
         </div>
 
         <!-- PAYMENT FORM -->
-        <div class="flex flex-col lg:flex-row gap-8">
-            <div class="lg:w-1/3">
+        <div class="space-y-4">
+            <div>
                 <a href="/cart" class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 rounded">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Modify Cart
                 </a>
             </div>
 
-            <div class="flex-1">
+            <div>
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
                     <form method="POST" action="/checkout" class="space-y-6"
                           x-data="{ loading: false, agreed: false, showTerms: false, scrolledToBottom: false }"

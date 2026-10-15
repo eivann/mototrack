@@ -3,6 +3,7 @@
 use App\Http\Controllers\Inventory\PublicBrowseController;
 use App\Http\Controllers\Inventory\AdminInventoryController;
 use App\Http\Controllers\Inventory\InventoryAdjustmentController;
+use App\Http\Controllers\Inventory\AdminCompatibilityController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
@@ -25,4 +26,11 @@ Route::middleware(['auth', 'owner'])->group(function () {
 
     Route::resource('inventory', AdminInventoryController::class)->parameters(['inventory' => 'item']);
     Route::get('/low-stock', [AdminInventoryController::class, 'lowStock'])->name('low-stock.index');
+
+    // Owner compatibility-record management (fitment database maintenance).
+    Route::get('/compatibility/manage', [AdminCompatibilityController::class, 'index'])->name('compatibility.manage');
+    Route::get('/compatibility/manage/options', [AdminCompatibilityController::class, 'options'])->name('compatibility.manage.options');
+    Route::post('/inventory/{item}/compatibility', [AdminCompatibilityController::class, 'store'])->name('compatibility.store');
+    Route::patch('/inventory/{item}/compatibility/{motorcycle}', [AdminCompatibilityController::class, 'update'])->name('compatibility.update');
+    Route::delete('/inventory/{item}/compatibility/{motorcycle}', [AdminCompatibilityController::class, 'destroy'])->name('compatibility.destroy');
 });

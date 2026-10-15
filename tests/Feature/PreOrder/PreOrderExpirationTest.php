@@ -82,7 +82,7 @@ test('preorders:expire command expires overdue preorders and safely restores cat
         ->assertSuccessful();
 
     $fresh = $preorder->fresh();
-    expect($fresh->status)->toBe('cancelled');
+    expect($fresh->status)->toBe('expired');
     expect($fresh->is_stocked)->toBeFalse();
     expect($item->fresh()->quantity)->toBe(14); // 10 + 4 restored
 });
@@ -117,7 +117,7 @@ test('custom preorders without inventory_item_id do not attempt to restore nonex
     $this->artisan('preorders:expire')->assertSuccessful();
 
     $fresh = $customPreorder->fresh();
-    expect($fresh->status)->toBe('cancelled');
+    expect($fresh->status)->toBe('expired');
     expect($fresh->is_stocked)->toBeFalse();
     expect(InventoryItem::count())->toBe($initialCount);
 });

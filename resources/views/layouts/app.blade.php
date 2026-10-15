@@ -90,10 +90,14 @@
                                 <h4 class="font-black text-gray-900 dark:text-white text-sm uppercase tracking-tight" x-text="toast.title"></h4>
                                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2" x-text="toast.message"></p>
                                 <div class="flex items-center gap-4 mt-3">
-                                    <button @click.stop="markAsRead(toast.id); hapticPulse();" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-white transition-colors cursor-pointer py-2 pr-4">
+                                    <button @click.stop="dismiss(toast.id); hapticPulse();" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-white transition-colors cursor-pointer py-2 pr-4">
                                         Dismiss
                                     </button>
                                     <span class="text-[10px] text-gray-400">•</span>
+                                    <button x-show="toast.link" @click.stop="window.location.href = toast.link" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-white transition-colors cursor-pointer py-2">
+                                        View Details
+                                    </button>
+                                    <span class="text-[10px] text-gray-400" x-show="toast.link">•</span>
                                     <span class="text-[10px] text-gray-400 uppercase tracking-widest" x-text="toast.time"></span>
                                 </div>
                             </div>
@@ -127,17 +131,44 @@
                                 }, 1000);
                             });
                             const rawNotifs = @json(auth()->user()->unreadNotifications->take(3));
-                            
-                            if (rawNotifs.length > 0) {
+
+                            // Toasts the user already dismissed must not pop again on the
+                            // next page load. Dismissal is tracked per notification id in
+                            // localStorage; the notification itself stays unread until the
+                            // user marks it read, which is a separate action.
+                            const dismissed = this.dismissedIds();
+                            const visibleNotifs = rawNotifs.filter(n => !dismissed.includes(String(n.id)));
+
+                            if (visibleNotifs.length > 0) {
                                 // Delay slightly for a nice intro
                                 setTimeout(() => {
-                                    rawNotifs.forEach((n, index) => {
+                                    visibleNotifs.forEach((n, index) => {
                                         setTimeout(() => {
                                             this.addToast(n);
                                         }, index * 400);
                                     });
                                 }, 800);
                             }
+                        },
+                        dismissedIds() {
+                            try {
+                                return JSON.parse(localStorage.getItem('dismissed_toasts') || '[]');
+                            } catch (e) {
+                                return [];
+                            }
+                        },
+                        persistDismiss(id) {
+                            const ids = this.dismissedIds();
+                            const key = String(id);
+                            if (!ids.includes(key)) {
+                                ids.push(key);
+                                // Bound the list so it cannot grow without limit.
+                                localStorage.setItem('dismissed_toasts', JSON.stringify(ids.slice(-100)));
+                            }
+                        },
+                        dismiss(id) {
+                            this.persistDismiss(id);
+                            this.removeToast(id);
                         },
                         addToast(n) {
                             const toast = {

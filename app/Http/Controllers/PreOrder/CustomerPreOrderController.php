@@ -10,12 +10,18 @@ use App\Models\PreOrder;
 use App\Models\User;
 use App\Models\Customer;
 use App\Notifications\StatusUpdated;
+use App\Services\PreOrderCancellationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 
 class CustomerPreOrderController extends Controller
 {
     use HandlesExceptions;
+
+    public function __construct(protected PreOrderCancellationService $cancellations)
+    {
+    }
+
     public function parts()
     {
         $items = InventoryItem::where('quantity', 0)->get();
@@ -82,5 +88,44 @@ class CustomerPreOrderController extends Controller
         ));
 
         return redirect('/customer/dashboard')->with('success', 'Pre-order request submitted! Please coordinate for pickup/payment.');
+    }
+
+    /**
+     * Cancel a pre-order the authenticated customer owns.
+     *
+     * Delegates to PreOrderCancellationService so customer and admin cancellations
+     * follow identical stock and eligibility rules.
+     */
+    public function cancel(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $user = auth()->user();
+        $customer = Customer::firstOrCreate(
+            ['user_id' => $user->id],
+            ['name' => $user->name, 'email' => $user->email]
+        );
+
+        $preorder = PreOrder::findOrFail($id);
+
+        $success = $this->cancellations->cancelForCustomer(
+            $preorder,
+            $customer->id,
+            $validated['reason'] ?? 'Customer changed their mind.'
+        );
+
+        if (!$success) {
+            $error = $this->cancellations->lastError;
+
+            if ($error && $error['http_status'] === 403) {
+                abort(403, $error['message']);
+            }
+
+            return back()->with('error', $error['message'] ?? 'This pre-order can no longer be cancelled.');
+        }
+
+        return back()->with('success', 'Pre-order cancelled. No stock movement was needed for the unstocked items; allocated stock has been released where applicable.');
     }
 }

@@ -35,6 +35,36 @@ class CustomerDashboardController extends Controller
             ->get()
             ->groupBy('transaction_reference');
 
-        return view('customer.dashboard', compact('repairs', 'preorders', 'purchases'));
+        // My Reservations: one card per checkout reference, split into the
+        // still-actionable reservations and the settled history.
+        $reservations = $purchases->map(function ($lines) {
+            $first = $lines->first();
+            $isSettled = $lines->contains(fn ($line) => $line->status !== 'pending');
+
+            return (object) [
+                'reference' => $first->transaction_reference,
+                'lines' => $lines,
+                'created_at' => $first->created_at,
+                'status' => $first->status,
+                'is_settled' => $isSettled,
+                'total' => $lines->sum('total_price'),
+                // A grouped reservation is cancellable only while every line is
+                // still pending, so eligibility is decided across the whole group.
+                'can_cancel' => !$isSettled,
+                'deadline' => $first->expires_at
+                    ?? ($first->reserved_at ? $first->reserved_at->copy()->addHours(24) : null),
+            ];
+        });
+
+        $activeReservations = $reservations->where('can_cancel', true)->values();
+        $reservationHistory = $reservations->where('is_settled', true)->values();
+
+        return view('customer.dashboard', compact(
+            'repairs',
+            'preorders',
+            'purchases',
+            'activeReservations',
+            'reservationHistory'
+        ));
     }
 }

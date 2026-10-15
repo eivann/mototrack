@@ -15,12 +15,14 @@
             'show' => true,
         ],
         [
+            // Customer-facing catalog entry. Owners use the Admin Panel instead,
+            // so this is hidden for them to avoid a redundant duplicate.
             'label' => 'Browse Parts',
             'mobile_label' => 'Browse Parts',
             'href' => route('browse'),
             'icon' => 'package',
             'active' => request()->routeIs('browse'),
-            'show' => true,
+            'show' => !$isAdmin,
         ],
         [
             'label' => 'Compatibility',
@@ -29,6 +31,19 @@
             'icon' => 'check-circle-2',
             'active' => request()->routeIs('compatibility*'),
             'show' => true,
+        ],
+        [
+            'label' => 'Admin Panel',
+            'mobile_label' => 'Admin Panel',
+            'href' => route('dashboard'),
+            'icon' => 'shield',
+            'active' => request()->routeIs('dashboard'),
+            'show' => $isAdmin,
+            'dropdown' => [
+                ['label' => 'Dashboard', 'href' => route('dashboard'), 'icon' => 'layout-dashboard'],
+                ['label' => 'Low Stock Alerts', 'href' => route('low-stock.index'), 'icon' => 'alert-triangle'],
+                ['label' => 'Compatibility Records', 'href' => route('compatibility.manage'), 'icon' => 'check-circle-2'],
+            ],
         ],
         [
             'label' => 'Pre-Order',
@@ -65,14 +80,6 @@
             'icon' => 'phone',
             'active' => request()->is('contact'),
             'show' => !$isAdmin,
-        ],
-        [
-            'label' => 'Admin Panel',
-            'mobile_label' => 'Admin Panel',
-            'href' => route('dashboard'),
-            'icon' => 'shield',
-            'active' => request()->routeIs('dashboard'),
-            'show' => $isAdmin,
         ],
     ];
 @endphp

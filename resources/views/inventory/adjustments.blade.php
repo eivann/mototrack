@@ -129,8 +129,9 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Select Item</label>
-                        <select name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none searchable-select">
-                            <option value="">Search by ID, name, brand...</option>
+                        <label for="damaged-item-select" class="sr-only">Select item to mark damaged</label>
+                        <select id="damaged-item-select" name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none searchable-select">
+                            <option value="" disabled {{ old('inventory_item_id') && old('action_taken') === null ? '' : 'selected' }}>Search by ID, name, brand...</option>
                             @foreach($inventoryItems as $item)
                                 <option value="{{ $item->id }}" {{ old('inventory_item_id') == $item->id && old('action_taken') === null ? 'selected' : '' }}>
                                     [{{ $item->sku ?? 'ID:'.$item->id }}] {{ $item->part_name }} — {{ $item->brand }} {{ $item->model }} (Stock: {{ $item->quantity }})
@@ -173,8 +174,9 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Select Item</label>
-                        <select name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none searchable-select">
-                            <option value="">Search by ID, name, brand...</option>
+                        <label for="return-item-select" class="sr-only">Select returned item</label>
+                        <select id="return-item-select" name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none searchable-select">
+                            <option value="" disabled {{ old('inventory_item_id') && old('action_taken') !== null ? '' : 'selected' }}>Search by ID, name, brand...</option>
                             @foreach($inventoryItems as $item)
                                 <option value="{{ $item->id }}" {{ old('inventory_item_id') == $item->id && old('action_taken') !== null ? 'selected' : '' }}>
                                     [{{ $item->sku ?? 'ID:'.$item->id }}] {{ $item->part_name }} — {{ $item->brand }} {{ $item->model }} (Stock: {{ $item->quantity }})
@@ -187,8 +189,11 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Customer (Optional)</label>
-                        <select name="customer_id" class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
-                            <option value="">Walk-in</option>
+                        <label for="return-customer-select" class="sr-only">Customer</label>
+                        <select id="return-customer-select" name="customer_id" class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
+                            {{-- "Walk-in" is a real, selectable choice here, not a placeholder:
+                                 customer_id is genuinely optional for counter returns. --}}
+                            <option value="" {{ old('customer_id') && old('action_taken') !== null ? '' : 'selected' }}>Walk-in</option>
                             @foreach($customers as $c)
                                 <option value="{{ $c->id }}" {{ old('customer_id') == $c->id && old('action_taken') !== null ? 'selected' : '' }}>{{ $c->name }}</option>
                             @endforeach
@@ -206,7 +211,11 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Action Taken</label>
-                        <select name="action_taken" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
+                        <label for="return-action-select" class="sr-only">Action taken on returned item</label>
+                        <select id="return-action-select" name="action_taken" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none">
+                            {{-- Disabled placeholder: restocking a defective return must be an
+                                 explicit choice, never the silent default. --}}
+                            <option value="" disabled {{ old('action_taken') ? '' : 'selected' }}>Choose an action...</option>
                             <option value="restocked" {{ old('action_taken') == 'restocked' ? 'selected' : '' }}>Put back in Inventory (Restock)</option>
                             <option value="discarded" {{ old('action_taken') == 'discarded' ? 'selected' : '' }}>Mark Damaged/Discard (Do not Restock)</option>
                         </select>
@@ -235,9 +244,17 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Tom Select comes from a CDN. If it failed to load, leave the native
+        // dropdown alone: it is still fully usable and server-validated. The
+        // previous unguarded call threw, which left the dialog half-initialised.
+        if (typeof TomSelect === 'undefined') {
+            return;
+        }
+
         document.querySelectorAll('.searchable-select').forEach((el) => {
             new TomSelect(el, {
                 create: false,
+                allowEmptyOption: false,
                 sortField: {
                     field: "text",
                     direction: "asc"

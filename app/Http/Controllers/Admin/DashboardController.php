@@ -45,7 +45,17 @@ class DashboardController extends Controller
             $activeServiceJobs = Repair::whereIn('status', ['pending', 'ongoing'])->latest()->take(10)->get();
             $recentPreorders = \App\Models\PreOrder::latest()->take(10)->get();
             $pendingReservations = Sale::with('item', 'customer.user')->where('status', 'pending')->latest()->take(15)->get();
+            $settledReservations = Sale::with('item', 'customer.user')
+                ->whereIn('status', [\App\Enums\OrderStatus::SALE_CANCELLED, \App\Enums\OrderStatus::SALE_EXPIRED])
+                ->latest()->take(15)->get();
             $recentReturns = \App\Models\ProductReturn::with('item', 'sale')->latest()->take(10)->get();
+
+            $lowStockItems = InventoryItem::whereColumn('quantity', '<=', 'low_stock_threshold')
+                ->orderBy('quantity')
+                ->orderBy('part_name')
+                ->limit(10)
+                ->get();
+            $outOfStockCount = InventoryItem::where('quantity', '<=', 0)->count();
 
             // Daily net revenue for the last 30 days (Chart.js)
             $dailyGross = Sale::selectRaw('DATE(payment_confirmed_at) as date, SUM(total_price) as gross')
@@ -74,7 +84,7 @@ class DashboardController extends Controller
 
             $pendingRefunds = \App\Models\RefundRequest::with(['sale.item', 'customer.user'])->where('status', 'pending')->latest()->get();
 
-            return view('admin.dashboard', compact('stats', 'recentActivities', 'inventorySummary', 'recentSales', 'activeServiceJobs', 'recentPreorders', 'pendingReservations', 'recentReturns', 'chartLabels', 'chartData', 'pendingRefunds'));
+            return view('admin.dashboard', compact('stats', 'recentActivities', 'inventorySummary', 'recentSales', 'activeServiceJobs', 'recentPreorders', 'pendingReservations', 'settledReservations', 'recentReturns', 'chartLabels', 'chartData', 'pendingRefunds', 'lowStockItems', 'outOfStockCount'));
         }
 
         return redirect()->route('customer.dashboard');

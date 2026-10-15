@@ -166,7 +166,15 @@ class PublicBrowseController extends Controller
             if ($type === 'makes') {
                 $motoMakes = \App\Models\Motorcycle::select('brand')->distinct()->whereNotNull('brand')->where('brand', '!=', '')->pluck('brand');
                 $itemMakes = InventoryItem::select('brand')->distinct()->whereNotNull('brand')->where('brand', '!=', '')->pluck('brand');
-                $makes = $motoMakes->merge($itemMakes)->unique()->sort()->values();
+                // Case-insensitive de-duplication: motorcycle and inventory rows
+                // disagree on casing ("Honda" vs "honda"), which previously
+                // rendered the same make as two separate dropdown options.
+                $makes = $motoMakes->merge($itemMakes)
+                    ->map(fn ($v) => trim((string) $v))
+                    ->filter()
+                    ->unique(fn ($v) => mb_strtolower($v))
+                    ->sort()
+                    ->values();
                 return response()->json($makes);
             }
 
@@ -183,7 +191,12 @@ class PublicBrowseController extends Controller
                 }
                 $itemModels = $itemQuery->distinct()->pluck('model');
 
-                $models = $motoModels->merge($itemModels)->unique()->sort()->values();
+                $models = $motoModels->merge($itemModels)
+                    ->map(fn ($v) => trim((string) $v))
+                    ->filter()
+                    ->unique(fn ($v) => mb_strtolower($v))
+                    ->sort()
+                    ->values();
                 return response()->json($models);
             }
 

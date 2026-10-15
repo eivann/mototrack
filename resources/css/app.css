@@ -14,3 +14,20 @@
         display: none !important;
     }
 }
+
+/* Tom Select is loaded from a CDN. Its stylesheet is what visually hides the
+   original <select> once the widget mounts, so a CDN stylesheet failure left
+   both the native control and the generated one on screen — the duplicate
+   dropdown reported in review. Bundling the rule locally makes the native
+   control stay hidden whenever the widget actually mounted. */
+.ts-hidden-accessible {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border-width: 0 !important;
+}

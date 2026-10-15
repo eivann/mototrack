@@ -64,13 +64,21 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- FILTER SIDEBAR (Sticky on Desktop, Collapsible on Mobile) -->
+        <!-- FILTER SIDEBAR (Sticky on Desktop, Fixed bottom sheet on Mobile) -->
         <div id="filter-panel"
              :class="showFilters ? '' : 'hidden lg:block'"
-             class="lg:col-span-3 lg:sticky lg:top-44 lg:self-start z-30">
+             class="lg:col-span-3 lg:sticky lg:top-44 lg:self-start z-30"
+             x-show="showFilters || window.innerWidth >= 1024"
+             x-cloak>
+            {{-- On mobile the panel is pinned to the viewport so it opens where the
+                 user is already looking instead of above their current scroll position. --}}
+            <div class="fixed inset-0 z-40 bg-black/40 lg:hidden" x-show="showFilters" @click="showFilters = false" x-cloak aria-hidden="true"></div>
             <form method="GET" action="/browse" x-data="browseFilters()" @submit="loading = true"
-                  class="bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto">
-                <h2 class="font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-xs">Filters</h2>
+                  :class="showFilters ? 'fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl' : ''"
+                  class="bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto lg:!static lg:!inset-auto">
+                <h2 class="font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-xs flex items-center justify-between">Filters
+                    <button type="button" @click="showFilters = false" class="lg:hidden -mr-1 p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Close filters">✕</button>
+                </h2>
                 <input type="hidden" name="search" value="{{ request('search') }}">
 
                 <!-- CATEGORY -->

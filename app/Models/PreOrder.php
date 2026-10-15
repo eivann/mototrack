@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasAuditTrail;
 
 class PreOrder extends Model
 {
+    use HasAuditTrail;
     protected $fillable = [
         'customer_name',
         'customer_id',

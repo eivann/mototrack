@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\InventoryItem;
+use App\Enums\OrderStatus;
 use App\Models\PreOrder;
 use App\Models\User;
 use App\Notifications\StatusUpdated;
@@ -51,7 +52,7 @@ class ExpirePreOrders extends Command
                     }
 
                     $order->is_stocked = false;
-                    $order->status = 'cancelled';
+                    $order->status = \App\Enums\OrderStatus::PREORDER_EXPIRED;
                     $order->save();
 
                     if ($order->customer && $order->customer->user) {

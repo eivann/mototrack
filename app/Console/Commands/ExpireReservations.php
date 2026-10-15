@@ -15,9 +15,10 @@ class ExpireReservations extends Command
      */
     public function handle()
     {
-        // Retrieve pending sales where expires_at has passed
-        // Fallback to created_at + 24 hours if expires_at is null
-        $expiredSales = \App\Models\Sale::where('status', 'pending')
+        // Group by checkout reference: one reference is one reservation, so a
+        // multi-item reservation expires as a single unit and cannot be split
+        // across separate release() calls.
+        $expiredReferences = \App\Models\Sale::where('status', 'pending')
             ->where(function ($query) {
                 $query->where('expires_at', '<=', now())
                       ->orWhere(function ($q) {
@@ -25,17 +26,19 @@ class ExpireReservations extends Command
                             ->where('created_at', '<=', now()->subHours(24));
                       });
             })
-            ->get();
+            ->distinct()
+            ->pluck('transaction_reference');
 
         $count = 0;
         $reservationService = app(\App\Services\ReservationService::class);
-        foreach ($expiredSales as $sale) {
+        foreach ($expiredReferences as $reference) {
             try {
-                if ($reservationService->release($sale, 'Automatically expired after 24 hours', 'expired')) {
+                $sale = \App\Models\Sale::where('transaction_reference', $reference)->first();
+                if ($sale && $reservationService->releaseGroup($sale, 'Automatically expired after 24 hours', \App\Enums\OrderStatus::SALE_EXPIRED)) {
                     $count++;
                 }
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Failed to expire reservation #{$sale->transaction_reference}: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error("Failed to expire reservation #{$reference}: " . $e->getMessage());
             }
         }
 

@@ -73,6 +73,8 @@
                             
                             @if($id === 'reservations' && isset($pendingReservations) && $pendingReservations->count() > 0)
                                 <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-amber-500 rounded-full">{{ $pendingReservations->count() }}</span>
+                            @elseif($id === 'inventory' && ($stats['lowStockCount'] ?? 0) > 0)
+                                <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-red-500 rounded-full">{{ $stats['lowStockCount'] }}</span>
                             @elseif($id === 'refunds' && isset($pendingRefunds) && $pendingRefunds->count() > 0)
                                 <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-red-500 rounded-full">{{ $pendingRefunds->count() }}</span>
                             @else
@@ -80,16 +82,6 @@
                             @endif
                         </button>
                     @endforeach
-
-                    <div class="pt-2">
-                        <a href="{{ route('compatibility') }}" target="_blank" class="w-full text-left py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 shadow-sm hover:bg-indigo-100/70 transition-all flex items-center justify-between group">
-                            <span class="flex items-center gap-3">
-                                <i data-lucide="check-circle-2" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
-                                Compatibility
-                            </span>
-                            <i data-lucide="external-link" class="w-4 h-4 opacity-60"></i>
-                        </a>
-                    </div>
                 </div>
 
                 <!-- Main Content (Right) -->
@@ -109,7 +101,22 @@
                                     <div class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-4">₱{{ number_format($stats['todayRevenue'], 2) }}</div>
                                     <div class="flex items-center gap-2 text-indigo-600 font-bold text-xs bg-indigo-50 dark:bg-indigo-900/20 w-fit px-3 py-1 rounded-full italic">Today's collection</div>
                                 </div>
-                            </div>
+                                <div class="bg-white dark:bg-gray-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all h-full">
+                                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Low Stock Alerts</div>
+                                    <div class="text-3xl sm:text-4xl font-black mb-4 {{ ($stats['lowStockCount'] ?? 0) > 0 ? 'text-amber-600' : 'text-gray-900 dark:text-white' }}">{{ number_format($stats['lowStockCount'] ?? 0) }}</div>
+                                    <a href="{{ route('low-stock.index') }}" class="inline-flex items-center gap-2 {{ ($stats['lowStockCount'] ?? 0) > 0 ? 'text-amber-600 font-bold text-xs bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 px-3 py-1 rounded-full' : 'text-gray-400 font-bold text-xs bg-gray-50 dark:bg-gray-800/50 px-3 py-1 rounded-full' }} transition-colors">
+                                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                                        {{ ($stats['lowStockCount'] ?? 0) > 0 ? 'View restock list' : 'All stocked' }}
+                                    </a>
+                                </div>
+                                <div class="bg-white dark:bg-gray-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all h-full">
+                                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Out of Stock</div>
+                                    <div class="text-3xl sm:text-4xl font-black mb-4 {{ ($outOfStockCount ?? 0) > 0 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">{{ number_format($outOfStockCount ?? 0) }}</div>
+                                    <a href="{{ route('low-stock.index') }}" class="inline-flex items-center gap-2 {{ ($outOfStockCount ?? 0) > 0 ? 'text-red-600 font-bold text-xs bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 px-3 py-1 rounded-full' : 'text-gray-400 font-bold text-xs bg-gray-50 dark:bg-gray-800/50 px-3 py-1 rounded-full' }} transition-colors">
+                                        <i data-lucide="package-x" class="w-3.5 h-3.5"></i>
+                                        {{ ($outOfStockCount ?? 0) > 0 ? 'Needs urgent restock' : 'Nothing to restock' }}
+                                    </a>
+                                </div>                            </div>
                             
                             <!-- Live Activity -->
                             <div class="bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 h-full">
@@ -172,6 +179,56 @@
                                                 <td class="p-6 font-black text-gray-900 dark:text-white text-right">₱{{ number_format($item->price, 2) }}</td>
                                             </tr>
                                         @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Low-stock quick-access panel: threshold alerts, counts and
+                             restock links in one place, so a critical part is never
+                             buried in the full inventory list. -->
+                        <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                            <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex flex-wrap justify-between items-center gap-3">
+                                <div>
+                                    <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Low Stock Alerts</h3>
+                                    <p class="text-xs text-gray-400 font-bold mt-1">Parts at or below their alert threshold</p>
+                                </div>
+                                <div class="flex flex-wrap gap-3 items-center">
+                                    <span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full font-black text-xs uppercase tracking-wider">
+                                        {{ $lowStockItems->count() }} Low
+                                    </span>
+                                    <span class="px-3 py-1 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full font-black text-xs uppercase tracking-wider">
+                                        {{ $outOfStockCount }} Out
+                                    </span>
+                                    <a href="{{ route('low-stock.index') }}" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">View All</a>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                                        @forelse($lowStockItems as $item)
+                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                                <td class="p-6">
+                                                    <div class="font-bold text-gray-900 dark:text-white">{{ $item->part_name }}</div>
+                                                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{{ $item->brand }} {{ $item->model }}</div>
+                                                </td>
+                                                <td class="p-6">
+                                                    <span class="px-3 py-1 rounded-lg {{ $item->quantity == 0 ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600' }} font-black text-xs">
+                                                        {{ $item->quantity }} left
+                                                    </span>
+                                                </td>
+                                                <td class="p-6 text-xs font-bold text-gray-500 dark:text-gray-400">Alerts at {{ $item->low_stock_threshold }}</td>
+                                                <td class="p-6 text-right">
+                                                    <a href="{{ route('inventory.edit', $item) }}" class="inline-flex items-center gap-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+                                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> Restock
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="p-10 text-center text-gray-400 font-bold italic">No parts are below their alert threshold.</td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -350,6 +407,50 @@
                                 </table>
                             </div>
                         </div>
+
+                        {{-- Settled reservations: cancelled and expired records stay visible
+                             to staff so a customer cancellation is never invisible here. --}}
+                        @if(isset($settledReservations) && $settledReservations->count() > 0)
+                        <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                            <div class="p-8 border-b border-gray-100 dark:border-gray-800">
+                                <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Cancelled &amp; Expired Reservations</h3>
+                                <p class="text-xs text-gray-400 font-bold mt-1">Released reservations kept for history. Expired records are shown separately from voluntary cancellations.</p>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="bg-gray-50/50 dark:bg-gray-800/30 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                        <tr>
+                                            <th class="p-6">Item &amp; Reference</th>
+                                            <th class="p-6">Customer</th>
+                                            <th class="p-6">Status</th>
+                                            <th class="p-6">Reason</th>
+                                            <th class="p-6 text-right">Qty &amp; Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                                        @foreach($settledReservations as $res)
+                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                                <td class="p-6">
+                                                    <div class="font-bold text-gray-900 dark:text-white">{{ $res->item?->part_name ?? 'Unknown Item' }}</div>
+                                                    <div class="text-[10px] font-mono text-gray-400 uppercase mt-0.5">{{ $res->transaction_reference }}</div>
+                                                </td>
+                                                <td class="p-6 text-sm font-bold text-gray-800 dark:text-gray-200">{{ $res->customer?->name ?? 'Online Customer' }}</td>
+                                                <td class="p-6">
+                                                    <span class="px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider
+                                                        {{ $res->status === 'expired' ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' : '' }}
+                                                        {{ $res->status === 'cancelled' ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-300' : '' }}">
+                                                        {{ $res->status }}
+                                                    </span>
+                                                </td>
+                                                <td class="p-6 text-xs font-bold text-gray-500">{{ $res->cancellation_reason ?? '—' }}</td>
+                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">x{{ $res->quantity }} • ₱{{ number_format($res->total_price, 2) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Returns & Cancellations Tab -->

@@ -50,22 +50,23 @@
                 
                 <!-- Sidebar Navigation (Left) -->
                 <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2 md:sticky md:top-[200px]">
-                    @foreach(['overview' => 'Overview', 'repairs' => 'Track Repairs', 'preorders' => 'Pre-orders', 'purchases' => 'Purchase History'] as $id => $label)
+                    @php
+                        $navIcons = [
+                            'overview' => 'layout-dashboard',
+                            'reservations' => 'calendar-clock',
+                            'repairs' => 'wrench',
+                            'preorders' => 'clipboard-list',
+                            'purchases' => 'shopping-bag',
+                        ];
+                    @endphp
+                    @foreach(['overview' => 'Overview', 'reservations' => 'My Reservations', 'repairs' => 'Track Repairs', 'preorders' => 'Pre-orders', 'purchases' => 'Purchase History'] as $id => $label)
                         <button
                             @click="activeTab = '{{ $id }}'"
                             :class="activeTab === '{{ $id }}' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none' : 'text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400'"
                             class="w-full text-left py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-600 dark:text-gray-300 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-between group"
                         >
                             <span class="flex items-center gap-3">
-                                @php
-                                    $icons = [
-                                        'overview' => 'layout-dashboard',
-                                        'repairs' => 'wrench',
-                                        'preorders' => 'clipboard-list',
-                                        'purchases' => 'shopping-bag'
-                                    ];
-                                @endphp
-                                <i data-lucide="{{ $icons[$id] }}" class="w-5 h-5 transition-transform group-hover:scale-110" :class="activeTab === '{{ $id }}' ? 'text-white' : 'text-gray-400 group-hover:text-indigo-500'"></i>
+                                <i data-lucide="{{ $navIcons[$id] }}" class="w-5 h-5 transition-transform group-hover:scale-110" :class="activeTab === '{{ $id }}' ? 'text-white' : 'text-gray-400 group-hover:text-indigo-500'"></i>
                                 {{ $label }}
                             </span>
                             <i data-lucide="chevron-right" class="w-4 h-4 opacity-50" :class="activeTab === '{{ $id }}' ? 'text-white opacity-100' : 'text-gray-400'"></i>
@@ -122,6 +123,98 @@
                         </div>
                     </div>
 
+                    </div>
+
+                    <!-- My Reservations Tab: one reviewable card per checkout reference -->
+                    <div x-show="activeTab === 'reservations'" x-cloak class="space-y-6">
+                        @if(isset($activeReservations) && $activeReservations->count() > 0)
+                            <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Active Reservations</h3>
+                            @foreach($activeReservations as $reservation)
+                                <div class="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-5">
+                                    <div class="flex flex-wrap items-center justify-between gap-3">
+                                        <div>
+                                            <div class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">Reservation</div>
+                                            <div class="font-black text-gray-900 dark:text-white text-lg">{{ $reservation->reference }}</div>
+                                            <div class="text-xs text-gray-500 font-bold mt-1">Placed {{ $reservation->created_at->format('M d, Y h:i A') }}</div>
+                                        </div>
+                                        <span class="px-3 py-1.5 text-[10px] font-black text-amber-600 bg-amber-50 dark:bg-amber-900/30 rounded-xl uppercase tracking-widest">Pending Pickup</span>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        @foreach($reservation->lines as $line)
+                                            <div class="flex items-center justify-between gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <img src="{{ $line->item?->image_url ?? '' }}" alt="{{ $line->item?->part_name ?? 'Part' }}" class="w-12 h-12 rounded-xl object-cover bg-white dark:bg-gray-700 shrink-0" loading="lazy"
+                                                         onerror="this.style.display='none'">
+                                                    <div class="min-w-0">
+                                                        <div class="font-black text-gray-900 dark:text-white text-sm truncate">{{ $line->item?->part_name ?? 'Unknown Item' }}</div>
+                                                        <div class="text-xs text-gray-500 font-bold">Qty: {{ $line->quantity }}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="font-black text-gray-900 dark:text-white text-sm shrink-0">₱{{ number_format($line->total_price, 2) }}</div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                                        <div class="text-sm font-black text-gray-900 dark:text-white">Due at store: <span class="text-indigo-600">₱{{ number_format($reservation->total, 2) }}</span> <span class="text-xs font-bold text-gray-400">(unpaid)</span></div>
+                                        @if($reservation->deadline && now()->lt($reservation->deadline))
+                                            <div class="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                <span>Pickup by {{ $reservation->deadline->format('M d, h:i A') }} ({{ $reservation->deadline->diffForHumans() }})</span>
+                                            </div>
+                                        @elseif($reservation->deadline)
+                                            <div class="text-[11px] font-bold text-red-600">Reservation window expired — it will be released shortly.</div>
+                                        @endif
+                                    </div>
+
+                                    <form action="{{ route('customer.reservation.cancel', ['reference' => $reservation->reference]) }}" method="POST" class="pt-1"
+                                          x-data="{ cancelling: false, reason: '' }"
+                                          @submit="if (!confirm('Cancel reservation {{ $reservation->reference }}? All {{ $reservation->lines->count() }} item(s) will be released back to stock. This cannot be undone.')) { $event.preventDefault(); }">
+                                        @csrf
+                                        <div class="flex flex-col sm:flex-row gap-3">
+                                            <input type="text" name="reason" x-model="reason" maxlength="255" placeholder="Cancellation reason (optional)"
+                                                   class="flex-1 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm px-4 py-2.5 focus:ring-indigo-500 focus:border-indigo-500" aria-label="Cancellation reason">
+                                            <button type="submit" :disabled="cancelling" @click="cancelling = true"
+                                                    class="px-6 py-2.5 text-xs font-black text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+                                                    aria-label="Cancel reservation {{ $reservation->reference }}">
+                                                <span x-show="!cancelling">Cancel Reservation</span>
+                                                <span x-show="cancelling" x-cloak>Cancelling…</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 p-12 text-center">
+                                <div class="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-400">
+                                    <i data-lucide="calendar-clock" class="w-8 h-8"></i>
+                                </div>
+                                <p class="text-gray-900 dark:text-white font-bold text-lg mb-1">No active reservations</p>
+                                <p class="text-gray-400 text-sm font-medium">Reserve an in-stock part and it will appear here with its 24-hour pickup deadline.</p>
+                            </div>
+                        @endif
+
+                        @if(isset($reservationHistory) && $reservationHistory->count() > 0)
+                            <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight pt-4">Reservation History</h3>
+                            @foreach($reservationHistory as $reservation)
+                                <div class="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-4 opacity-90">
+                                    <div class="flex flex-wrap items-center justify-between gap-3">
+                                        <div>
+                                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Reservation</div>
+                                            <div class="font-black text-gray-900 dark:text-white">{{ $reservation->reference }}</div>
+                                            <div class="text-xs text-gray-500 font-bold mt-1">{{ $reservation->lines->count() }} item(s) • ₱{{ number_format($reservation->total, 2) }} • {{ $reservation->created_at->format('M d, Y') }}</div>
+                                        </div>
+                                        <span class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-xl
+                                            {{ $reservation->status === 'completed' ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30' : '' }}
+                                            {{ $reservation->status === 'cancelled' ? 'text-red-600 bg-red-50 dark:bg-red-900/30' : '' }}
+                                            {{ $reservation->status === 'expired' ? 'text-gray-600 bg-gray-100 dark:bg-gray-800' : '' }}">
+                                            {{ ucfirst($reservation->status) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
 
                     <!-- Repairs Tab -->
@@ -202,6 +295,33 @@
                                                     <div class="font-black text-gray-900 dark:text-white mb-1">Total: {{ ($order->total ?? 0) > 0 ? '₱'.number_format((float)($order->total), 2) : 'TBD' }}</div>
                                                     <div class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">Paid DP: ₱{{ number_format((float)($order->down_payment ?? 0), 2) }}</div>
                                                     <div class="text-xs text-amber-600 dark:text-amber-400 font-bold">Bal: {{ ($order->total ?? 0) > 0 ? '₱'.number_format((float)(($order->total ?? 0) - ($order->down_payment ?? 0)), 2) : 'TBD' }}</div>
+
+                                                    @php
+                                                        // Cancel is offered only while the request is still an
+                                                        // uncollected, unpaid sourcing record the customer owns.
+                                                        $preorderCancellable = in_array($order->status, ['pending', 'arrived'], true)
+                                                            && !$order->is_paid
+                                                            && $order->picked_up_at === null;
+                                                    @endphp
+                                                    @if($preorderCancellable)
+                                                        <form action="{{ route('customer.preorder.cancel', $order->id) }}" method="POST" class="mt-3"
+                                                              x-data="{ cancelling: false }"
+                                                              @submit="if (!confirm('Cancel this pre-order for {{ $order->part_name }}? This cannot be undone.')) { $event.preventDefault(); }">
+                                                            @csrf
+                                                            <button type="submit" :disabled="cancelling" @click="cancelling = true"
+                                                                    class="w-full px-4 py-2 text-[10px] font-black text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-xl transition-colors uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50"
+                                                                    aria-label="Cancel pre-order for {{ $order->part_name }}">
+                                                                <span x-show="!cancelling">Cancel Pre-order</span>
+                                                                <span x-show="cancelling" x-cloak>Cancelling…</span>
+                                                            </button>
+                                                        </form>
+                                                    @elseif($order->status === 'completed')
+                                                        <span class="mt-3 inline-block px-3 py-1.5 text-[10px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl uppercase tracking-widest">Completed</span>
+                                                    @elseif($order->status === 'cancelled')
+                                                        <span class="mt-3 inline-block px-3 py-1.5 text-[10px] font-black text-red-600 bg-red-50 dark:bg-red-900/30 rounded-xl uppercase tracking-widest">Cancelled</span>
+                                                    @elseif($order->status === 'expired')
+                                                        <span class="mt-3 inline-block px-3 py-1.5 text-[10px] font-black text-gray-600 bg-gray-100 dark:bg-gray-800 rounded-xl uppercase tracking-widest">Expired</span>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach

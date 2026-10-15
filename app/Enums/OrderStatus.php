@@ -16,6 +16,7 @@ class OrderStatus
     const SALE_CANCELLED         = 'cancelled';
     const SALE_REFUND_REQUESTED  = 'refund_requested';
     const SALE_REFUNDED          = 'refunded';
+    const SALE_EXPIRED           = 'expired';
 
     // ── Refund Statuses ──────────────────────────────────────
     const REFUND_PENDING   = 'pending';
@@ -32,6 +33,7 @@ class OrderStatus
     const PREORDER_COMPLETED = 'completed';
     const PREORDER_REJECTED  = 'rejected';
     const PREORDER_CANCELLED = 'cancelled';
+    const PREORDER_EXPIRED   = 'expired';
 
     // ── Refund Methods ───────────────────────────────────────
     const METHOD_DIGITAL = 'digital';
@@ -48,6 +50,7 @@ class OrderStatus
             self::SALE_CANCELLED,
             self::SALE_REFUND_REQUESTED,
             self::SALE_REFUNDED,
+            self::SALE_EXPIRED,
         ];
     }
 
@@ -78,6 +81,7 @@ class OrderStatus
             self::PREORDER_COMPLETED,
             self::PREORDER_REJECTED,
             self::PREORDER_CANCELLED,
+            self::PREORDER_EXPIRED,
         ];
     }
 
@@ -107,6 +111,7 @@ class OrderStatus
             'ongoing'          => 'Ongoing',
             'rejected'         => 'Rejected',
             'arrived'          => 'Arrived',
+            'expired'          => 'Expired',
             default            => ucfirst(str_replace('_', ' ', $status)),
         };
     }
@@ -123,6 +128,7 @@ class OrderStatus
             'refund_requested' => 'orange',
             'rejected', 'cancelled' => 'red',
             'refunded'         => 'purple',
+            'expired'          => 'gray',
             default            => 'gray',
         };
     }

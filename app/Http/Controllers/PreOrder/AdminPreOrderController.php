@@ -191,40 +191,12 @@ class AdminPreOrderController extends Controller
 
     public function cancel(PreOrder $preorder)
     {
-        $error = null;
-        $order = null;
-        DB::transaction(function () use ($preorder, &$error, &$order) {
-            $order = PreOrder::lockForUpdate()->findOrFail($preorder->id);
-            if ($order->status !== 'pending') {
-                $error = 'Only pending pre-orders can be cancelled.';
-                return;
-            }
-            if ($order->is_paid) {
-                $error = 'A paid pre-order requires a separate refund workflow.';
-                return;
-            }
-            if ($order->is_stocked) {
-                if ($order->inventory_item_id) {
-                    $item = InventoryItem::lockForUpdate()->find($order->inventory_item_id);
-                    if ($item) {
-                        $item->increment('quantity', $order->quantity);
-                    }
-                }
-                $order->is_stocked = false;
-            }
-            $order->status = 'cancelled';
-            $order->save();
-        });
+        // Delegated to the shared service so the admin and customer paths cannot
+        // diverge on stock release or eligibility rules.
+        $cancelled = app(\App\Services\PreOrderCancellationService::class)->cancelAsOwner($preorder);
 
-        if ($error) return back()->with('error', $error);
-
-        // Notify customer
-        if ($order && $order->customer && $order->customer->user) {
-            $order->customer->user->notify(new \App\Notifications\StatusUpdated(
-                'Pre-order Cancelled',
-                "Your pre-order for {$order->part_name} has been cancelled.",
-                '/customer/dashboard'
-            ));
+        if (!$cancelled) {
+            return back()->with('error', 'This pre-order can no longer be cancelled.');
         }
 
         return back()->with('success', 'Pre-order cancelled!');
