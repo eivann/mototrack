@@ -170,12 +170,13 @@
 
                                     <form action="{{ route('customer.reservation.cancel', ['reference' => $reservation->reference]) }}" method="POST" class="pt-1"
                                           x-data="{ cancelling: false, reason: '' }"
-                                          @submit="if (!confirm('Cancel reservation {{ $reservation->reference }}? All {{ $reservation->lines->count() }} item(s) will be released back to stock. This cannot be undone.')) { $event.preventDefault(); }">
+                                          @pageshow.window="cancelling = false"
+                                          @submit="if (cancelling) { $event.preventDefault(); return; } if (!confirm(@js('Cancel reservation '.$reservation->reference.'? All '.$reservation->lines->count().' item(s) will be released back to stock. This cannot be undone.'))) { $event.preventDefault(); return; } cancelling = true; setTimeout(() => cancelling = false, 20000);">
                                         @csrf
                                         <div class="flex flex-col sm:flex-row gap-3">
                                             <input type="text" name="reason" x-model="reason" maxlength="255" placeholder="Cancellation reason (optional)"
                                                    class="flex-1 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm px-4 py-2.5 focus:ring-indigo-500 focus:border-indigo-500" aria-label="Cancellation reason">
-                                            <button type="submit" :disabled="cancelling" @click="cancelling = true"
+                                            <button type="submit" :disabled="cancelling"
                                                     class="px-6 py-2.5 text-xs font-black text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
                                                     aria-label="Cancel reservation {{ $reservation->reference }}">
                                                 <span x-show="!cancelling">Cancel Reservation</span>
@@ -306,9 +307,10 @@
                                                     @if($preorderCancellable)
                                                         <form action="{{ route('customer.preorder.cancel', $order->id) }}" method="POST" class="mt-3"
                                                               x-data="{ cancelling: false }"
-                                                              @submit="if (!confirm('Cancel this pre-order for {{ $order->part_name }}? This cannot be undone.')) { $event.preventDefault(); }">
+                                                              @pageshow.window="cancelling = false"
+                                                              @submit="if (cancelling) { $event.preventDefault(); return; } if (!confirm(@js('Cancel this pre-order for '.$order->part_name.'? This cannot be undone.'))) { $event.preventDefault(); return; } cancelling = true; setTimeout(() => cancelling = false, 20000);">
                                                             @csrf
-                                                            <button type="submit" :disabled="cancelling" @click="cancelling = true"
+                                                            <button type="submit" :disabled="cancelling"
                                                                     class="w-full px-4 py-2 text-[10px] font-black text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-xl transition-colors uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50"
                                                                     aria-label="Cancel pre-order for {{ $order->part_name }}">
                                                                 <span x-show="!cancelling">Cancel Pre-order</span>

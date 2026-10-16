@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
+use App\Services\CompatibilityMatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,10 @@ class PublicBrowseController extends Controller
         }
 
         if ($model !== '') {
-            $query->where('model', 'like', "%{$model}%");
+            // Same rule as the compatibility checker: only parts with a recorded
+            // fitment for this exact motorcycle model (no free-text guessing).
+            $ids = app(CompatibilityMatcher::class)->motorcycleIds('', $model, '');
+            $query->whereHas('motorcycles', fn ($mq) => $mq->whereIn('motorcycles.id', $ids->all()));
         }
 
         if ($category !== '') {
@@ -85,6 +89,18 @@ class PublicBrowseController extends Controller
                 return response()->json($this->searchSuggestions($term));
             }
 
+            if ($field === 'model') {
+                // Model suggestions mirror the fitment records the filter matches against.
+                return response()->json(
+                    \App\Models\Motorcycle::query()
+                        ->whereNotNull('model')->where('model', '!=', '')
+                        ->when($term !== '', fn ($q) => $q->where('model', DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE', $term . '%'))
+                        ->distinct()->orderBy('model')->limit(12)->pluck('model')
+                        ->unique(fn ($v) => mb_strtolower($v))->values()
+                        ->map(fn ($v) => ['value' => $v, 'label' => $v, 'field' => 'model'])
+                );
+            }
+
             return response()->json($this->fieldSuggestions($field, $term));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Search suggestions error: ' . $e->getMessage());
@@ -125,28 +141,29 @@ class PublicBrowseController extends Controller
                 });
             }
 
-            if ($make !== '' || $model !== '' || $year !== '') {
-                $query->where(function ($q) use ($make, $model, $year, $likeOp) {
-                    $q->whereHas('motorcycles', function ($mq) use ($make, $model, $year, $likeOp) {
-                        if ($make !== '') {
-                            $mq->where('brand', $likeOp, "%{$make}%");
-                        }
-                        if ($model !== '') {
-                            $mq->where('model', $likeOp, "%{$model}%");
-                        }
-                        if ($year !== '') {
-                            $mq->where('year', $likeOp, "%{$year}%");
-                        }
-                    });
+            $vehicleSelected = $make !== '' || $model !== '' || $year !== '';
+            $matchedIds = collect();
 
-                    if ($model !== '') {
-                        $q->orWhere('model', $likeOp, "%{$model}%");
-                    }
-                    $q->orWhere('model', $likeOp, '%Universal%');
-                });
+            if ($vehicleSelected) {
+                // Confirmed fitment only: the part must be linked (part_compatibility)
+                // to a motorcycle row matching every selected criterion.
+                $matchedIds = app(CompatibilityMatcher::class)->motorcycleIds($make, $model, $year);
+
+                $query->whereHas('motorcycles', fn ($mq) => $mq->whereIn('motorcycles.id', $matchedIds->all()));
             }
 
             $items = $query->take(30)->get();
+
+            if ($vehicleSelected) {
+                $ids = $matchedIds->flip();
+                $items->each(function ($item) use ($ids) {
+                    $fits = $item->motorcycles->filter(fn ($m) => $ids->has($m->id));
+                    $item->setAttribute('compatibility_status', 'confirmed');
+                    $item->setAttribute('matched_fitment', $fits->map(
+                        fn ($m) => trim("{$m->brand} {$m->model}" . ($m->year ? " ({$m->year})" : ''))
+                    )->values()->all());
+                });
+            }
 
             return response()->json($items);
         } catch (\Throwable $e) {
@@ -163,53 +180,32 @@ class PublicBrowseController extends Controller
             $model = trim((string) $request->query('model', ''));
             $likeOp = DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
 
+            // Options come ONLY from motorcycle (fitment) records so every choice
+            // the customer can make corresponds to data the checker can match.
+            $motorcycles = \App\Models\Motorcycle::query()->get(['brand', 'model', 'year']);
+            $unique = fn ($values) => $values
+                ->map(fn ($v) => trim((string) preg_replace('/\s+/u', ' ', (string) $v)))
+                ->filter()
+                ->unique(fn ($v) => mb_strtolower($v))
+                ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+                ->values();
+
             if ($type === 'makes') {
-                $motoMakes = \App\Models\Motorcycle::select('brand')->distinct()->whereNotNull('brand')->where('brand', '!=', '')->pluck('brand');
-                $itemMakes = InventoryItem::select('brand')->distinct()->whereNotNull('brand')->where('brand', '!=', '')->pluck('brand');
-                // Case-insensitive de-duplication: motorcycle and inventory rows
-                // disagree on casing ("Honda" vs "honda"), which previously
-                // rendered the same make as two separate dropdown options.
-                $makes = $motoMakes->merge($itemMakes)
-                    ->map(fn ($v) => trim((string) $v))
-                    ->filter()
-                    ->unique(fn ($v) => mb_strtolower($v))
-                    ->sort()
-                    ->values();
-                return response()->json($makes);
+                return response()->json($unique($motorcycles->pluck('brand')));
             }
 
+            $makeKey = CompatibilityMatcher::normalize($make);
+            $modelKey = CompatibilityMatcher::normalize($model);
+            $scoped = $motorcycles->filter(fn ($m) => $makeKey === '' || CompatibilityMatcher::normalize($m->brand) === $makeKey);
+
             if ($type === 'models') {
-                $motoQuery = \App\Models\Motorcycle::query()->whereNotNull('model')->where('model', '!=', '');
-                if ($make !== '') {
-                    $motoQuery->where('brand', $likeOp, "%{$make}%");
-                }
-                $motoModels = $motoQuery->distinct()->pluck('model');
-
-                $itemQuery = InventoryItem::query()->whereNotNull('model')->where('model', '!=', '');
-                if ($make !== '') {
-                    $itemQuery->where('brand', $likeOp, "%{$make}%");
-                }
-                $itemModels = $itemQuery->distinct()->pluck('model');
-
-                $models = $motoModels->merge($itemModels)
-                    ->map(fn ($v) => trim((string) $v))
-                    ->filter()
-                    ->unique(fn ($v) => mb_strtolower($v))
-                    ->sort()
-                    ->values();
-                return response()->json($models);
+                return response()->json($unique($scoped->pluck('model')));
             }
 
             if ($type === 'years') {
-                $yearQuery = \App\Models\Motorcycle::query()->whereNotNull('year')->where('year', '!=', '');
-                if ($make !== '') {
-                    $yearQuery->where('brand', $likeOp, "%{$make}%");
-                }
-                if ($model !== '') {
-                    $yearQuery->where('model', $likeOp, "%{$model}%");
-                }
-                $years = $yearQuery->distinct()->orderBy('year', 'desc')->pluck('year')->values();
-                return response()->json($years);
+                $scoped = $scoped->filter(fn ($m) => $modelKey === '' || CompatibilityMatcher::normalize($m->model) === $modelKey);
+
+                return response()->json(CompatibilityMatcher::expandYears($scoped->pluck('year')));
             }
 
             return response()->json([]);

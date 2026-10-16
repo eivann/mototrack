@@ -27,7 +27,7 @@ class CommitOrder
      * @param  string         $stockErrorPrefix      Prepended to the out-of-stock exception message.
      * @param  callable       $tenderFor             fn(bool $isFirst, float $grandTotal): float
      * @param  callable       $changeFor             fn(bool $isFirst, float $grandTotal): float
-     * @param  bool           $dispatchLowStockAlert Dispatch CheckLowStockAlertJob per decremented item.
+     * @param  bool           $dispatchLowStockAlert Deprecated no-op: every decrement now triggers the synchronous low-stock check.
      * @return float                                 The grand total.
      */
     public function execute(
@@ -113,9 +113,8 @@ class CommitOrder
 
                 $inventory->decrement('quantity', $quantity);
 
-                if ($dispatchLowStockAlert) {
-                    \App\Jobs\CheckLowStockAlertJob::dispatch($inventory->id);
-                }
+                // Synchronous, queue-independent low-stock check (runs after commit).
+                \App\Services\LowStockAlertService::checkAfterCommit($inventory->id);
 
                 $isFirst = false;
             }

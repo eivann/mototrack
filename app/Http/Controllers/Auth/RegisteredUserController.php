@@ -31,7 +31,7 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\p{M}][\p{L}\p{M} .\'’-]*$/u'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'ends_with:@gmail.com', 'unique:'.User::class],
             'phone' => ['required', 'string', 'regex:/^(09|\+639)\d{9}$/'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
@@ -54,6 +54,7 @@ class RegisteredUserController extends Controller
                 }
             ],
         ], [
+            'name.regex' => 'The full name may only contain letters, spaces, apostrophes, periods and hyphens.',
             'email.ends_with' => 'Only @gmail.com email addresses are allowed to register.',
             'phone.regex' => 'The phone number must start with 09 or +639 followed by 9 digits.',
             'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',

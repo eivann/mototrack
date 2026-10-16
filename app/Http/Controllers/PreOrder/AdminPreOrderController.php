@@ -59,13 +59,15 @@ class AdminPreOrderController extends Controller
 
 
 
-        if ($preorder->customer && $preorder->customer->user) {
-            $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
+        // Payment is already committed; a notification problem must never turn it into an error page.
+        app(\App\Services\NotificationDispatcher::class)->send(
+            $preorder->customer?->user,
+            new \App\Notifications\StatusUpdated(
                 'Pre-order Payment Received',
                 "Your payment of ₱" . number_format($preorder->total, 2) . " for your pre-order ({$preorder->part_name}) has been confirmed.",
                 '/customer/dashboard'
-            ));
-        }
+            )
+        );
 
         return back()->with('success', 'Payment recorded successfully!');
     }
@@ -88,6 +90,7 @@ class AdminPreOrderController extends Controller
                     ]);
                 }
                 $item->decrement('quantity', $order->quantity);
+                \App\Services\LowStockAlertService::checkAfterCommit($item->id);
             }
             $order->is_stocked = true;
             $order->save();
@@ -99,23 +102,28 @@ class AdminPreOrderController extends Controller
 
         $notified = false;
         if ($order && $order->customer && $order->customer->user) {
-            try {
-                $now = now();
-                $expiresAt = $now->copy()->addHours(24);
-                $deadlineStr = $expiresAt->format('M d, Y h:i A');
+            $now = now();
+            $expiresAt = $now->copy()->addHours(24);
+            $deadlineStr = $expiresAt->format('M d, Y h:i A');
 
-                $order->customer->user->notify(new \App\Notifications\StatusUpdated(
+            // The 24-hour pickup deadline starts only once the readiness
+            // notification row is durably recorded.
+            $recorded = app(\App\Services\NotificationDispatcher::class)->send(
+                $order->customer->user,
+                new \App\Notifications\StatusUpdated(
                     'Pre-order Arrived — Ready for Pickup',
                     "Your pre-order for {$order->part_name} has arrived at the store! Please pick up and pay within 24 hours (Deadline: {$deadlineStr}).",
                     '/customer/dashboard'
-                ));
+                )
+            );
 
+            if ($recorded > 0) {
                 $order->ready_notified_at = $now;
                 $order->pickup_expires_at = $expiresAt;
                 $order->save();
                 $notified = true;
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error("Failed to notify customer for pre-order #{$order->id}: " . $e->getMessage());
+            } else {
+                \Illuminate\Support\Facades\Log::error("Readiness notification for pre-order #{$order->id} was not recorded; pickup deadline not started.");
             }
         }
 
@@ -143,11 +151,18 @@ class AdminPreOrderController extends Controller
             $expiresAt = $isFirstNotification ? $now->copy()->addHours(24) : $preorder->pickup_expires_at;
             $deadlineStr = $expiresAt->format('M d, Y h:i A');
 
-            $preorder->customer->user->notify(new \App\Notifications\StatusUpdated(
-                'Pre-order Arrived — Ready for Pickup',
-                "Your pre-order for {$preorder->part_name} has arrived at the store! Please pick up and pay within 24 hours (Deadline: {$deadlineStr}).",
-                '/customer/dashboard'
-            ));
+            $recorded = app(\App\Services\NotificationDispatcher::class)->send(
+                $preorder->customer->user,
+                new \App\Notifications\StatusUpdated(
+                    'Pre-order Arrived — Ready for Pickup',
+                    "Your pre-order for {$preorder->part_name} has arrived at the store! Please pick up and pay within 24 hours (Deadline: {$deadlineStr}).",
+                    '/customer/dashboard'
+                )
+            );
+
+            if ($recorded < 1) {
+                return back()->with('error', 'Failed to deliver notification. Please try again.');
+            }
 
             if ($isFirstNotification) {
                 $preorder->ready_notified_at = $now;

@@ -37,8 +37,8 @@ class InventoryAdjustmentController extends Controller
             DamagedItem::create($request->validated());
             $item->decrement('quantity', $request->quantity);
             
-            // Trigger stock notification if threshold is breached
-            \App\Jobs\CheckLowStockAlertJob::dispatch($item->id);
+            // Synchronous low-stock check (in-app notification; no queue worker needed).
+            \App\Services\LowStockAlertService::checkAfterCommit($item->id);
         });
 
         return redirect()->back()->with('success', 'Damaged stock recorded successfully!');
@@ -97,11 +97,9 @@ class InventoryAdjustmentController extends Controller
             if ($request->action_taken === 'restocked') {
                 $item = InventoryItem::lockForUpdate()->findOrFail($request->inventory_item_id);
                 $item->increment('quantity', $request->quantity);
-                
-                if ($item->quantity > ($item->low_stock_threshold ?? 5)) {
-                    $item->low_stock_notified = false;
-                    $item->save();
-                }
+
+                // Re-arms the alert when stock is back above the threshold.
+                \App\Services\LowStockAlertService::checkAfterCommit($item->id);
             } elseif ($request->action_taken === 'discarded') {
                 // Distinguish damaged write-off from resellable return in audit trail
                 DamagedItem::create([

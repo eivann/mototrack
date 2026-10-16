@@ -123,5 +123,7 @@ test('a gateway failure still records the dashboard notification', function () {
     SmsService::checkLowStockAlert($item, $gateway);
 
     Notification::assertSentTo($owner, StatusUpdated::class);
-    expect($item->fresh()->low_stock_notified)->toBeFalse();
+    // The alert state follows the durable in-app record, not SMS delivery, so a
+    // gateway failure neither blocks the notification nor causes repeat alerts.
+    expect($item->fresh()->low_stock_notified)->toBeTrue();
 });

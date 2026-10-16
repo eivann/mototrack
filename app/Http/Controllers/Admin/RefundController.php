@@ -57,6 +57,7 @@ class RefundController extends Controller
                         $item = \App\Models\InventoryItem::lockForUpdate()->find($sale->inventory_item_id);
                         if ($item) {
                             $item->increment('quantity', $sale->quantity);
+                            \App\Services\LowStockAlertService::checkAfterCommit($item->id);
                         }
                     } else {
                         \App\Models\DamagedItem::create([

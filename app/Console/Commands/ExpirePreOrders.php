@@ -48,6 +48,7 @@ class ExpirePreOrders extends Command
                         $item = InventoryItem::lockForUpdate()->find($order->inventory_item_id);
                         if ($item) {
                             $item->increment('quantity', $order->quantity);
+                            \App\Services\LowStockAlertService::checkAfterCommit($item->id);
                         }
                     }
 

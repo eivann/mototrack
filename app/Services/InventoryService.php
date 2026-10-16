@@ -14,6 +14,7 @@ class InventoryService
     {
         $item = InventoryItem::create($data);
         Cache::forget(InventoryItem::CATEGORY_CACHE_KEY);
+        LowStockAlertService::checkAfterCommit($item->id);
         return $item;
     }
 
@@ -37,15 +38,12 @@ class InventoryService
             
             $locked->update($data);
 
-            if ($locked->quantity > ($locked->low_stock_threshold ?? 5)) {
-                $locked->low_stock_notified = false;
-            } else {
-                // Suppress alerts if manually set below threshold, since the admin already knows
-                $locked->low_stock_notified = true;
-            }
-            $locked->save();
-
             Cache::forget(InventoryItem::CATEGORY_CACHE_KEY);
+
+            // Manual edits are a quantity/threshold-changing path: alert once if now
+            // low, re-arm if back above the threshold. Runs after commit.
+            LowStockAlertService::checkAfterCommit($locked->id);
+
             return $locked->fresh();
         });
     }

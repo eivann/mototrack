@@ -3,13 +3,11 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class StatusUpdated extends Notification implements ShouldQueue, ShouldBroadcast
+class StatusUpdated extends Notification
 {
     use Queueable;
 
@@ -34,7 +32,16 @@ class StatusUpdated extends Notification implements ShouldQueue, ShouldBroadcast
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        // Delivered synchronously (not queued) so the in-app record exists as soon as
+        // the request finishes, with no dependency on a queue worker. Realtime
+        // broadcast is added only when a real broadcaster is configured.
+        $channels = ['database'];
+
+        if (! in_array(config('broadcasting.default'), [null, 'null', 'log'], true)) {
+            $channels[] = 'broadcast';
+        }
+
+        return $channels;
     }
 
     /**

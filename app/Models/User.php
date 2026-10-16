@@ -33,9 +33,16 @@ class User extends Authenticatable
      */
     public static function owners()
     {
-        return Cache::remember('users_role_owner', 300, function () {
-            return static::where('role', 'owner')->get();
+        // Cache plain IDs only. Caching the Eloquent collection itself breaks on any
+        // serializing cache store (file/database/redis): with `serializable_classes`
+        // disabled it comes back as __PHP_Incomplete_Class and notifications to
+        // owners silently failed. Models are always hydrated fresh and the role is
+        // re-checked so a demoted owner is never notified from a stale list.
+        $ids = Cache::remember('users_role_owner_ids', 300, function () {
+            return static::where('role', 'owner')->pluck('id')->all();
         });
+
+        return static::whereIn('id', $ids)->where('role', 'owner')->get();
     }
 
     /**

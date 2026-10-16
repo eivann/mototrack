@@ -147,7 +147,9 @@ class SaleController extends Controller
 
     public function complete($id, Request $request)
     {
-        DB::transaction(function () use ($id, $request) {
+        $blocked = null;
+
+        DB::transaction(function () use ($id, $request, &$blocked) {
             $sales = Sale::lockForUpdate()->where('transaction_reference', $id)->get();
             if ($sales->isEmpty()) {
                 abort(404, 'Reservation not found.');
@@ -167,7 +169,12 @@ class SaleController extends Controller
             }
 
             if (!$isPending) {
-                return; // already completed
+                // A cancelled/expired reservation must never be reported as paid.
+                if ($sales->contains(fn ($sale) => in_array($sale->status, ['cancelled', 'expired'], true))) {
+                    $blocked = 'This reservation was ' . $sales->first()->status . ' and can no longer be completed.';
+                }
+
+                return; // already completed (idempotent) or blocked above
             }
 
             if ($tendered < $grandTotal) {
@@ -191,20 +198,22 @@ class SaleController extends Controller
             }
         });
 
+        if ($blocked) {
+            return redirect()->back()->with('error', $blocked);
+        }
+
         return redirect()->back()->with('success', 'Reservation marked as completed/paid!');
     }
 
+    /**
+     * Sales are never deleted. This method is deliberately kept (and routed
+     * nowhere) so that re-adding a DELETE route in the future fails closed
+     * instead of silently re-enabling destruction of financial history.
+     * Use cancel / expire / refund flows, which change status and keep the row.
+     */
     public function destroy($id)
     {
-        DB::transaction(function () use ($id) {
-            $sale = Sale::lockForUpdate()->findOrFail($id);
-            // Inventory is no longer affected by archiving/deletion.
-            // Cancellations/expirations must be handled via specific cancel endpoints.
-
-            $sale->delete();
-        });
-
-        return redirect()->back()->with('success', 'Sale archived successfully.');
+        abort(405, 'Sale records cannot be deleted. Use cancellation or refund instead.');
     }
 
     public function receipt($id)

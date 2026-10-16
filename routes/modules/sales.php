@@ -7,7 +7,9 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::get('/sales', [SaleController::class, 'recordSaleForm'])->name('sales.index');
     Route::post('/sales/store', [SaleController::class, 'storeSale'])->name('sales.store');
     Route::get('/sales/history', [SaleController::class, 'history'])->name('sales.history');
-    Route::delete('/sales/{id}', [SaleController::class, 'destroy'])->name('sales.destroy');
+    // NOTE: there is intentionally NO DELETE /sales/{id} route. Sale rows are the
+    // financial, cancellation and inventory-traceability record and are never
+    // deleted; cancel/expire/refund workflows change status instead.
 
     Route::get('/sales/{id}/receipt', [SaleController::class, 'receipt'])->name('sales.receipt');
     Route::get('/sales/{transaction}/download', [SaleController::class, 'downloadReceipt'])->name('sales.download');

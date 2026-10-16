@@ -23,8 +23,12 @@ class SalePolicy
         return $user->role === 'owner';
     }
 
+    /**
+     * Sales (paid, refunded, pending, cancelled or expired) are permanent
+     * financial/inventory history and may never be deleted by any role.
+     */
     public function delete(User $user, Sale $sale): bool
     {
-        return $user->role === 'owner';
+        return false;
     }
 }

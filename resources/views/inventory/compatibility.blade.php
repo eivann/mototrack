@@ -277,6 +277,9 @@
                                 }
 
                                 const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${item.brand}</p>` : '';
+                                const fitText = (item.matched_fitment && item.matched_fitment.length)
+                                    ? `<p class="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">&#10003; Confirmed fit: ${item.matched_fitment.map(f => String(f).replace(/[<>&"]/g, '')).join(', ')}</p>`
+                                    : '';
                                 const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
                                 
                                 const imageHtml = item.image_url 
@@ -294,6 +297,7 @@
                                             ${highlightText(item.part_name, query)}
                                         </h3>
                                         ${modelBadge}
+                                        ${fitText}
                                         <div class="flex items-end justify-between mt-3">
                                             <div class="leading-none">
                                                 <span class="text-xs font-semibold text-orange-500 align-top">₱</span><span class="text-lg font-bold text-orange-500">${parseFloat(item.price).toFixed(2)}</span>

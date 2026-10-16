@@ -67,7 +67,7 @@ jobs:
           REMOTE_HOST: ${{ secrets.SERVER_HOST }}
           REMOTE_USER: ${{ secrets.SERVER_USER }}
           TARGET: "/var/www/mototrack"
-          EXCLUDE: "/.git/, /.github/, /node_modules/, /.env, /storage/, /tests/"
+          EXCLUDE: "/.git/, /.github/, /node_modules/, /.env, /storage/, /tests/, /public/images/products/, /public/storage"
 
       - name: 🔄 Run Commands on VPS
         uses: appleboy/ssh-action@v1.0.3

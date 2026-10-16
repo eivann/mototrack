@@ -100,6 +100,7 @@ class ReservationService
 
                 if ($inventory) {
                     $inventory->increment('quantity', (int) $quantities[$itemId]);
+                    \App\Services\LowStockAlertService::checkAfterCommit($inventory->id);
                 }
             }
 
@@ -141,7 +142,7 @@ class ReservationService
     private function notifyRelease(?\App\Models\Customer $customer, string $reference, string $reason, string $status): void
     {
         $title = $status === OrderStatus::SALE_EXPIRED ? 'Reservation Expired' : 'Reservation Cancelled';
-        $message = "Reservation #{$reference} has been {$status}. Reason: {$reason}.";
+        $message = "Reservation #{$reference} has been {$status}. Reason: " . rtrim(trim($reason), '.') . '.';
 
         // Named routes: the admin dashboard lives at /dashboard, so a hardcoded
         // '/admin/dashboard' path produced a broken "View Details" redirect.
@@ -149,23 +150,16 @@ class ReservationService
         $ownerLink = route('dashboard', ['tab' => 'reservations']);
 
         try {
+            $dispatcher = app(NotificationDispatcher::class);
+
             if ($customer && $customer->user) {
-                $customer->user->notify(new \App\Notifications\StatusUpdated(
-                    $title,
-                    $message,
-                    $customerLink
-                ));
+                $dispatcher->send($customer->user, new \App\Notifications\StatusUpdated($title, $message, $customerLink));
             }
 
-            $owners = \App\Models\User::owners();
-            \Illuminate\Support\Facades\Notification::send($owners, new \App\Notifications\StatusUpdated(
-                $title,
-                $message,
-                $ownerLink
-            ));
-        } catch (\Throwable $e) {
             // The stock and status changes are already committed; a failed notice
-            // must not be reported as a failed cancellation.
+            // must not be reported as a failed cancellation (the dispatcher isolates errors).
+            $dispatcher->send(\App\Models\User::owners(), new \App\Notifications\StatusUpdated($title, $message, $ownerLink));
+        } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("Reservation {$reference} released but notification failed: " . $e->getMessage());
         }
     }

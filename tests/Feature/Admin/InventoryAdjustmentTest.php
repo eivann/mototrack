@@ -48,7 +48,8 @@ test('owner can record damaged items which decrements quantity', function () {
     ]);
 
     expect($item->fresh()->quantity)->toBe(7);
-    Queue::assertPushed(CheckLowStockAlertJob::class);
+    // Low-stock checks are synchronous now; the legacy queued job is no longer dispatched.
+    Queue::assertNotPushed(CheckLowStockAlertJob::class);
 });
 
 test('owner cannot record damaged items with quantity exceeding stock', function () {

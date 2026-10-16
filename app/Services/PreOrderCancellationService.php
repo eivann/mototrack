@@ -102,6 +102,7 @@ class PreOrderCancellationService
 
                 if ($item) {
                     $item->increment('quantity', $order->quantity);
+                    \App\Services\LowStockAlertService::checkAfterCommit($item->id);
                 }
             }
 
@@ -134,17 +135,19 @@ class PreOrderCancellationService
     private function notify(?\App\Models\User $customerUser, PreOrder $order, ?string $partName, string $reason): void
     {
         try {
+            $dispatcher = app(NotificationDispatcher::class);
+
             if ($customerUser) {
-                $customerUser->notify(new StatusUpdated(
+                $dispatcher->send($customerUser, new StatusUpdated(
                     'Pre-order Cancelled',
-                    "Your pre-order for {$partName} has been cancelled. Reason: {$reason}.",
+                    "Your pre-order for {$partName} has been cancelled. Reason: " . rtrim(trim($reason), '.') . '.',
                     route('customer.dashboard')
                 ));
             }
 
-            Notification::send(User::owners(), new StatusUpdated(
+            $dispatcher->send(User::owners(), new StatusUpdated(
                 'Pre-order Cancelled',
-                "Pre-order #{$order->id} ({$partName}) has been cancelled. Reason: {$reason}.",
+                "Pre-order #{$order->id} ({$partName}) has been cancelled. Reason: " . rtrim(trim($reason), '.') . '.',
                 route('preorders.index')
             ));
         } catch (\Throwable $e) {
