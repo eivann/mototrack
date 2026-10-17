@@ -26,13 +26,16 @@
                 <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
                     <div>
                         <div class="aspect-square w-full rounded-2xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 mb-4 flex items-center justify-center overflow-hidden relative">
-                            @if($item->image)
-                                <img src="{{ Storage::url($item->image) }}" alt="{{ $item->part_name }}" class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300">
-                            @else
-                                <div class="text-center p-4">
-                                    <i data-lucide="package" class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-2"></i>
-                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Catalog Part</span>
-                                </div>
+                            {{-- Existing item picture when one is on record; the placeholder is always
+                                 present underneath and takes over if the picture is missing or fails to load. --}}
+                            <div class="preorder-image-fallback text-center p-4 {{ empty($item->image_path) ? '' : 'hidden' }}">
+                                <i data-lucide="package" class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-2"></i>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Catalog Part</span>
+                            </div>
+                            @if(!empty($item->image_path))
+                                <img src="{{ $item->image_url }}" alt="{{ $item->part_name }}" loading="lazy"
+                                     onerror="this.onerror=null; this.classList.add('hidden'); this.parentNode.querySelector('.preorder-image-fallback').classList.remove('hidden');"
+                                     class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300">
                             @endif
                             <span class="absolute top-3 right-3 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-100 dark:border-red-800">
                                 Out of Stock

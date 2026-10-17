@@ -44,7 +44,9 @@ class DashboardController extends Controller
             $recentSales = Sale::with('item', 'customer')->latest()->take(10)->get();
             $activeServiceJobs = Repair::whereIn('status', ['pending', 'ongoing'])->latest()->take(10)->get();
             $recentPreorders = \App\Models\PreOrder::latest()->take(10)->get();
-            $pendingReservations = Sale::with('item', 'customer.user')->where('status', 'pending')->latest()->take(15)->get();
+            // Pending reservations are short-lived (24h), so load every pending line: a
+            // multi-line reservation must show its complete total before pickup.
+            $pendingReservations = Sale::with('item', 'customer.user')->where('status', 'pending')->latest()->get();
             $settledReservations = Sale::with('item', 'customer.user')
                 ->whereIn('status', [\App\Enums\OrderStatus::SALE_CANCELLED, \App\Enums\OrderStatus::SALE_EXPIRED])
                 ->latest()->take(15)->get();

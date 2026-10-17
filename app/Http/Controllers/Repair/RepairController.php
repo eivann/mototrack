@@ -65,7 +65,7 @@ class RepairController extends Controller
             $repair->customer->user->notify(new \App\Notifications\StatusUpdated(
                 'Repair Status Updated',
                 "Your repair job for {$repair->bike_model} is now: " . strtoupper($request->status),
-                '/customer/dashboard'
+                route('customer.dashboard', ['tab' => 'repairs'])
             ));
         }
 
@@ -134,7 +134,7 @@ class RepairController extends Controller
                 $repair->customer->user->notify(new StatusUpdated(
                     'Payment Confirmed',
                     "Your payment of ₱" . number_format($repair->cost, 2) . " for {$repair->bike_model} has been received. Thank you!",
-                    '/customer/dashboard'
+                    route('customer.dashboard', ['tab' => 'repairs'])
                 ));
             }
 

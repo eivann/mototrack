@@ -146,7 +146,7 @@ class ReservationService
 
         // Named routes: the admin dashboard lives at /dashboard, so a hardcoded
         // '/admin/dashboard' path produced a broken "View Details" redirect.
-        $customerLink = route('customer.dashboard');
+        $customerLink = route('customer.dashboard', ['tab' => 'reservations']) . '#reservation-' . $reference;
         $ownerLink = route('dashboard', ['tab' => 'reservations']);
 
         try {

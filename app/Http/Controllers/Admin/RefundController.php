@@ -87,7 +87,7 @@ class RefundController extends Controller
             $user->notify(new StatusUpdated(
                 'Refund Approved',
                 "Your refund request for {$refundRequest->sale->item?->part_name} has been approved.{$methodMsg}",
-                '/customer/dashboard'
+                route('customer.dashboard', ['tab' => 'purchases'])
             ));
         }
 
@@ -130,7 +130,7 @@ class RefundController extends Controller
             $user->notify(new StatusUpdated(
                 'Refund Denied',
                 "Your refund request for {$refundRequest->sale->item?->part_name} has been denied. Reason: " . $request->admin_notes,
-                '/customer/dashboard'
+                route('customer.dashboard', ['tab' => 'purchases'])
             ));
         }
 

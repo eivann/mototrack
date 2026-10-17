@@ -130,7 +130,7 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Select Item</label>
                         <label for="damaged-item-select" class="sr-only">Select item to mark damaged</label>
-                        <select id="damaged-item-select" name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none searchable-select">
+                        <select id="damaged-item-select" name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none" data-item-search>
                             <option value="" disabled {{ old('inventory_item_id') && old('action_taken') === null ? '' : 'selected' }}>Search by ID, name, brand...</option>
                             @foreach($inventoryItems as $item)
                                 <option value="{{ $item->id }}" {{ old('inventory_item_id') == $item->id && old('action_taken') === null ? 'selected' : '' }}>
@@ -175,7 +175,7 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Select Item</label>
                         <label for="return-item-select" class="sr-only">Select returned item</label>
-                        <select id="return-item-select" name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none searchable-select">
+                        <select id="return-item-select" name="inventory_item_id" required class="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none" data-item-search>
                             <option value="" disabled {{ old('inventory_item_id') && old('action_taken') !== null ? '' : 'selected' }}>Search by ID, name, brand...</option>
                             @foreach($inventoryItems as $item)
                                 <option value="{{ $item->id }}" {{ old('inventory_item_id') == $item->id && old('action_taken') !== null ? 'selected' : '' }}>
@@ -240,27 +240,61 @@
     </div>
 </div>
 
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Tom Select comes from a CDN. If it failed to load, leave the native
-        // dropdown alone: it is still fully usable and server-validated. The
-        // previous unguarded call threw, which left the dialog half-initialised.
-        if (typeof TomSelect === 'undefined') {
-            return;
-        }
-
-        document.querySelectorAll('.searchable-select').forEach((el) => {
-            new TomSelect(el, {
-                create: false,
-                allowEmptyOption: false,
-                sortField: {
-                    field: "text",
-                    direction: "asc"
-                },
-                maxOptions: 50
+    // Dependency-free item search for the Log Damaged / Log Return pickers.
+    // The server-rendered <select> stays the source of truth (it is what gets
+    // submitted); the box only narrows which options are listed. No CDN script or
+    // stylesheet is involved, so it cannot be broken by a blocked external asset.
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('select[data-item-search]').forEach(function (select) {
+            var placeholder = null;
+            var all = [];
+            Array.prototype.forEach.call(select.options, function (opt) {
+                if (opt.value === '') { placeholder = opt; return; }
+                all.push({ value: opt.value, text: opt.text, haystack: opt.text.toLowerCase(), selected: opt.defaultSelected });
             });
+
+            var input = document.createElement('input');
+            input.type = 'search';
+            input.autocomplete = 'off';
+            input.placeholder = 'Type to search by ID, SKU, name, brand or model…';
+            input.setAttribute('aria-label', 'Search items');
+            input.className = 'w-full mb-2 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-indigo-500';
+            select.parentNode.insertBefore(input, select);
+
+            var status = document.createElement('p');
+            status.className = 'text-xs text-gray-400 mt-1';
+            status.setAttribute('aria-live', 'polite');
+            select.parentNode.insertBefore(status, select.nextSibling);
+
+            function render() {
+                var terms = input.value.toLowerCase().split(/\s+/).filter(Boolean);
+                var keep = select.value;
+                var matches = all.filter(function (o) {
+                    return terms.every(function (t) { return o.haystack.indexOf(t) !== -1; });
+                });
+                // Always keep the currently chosen item listed so typing never silently drops it.
+                var chosen = all.filter(function (o) { return o.value === keep; })[0];
+                if (chosen && matches.indexOf(chosen) === -1) { matches.unshift(chosen); }
+
+                select.innerHTML = '';
+                if (placeholder) { select.appendChild(placeholder); }
+                matches.forEach(function (o) {
+                    var opt = document.createElement('option');
+                    opt.value = o.value;
+                    opt.textContent = o.text;
+                    if (o.value === keep || (!keep && o.selected)) { opt.selected = true; }
+                    select.appendChild(opt);
+                });
+                if (!select.value && placeholder) { placeholder.selected = true; }
+                status.textContent = matches.length + ' of ' + all.length + ' items' + (terms.length ? ' match' : '');
+            }
+
+            input.addEventListener('input', render);
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); if (select.options.length > 1 && !select.value) { select.selectedIndex = 1; } }
+            });
+            render();
         });
     });
 </script>

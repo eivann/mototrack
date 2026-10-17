@@ -21,6 +21,7 @@ class PreOrder extends Model
         'total',
         'is_paid',
         'is_stocked',
+        'sourced_at',
         'picked_up_at',
         'ready_notified_at',
         'pickup_expires_at',
@@ -29,6 +30,7 @@ class PreOrder extends Model
     protected $casts = [
         'is_paid' => 'boolean',
         'is_stocked' => 'boolean',
+        'sourced_at' => 'datetime',
         'picked_up_at' => 'datetime',
         'ready_notified_at' => 'datetime',
         'pickup_expires_at' => 'datetime',
@@ -47,5 +49,44 @@ class PreOrder extends Model
     public function inventoryItem()
     {
         return $this->belongsTo(InventoryItem::class);
+    }
+
+    /** Customer notification deep link: Pre-orders tab, this record. */
+    public function customerLink(): string
+    {
+        return route('customer.dashboard', ['tab' => 'preorders']) . '#preorder-' . $this->id;
+    }
+
+    /** Owner notification deep link: Process Pre-orders, this record. */
+    public function ownerLink(): string
+    {
+        return route('preorders.index') . '#preorder-' . $this->id;
+    }
+
+    /**
+     * Owner-facing lifecycle stage derived from existing columns (statuses are
+     * never rewritten). Legacy rows with NULL sourced_at are "pending_sourcing".
+     *
+     * @return array{key: string, label: string}
+     */
+    public function stage(): array
+    {
+        if ($this->status === 'cancelled') {
+            return ['key' => 'cancelled', 'label' => 'Cancelled'];
+        }
+        if ($this->status === 'completed') {
+            return ['key' => 'completed', 'label' => 'Completed'];
+        }
+        if ($this->status === 'expired') {
+            return ['key' => 'expired', 'label' => 'Pickup expired'];
+        }
+        if ($this->is_stocked) {
+            return ['key' => 'ready', 'label' => 'Ready for Pickup'];
+        }
+        if ($this->sourced_at) {
+            return ['key' => 'awaiting_arrival', 'label' => 'Sourced / Awaiting Arrival'];
+        }
+
+        return ['key' => 'pending_sourcing', 'label' => 'Pending Sourcing'];
     }
 }

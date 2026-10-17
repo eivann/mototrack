@@ -71,7 +71,7 @@ class ExpirePreOrders extends Command
                         $customerUser->notify(new StatusUpdated(
                             'Pre-order Expired',
                             "Your pre-order for {$partName} has expired after 24 hours without pickup. The allocated item has been returned.",
-                            '/customer/dashboard'
+                            $preorder->customerLink()
                         ));
                     }
 
@@ -80,7 +80,7 @@ class ExpirePreOrders extends Command
                     Notification::send($owners, new StatusUpdated(
                         'Pre-order Expired',
                         "Pre-order #{$preorder->id} ({$partName}) has expired after 24 hours without pickup. Stock has been restored.",
-                        '/preorders'
+                        $preorder->ownerLink()
                     ));
                 }
             } catch (\Throwable $e) {

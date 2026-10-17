@@ -137,7 +137,15 @@ class SaleController extends Controller
         $sales = $baseQuery->with('item')->latest()->paginate(10)->withQueryString();
         $inventoryItems = InventoryItem::orderBy('quantity', 'asc')->paginate(12, ['*'], 'stock_page')->withQueryString();
 
+        // Full pending lines per reference so the pickup modal always shows the true total due.
+        $pendingRefs = $sales->getCollection()
+            ->where('status', 'pending')->pluck('transaction_reference')->filter()->unique()->values();
+        $pendingGroups = $pendingRefs->isEmpty()
+            ? collect()
+            : Sale::with('item')->where('status', 'pending')->whereIn('transaction_reference', $pendingRefs)->get()->groupBy('transaction_reference');
+
         return view('sales.history', compact(
+            'pendingGroups',
             'sales',
             'totalSales',
             'totalTransactions',

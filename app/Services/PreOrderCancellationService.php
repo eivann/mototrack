@@ -141,14 +141,14 @@ class PreOrderCancellationService
                 $dispatcher->send($customerUser, new StatusUpdated(
                     'Pre-order Cancelled',
                     "Your pre-order for {$partName} has been cancelled. Reason: " . rtrim(trim($reason), '.') . '.',
-                    route('customer.dashboard')
+                    $order->customerLink()
                 ));
             }
 
             $dispatcher->send(User::owners(), new StatusUpdated(
                 'Pre-order Cancelled',
                 "Pre-order #{$order->id} ({$partName}) has been cancelled. Reason: " . rtrim(trim($reason), '.') . '.',
-                route('preorders.index')
+                $order->ownerLink()
             ));
         } catch (\Throwable $e) {
             Log::warning("Pre-order #{$order->id} cancelled but notification failed: " . $e->getMessage());

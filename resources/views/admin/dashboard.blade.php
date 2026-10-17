@@ -67,12 +67,12 @@
                                         'reports' => 'bar-chart-2'
                                     ];
                                 @endphp
-                                <i data-lucide="{{ $icons[$id] }}" class="w-5 h-5 transition-transform group-hover:scale-110" :class="activeTab === '{{ $id }}' ? 'text-white' : 'text-gray-400 group-hover:text-indigo-500'"></i>
+                                <span class="nav-icon inline-flex w-5 h-5 shrink-0 items-center justify-center transition-transform group-hover:scale-110" :class="activeTab === '{{ $id }}' ? 'text-white' : 'text-gray-400 group-hover:text-indigo-500'" data-nav-icon="{{ $id }}"><i data-lucide="{{ $icons[$id] }}" class="w-5 h-5"></i></span>
                                 {{ $label }}
                             </span>
                             
                             @if($id === 'reservations' && isset($pendingReservations) && $pendingReservations->count() > 0)
-                                <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-amber-500 rounded-full">{{ $pendingReservations->count() }}</span>
+                                <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-amber-500 rounded-full">{{ $pendingReservations->groupBy(fn ($r) => $r->transaction_reference ?? 'row-'.$r->id)->count() }}</span>
                             @elseif($id === 'inventory' && ($stats['lowStockCount'] ?? 0) > 0)
                                 <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-red-500 rounded-full">{{ $stats['lowStockCount'] }}</span>
                             @elseif($id === 'refunds' && isset($pendingRefunds) && $pendingRefunds->count() > 0)
@@ -351,7 +351,7 @@
                                     <p class="text-xs text-gray-400 font-bold mt-1">Pending in-stock reservations awaiting 24-hour in-store payment and pickup</p>
                                 </div>
                                 <span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full font-black text-xs uppercase tracking-wider">
-                                    {{ $pendingReservations->count() }} Pending
+                                    {{ $pendingReservations->groupBy(fn ($r) => $r->transaction_reference ?? 'row-'.$r->id)->count() }} Pending
                                 </span>
                             </div>
                             <div class="overflow-x-auto">
@@ -366,11 +366,13 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
-                                        @forelse($pendingReservations as $res)
-                                            @php $deadline = $res->expires_at ?? ($res->reserved_at ? $res->reserved_at->addHours(24) : $res->created_at->addHours(24)); @endphp
+                                        @forelse($pendingReservations->groupBy(fn ($r) => $r->transaction_reference ?? 'row-'.$r->id) as $ref => $group)
+                                            @php $res = $group->first(); $groupTotal = (float) $group->sum('total_price'); $deadline = $res->expires_at ?? ($res->reserved_at ? $res->reserved_at->addHours(24) : $res->created_at->addHours(24)); @endphp
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
                                                 <td class="p-6">
-                                                    <div class="font-bold text-gray-900 dark:text-white">{{ $res->item?->part_name ?? 'Unknown Item' }}</div>
+                                                    @foreach($group as $line)
+                                                        <div class="font-bold text-gray-900 dark:text-white">{{ $line->item?->part_name ?? 'Unknown Item' }}</div>
+                                                    @endforeach
                                                     <div class="text-[10px] font-mono text-gray-400 uppercase mt-0.5">{{ $res->transaction_reference }}</div>
                                                 </td>
                                                 <td class="p-6">
@@ -378,7 +380,7 @@
                                                     <div class="text-xs text-gray-400">{{ $res->customer?->phone ?? $res->customer?->email ?? '' }}</div>
                                                 </td>
                                                 <td class="p-6 font-black text-gray-900 dark:text-white">
-                                                    <div>x{{ $res->quantity }} • ₱{{ number_format($res->total_price, 2) }}</div>
+                                                    <div>x{{ $group->sum('quantity') }} • ₱{{ number_format($groupTotal, 2) }}</div>
                                                 </td>
                                                 <td class="p-6">
                                                     @if(now()->lt($deadline))
@@ -393,9 +395,20 @@
                                                     @endif
                                                 </td>
                                                 <td class="p-6 text-right">
-                                                    <a href="{{ route('sales.receipt', $res->transaction_reference) }}" class="inline-flex items-center gap-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
-                                                        <i data-lucide="receipt" class="w-3.5 h-3.5"></i> Complete / View
-                                                    </a>
+                                                    <div class="flex items-center justify-end gap-2">
+                                                        @if($res->transaction_reference && now()->lt($deadline))
+                                                            <x-cash-pickup-modal
+                                                                :action="route('sales.complete', $res->transaction_reference)"
+                                                                :reference="$res->transaction_reference"
+                                                                :total="$groupTotal"
+                                                                :lines="$group->map(fn ($l) => ['name' => $l->item?->part_name ?? 'Unknown Item', 'qty' => $l->quantity, 'subtotal' => (float) $l->total_price])->values()->all()" />
+                                                        @endif
+                                                        @if($res->transaction_reference)
+                                                            <a href="{{ route('sales.receipt', $res->transaction_reference) }}" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg">
+                                                                <i data-lucide="receipt" class="w-3.5 h-3.5"></i> View
+                                                            </a>
+                                                        @endif
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @empty

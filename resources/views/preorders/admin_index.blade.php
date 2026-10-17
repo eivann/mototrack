@@ -24,7 +24,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
                             @forelse($preorders as $order)
-                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+                            <tr id="preorder-{{ $order->id }}" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
                                 <td class="p-4 align-top font-bold text-gray-900 dark:text-white">#{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</td>
                                 <td class="p-4 align-top font-medium text-gray-900 dark:text-white">{{ $order->customer_name }}</td>
                                 <td class="p-4 align-top">
@@ -37,101 +37,70 @@
                                 </td>
                                 <td class="p-4 align-top text-center font-bold text-gray-900 dark:text-white">₱{{ number_format($order->total, 2) }}</td>
                                 <td class="p-4 align-top text-center">
-                                    @if($order->status == 'cancelled')
-                                        <x-status-badge status="cancelled" />
-                                    @elseif($order->status == 'completed')
-                                        <x-status-badge status="completed" />
-                                    @else
-                                        @if(!$order->is_stocked)
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                                                Awaiting Arrival
-                                            </span>
-                                        @elseif(!$order->ready_notified_at)
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" title="Part arrived in shop, but customer readiness notice delivery is pending or failed">
-                                                Notice Delivery Failed / Pending
-                                            </span>
-                                        @else
-                                            <div class="flex flex-col items-center gap-0.5">
-                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
-                                                    Ready for Pickup
-                                                </span>
-                                                @if($order->pickup_expires_at)
-                                                    <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Due: {{ $order->pickup_expires_at->format('M d, h:i A') }}</span>
-                                                @endif
-                                            </div>
+                                    @php
+                                        $stage = $order->stage();
+                                        $stageClasses = [
+                                            'pending_sourcing' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+                                            'awaiting_arrival' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300',
+                                            'ready' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+                                            'completed' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+                                            'cancelled' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+                                            'expired' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
+                                        ][$stage['key']];
+                                    @endphp
+                                    <div class="flex flex-col items-center gap-0.5">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold {{ $stageClasses }}">{{ $stage['label'] }}</span>
+                                        @if($stage['key'] === 'ready' && !$order->ready_notified_at)
+                                            <span class="text-[10px] text-amber-600 font-medium" title="Part arrived, but the customer notice is pending or failed">Notice pending / failed</span>
                                         @endif
-                                    @endif
+                                        @if($stage['key'] === 'ready' && $order->pickup_expires_at)
+                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Pickup by: {{ $order->pickup_expires_at->format('M d, h:i A') }}</span>
+                                        @endif
+                                        @if($order->is_paid && $order->status === 'pending')
+                                            <span class="text-[10px] text-emerald-600 font-medium">Already paid — no extra charge</span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="p-4 align-top text-right">
-                                    {{-- View opens the full record; Complete/Cancel are separate
-                                         labelled actions so staff cannot confuse inspection with pickup. --}}
-                                    <div class="flex flex-col items-end gap-2">
-                                        <a href="{{ route('preorders.index', ['view' => $order->id]) }}" title="View Details" aria-label="View pre-order {{ $order->id }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 rounded-lg transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                            View
-                                        </a>
-                                    <div class="flex items-center justify-end gap-2">
-                                        @if(!$order->is_paid)
-                                            <form method="POST" action="/preorders/{{ $order->id }}/pay" onsubmit="return confirm('Confirm payment received?');">
-                                                @csrf
-                                                <button title="Collect Payment" aria-label="Collect payment for pre-order" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                </button>
-                                            </form>
-                                        @else
-                                            <span class="text-emerald-600 dark:text-emerald-400" title="Paid">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                            </span>
-                                        @endif
+                                    <div class="flex flex-wrap items-center justify-end gap-2">
+                                        @if($order->status === 'pending')
+                                            @if(!$order->is_stocked && !$order->sourced_at)
+                                                <form method="POST" action="{{ route('preorders.source', $order) }}">
+                                                    @csrf
+                                                    <button class="px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">Mark sourced</button>
+                                                </form>
+                                            @endif
 
-                                        @if($order->status == 'pending')
                                             @if(!$order->is_stocked)
-                                            <form method="POST" action="/preorders/{{ $order->id }}/stock" onsubmit="return confirm('Mark this pre-order as arrived/stocked?');">
-                                                @csrf
-                                                <button title="Mark Arrived" aria-label="Mark pre-order as stocked" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                                                </button>
-                                            </form>
-                                            @elseif(!$order->ready_notified_at)
-                                            <form method="POST" action="/preorders/{{ $order->id }}/notify-ready">
-                                                @csrf
-                                                <button title="Retry / Send Arrival Notice" aria-label="Send arrival notice" class="p-1.5 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                                                </button>
-                                            </form>
+                                                <form method="POST" action="{{ route('preorders.stock', $order) }}" onsubmit="return confirm('Mark this part as arrived and notify the customer? The 24-hour pickup deadline starts when the notice is recorded.');">
+                                                    @csrf
+                                                    <button class="px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">Mark arrived &amp; notify</button>
+                                                </form>
                                             @else
-                                            <form method="POST" action="/preorders/{{ $order->id }}/notify-ready">
-                                                @csrf
-                                                <button title="Resend Notification (Preserves 24h Deadline)" aria-label="Resend arrival notification" class="p-1.5 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                                                </button>
-                                            </form>
+                                                <form method="POST" action="{{ route('preorders.notify-ready', $order) }}">
+                                                    @csrf
+                                                    <button class="px-3 py-1.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400" title="Preserves the existing 24-hour deadline">{{ $order->ready_notified_at ? 'Resend arrival notice' : 'Send arrival notice' }}</button>
+                                                </form>
+                                                <x-cash-pickup-modal
+                                                    :action="route('preorders.pickup', $order)"
+                                                    :reference="'Pre-order #' . str_pad($order->id, 4, '0', STR_PAD_LEFT)"
+                                                    :total="(float) $order->total"
+                                                    :already-paid="(bool) $order->is_paid"
+                                                    :lines="[['name' => $order->part_name, 'qty' => $order->quantity, 'subtotal' => (float) $order->total]]" />
                                             @endif
 
-                                            @if($order->is_stocked && $order->is_paid)
-                                            <form method="POST" action="/preorders/{{ $order->id }}/complete" onsubmit="return confirm('Complete this pre-order? Make sure the customer is picking it up.');">
+                                            <form method="POST" action="{{ route('preorders.cancel', $order) }}" onsubmit="return confirm('Cancel this pre-order?');">
                                                 @csrf
-                                                <button title="Complete Pickup" aria-label="Mark pre-order as completed" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                                </button>
-                                            </form>
-                                            @endif
-
-                                            <form method="POST" action="/preorders/{{ $order->id }}/cancel" onsubmit="return confirm('Cancel this pre-order?');">
-                                                @csrf
-                                                <button title="Cancel Order" aria-label="Cancel pre-order" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                </button>
+                                                <button class="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400">Cancel</button>
                                             </form>
                                         @endif
-                                        
-                                        <form method="POST" action="/preorders/{{ $order->id }}" class="inline" onsubmit="return confirm('Delete this pre-order?');">
+
+                                        <form method="POST" action="{{ route('preorders.destroy', $order) }}" class="inline" onsubmit="return confirm('Delete this pre-order record?');">
                                             @csrf @method('DELETE')
-                                            <button title="Delete Record" aria-label="Delete pre-order record" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">
+                                            <button title="Delete record" aria-label="Delete pre-order record" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </form>
-                                    </div>
                                     </div>
                                 </td>
                             </tr>

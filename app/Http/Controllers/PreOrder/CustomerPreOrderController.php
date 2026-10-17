@@ -84,7 +84,7 @@ class CustomerPreOrderController extends Controller
         Notification::send($owners, new StatusUpdated(
             'New Pre-order Request',
             "Customer {$user->name} has requested a pre-order for {$partName}.",
-            "/preorders"
+            $preorder->ownerLink()
         ));
 
         return redirect('/customer/dashboard')->with('success', 'Pre-order request submitted! Please coordinate for pickup/payment.');

@@ -113,12 +113,12 @@
                                         </td>
                                         <td class="p-5 text-center">
                                             @if($sale->status === 'pending' && $sale->transaction_reference)
-                                                <form action="{{ route('sales.complete', $sale->transaction_reference) }}" method="POST" class="inline-block" onsubmit="return confirm('Confirm payment received and item picked up?');">
-                                                    @csrf
-                                                    <button type="submit" class="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 mr-1">
-                                                        <i data-lucide="check-circle" class="w-4 h-4"></i> Complete
-                                                    </button>
-                                                </form>
+                                                @php $grp = $pendingGroups[$sale->transaction_reference] ?? collect([$sale]); @endphp
+                                                <x-cash-pickup-modal
+                                                    :action="route('sales.complete', $sale->transaction_reference)"
+                                                    :reference="$sale->transaction_reference"
+                                                    :total="(float) $grp->sum('total_price')"
+                                                    :lines="$grp->map(fn ($l) => ['name' => $l->item->part_name ?? 'Unknown Item', 'qty' => $l->quantity, 'subtotal' => (float) $l->total_price])->values()->all()" />
                                             @endif
                                             <a href="/sales/{{ $sale->id }}/receipt" aria-label="View receipt for {{ $sale->item->part_name ?? 'sale' }}" class="inline-flex items-center gap-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-green-400">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -169,12 +169,12 @@
                                         <p class="text-[10px] text-gray-400 uppercase font-black mb-1">{{ $sale->created_at->format('M d, Y') }}</p>
                                         <div class="flex items-center justify-end gap-2">
                                             @if($sale->status === 'pending' && $sale->transaction_reference)
-                                                <form action="{{ route('sales.complete', $sale->transaction_reference) }}" method="POST" class="inline-block" onsubmit="return confirm('Confirm payment received and item picked up?');">
-                                                    @csrf
-                                                    <button type="submit" class="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center justify-end gap-1">
-                                                        <i data-lucide="check-circle" class="w-3 h-3"></i> Complete
-                                                    </button>
-                                                </form>
+                                                @php $grp = $pendingGroups[$sale->transaction_reference] ?? collect([$sale]); @endphp
+                                                <x-cash-pickup-modal
+                                                    :action="route('sales.complete', $sale->transaction_reference)"
+                                                    :reference="$sale->transaction_reference"
+                                                    :total="(float) $grp->sum('total_price')"
+                                                    :lines="$grp->map(fn ($l) => ['name' => $l->item->part_name ?? 'Unknown Item', 'qty' => $l->quantity, 'subtotal' => (float) $l->total_price])->values()->all()" />
                                             @endif
                                             <a href="/sales/{{ $sale->id }}/receipt" class="text-xs font-bold text-green-600 dark:text-green-400 flex items-center justify-end gap-1">
                                                 View Receipt <i data-lucide="chevron-right" class="w-3 h-3"></i>

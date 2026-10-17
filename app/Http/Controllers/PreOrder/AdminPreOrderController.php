@@ -65,11 +65,122 @@ class AdminPreOrderController extends Controller
             new \App\Notifications\StatusUpdated(
                 'Pre-order Payment Received',
                 "Your payment of ₱" . number_format($preorder->total, 2) . " for your pre-order ({$preorder->part_name}) has been confirmed.",
-                '/customer/dashboard'
+                $preorder->customerLink()
             )
         );
 
         return back()->with('success', 'Payment recorded successfully!');
+    }
+
+    /**
+     * Mark a pending pre-order as sourced (ordered from supplier / awaiting arrival).
+     * Idempotent and inventory-neutral: it only stamps the sourced_at milestone.
+     */
+    public function source(PreOrder $preorder)
+    {
+        $error = null;
+
+        DB::transaction(function () use ($preorder, &$error) {
+            $order = PreOrder::lockForUpdate()->findOrFail($preorder->id);
+
+            if ($order->status !== 'pending' || $order->is_stocked) {
+                $error = 'Only pre-orders still awaiting sourcing can be marked as sourced.';
+                return;
+            }
+            if ($order->sourced_at) {
+                $error = 'This pre-order is already marked as sourced.';
+                return;
+            }
+
+            $order->sourced_at = now();
+            $order->save();
+        });
+
+        if ($error) {
+            return back()->with('error', $error);
+        }
+
+        return back()->with('success', 'Pre-order marked as sourced. Awaiting arrival.');
+    }
+
+    /**
+     * Single cash action for pickup: record the cash sale (unless the
+     * pre-order was already paid before this release) and complete it in one
+     * transaction. Row-locked and idempotent, so a double submit or a second
+     * tab can never create a second sale or complete twice.
+     */
+    public function pickup(Request $request, PreOrder $preorder)
+    {
+        $error = null;
+        $info = null;
+        $tendered = (float) $request->input('amount_tendered');
+
+        DB::transaction(function () use ($preorder, $tendered, &$error, &$info) {
+            $order = PreOrder::lockForUpdate()->findOrFail($preorder->id);
+
+            if ($order->status === 'completed') {
+                $info = 'This pre-order was already picked up. No additional payment was recorded.';
+                return;
+            }
+            if ($order->status !== 'pending') {
+                $error = 'This pre-order is ' . $order->stage()['label'] . ' and can no longer be picked up.';
+                return;
+            }
+            if (!$order->is_stocked) {
+                $error = 'The part has not arrived yet. Mark it as arrived before pickup.';
+                return;
+            }
+            if ($order->pickup_expires_at && now()->greaterThanOrEqualTo($order->pickup_expires_at)) {
+                $error = 'The 24-hour pickup deadline has passed. This pre-order can no longer be picked up.';
+                return;
+            }
+
+            if (!$order->is_paid) {
+                if ((float) $order->total <= 0 || $tendered < (float) $order->total) {
+                    $error = 'Full cash payment is required.';
+                    return;
+                }
+
+                \App\Models\Sale::create([
+                    'inventory_item_id' => $order->inventory_item_id,
+                    'quantity' => $order->quantity,
+                    'price' => $order->price,
+                    'total_price' => $order->total,
+                    'amount_tendered' => $tendered,
+                    'change' => round($tendered - (float) $order->total, 2),
+                    'status' => 'completed',
+                    'customer_id' => $order->customer_id,
+                    'payment_confirmed_at' => now(),
+                    'picked_up_at' => now(),
+                    'transaction_reference' => 'PRE-' . strtoupper(\Illuminate\Support\Str::random(8)),
+                ]);
+                $order->is_paid = true;
+            }
+            // Already-paid (legacy) pre-orders skip the sale: they were charged
+            // earlier through the old "Collect payment" step.
+
+            $order->picked_up_at = now();
+            $order->status = 'completed';
+            $order->save();
+        });
+
+        if ($error) {
+            return back()->with('error', $error);
+        }
+        if ($info) {
+            return back()->with('warning', $info);
+        }
+
+        app(\App\Services\NotificationDispatcher::class)->send(
+            $preorder->customer?->user,
+            new \App\Notifications\StatusUpdated(
+                'Pre-order Picked Up',
+                "Your pre-order ({$preorder->part_name}) has been picked up and paid. Thank you!",
+                $preorder->customerLink()
+            )
+        );
+
+        return back()->with('success', 'Pickup confirmed and cash payment recorded.');
     }
 
     public function stock(PreOrder $preorder)
@@ -93,6 +204,8 @@ class AdminPreOrderController extends Controller
                 \App\Services\LowStockAlertService::checkAfterCommit($item->id);
             }
             $order->is_stocked = true;
+            // Arrival implies sourcing; legacy rows that skipped "Mark sourced" get the milestone here.
+            $order->sourced_at = $order->sourced_at ?? now();
             $order->save();
         });
 
@@ -113,7 +226,7 @@ class AdminPreOrderController extends Controller
                 new \App\Notifications\StatusUpdated(
                     'Pre-order Arrived — Ready for Pickup',
                     "Your pre-order for {$order->part_name} has arrived at the store! Please pick up and pay within 24 hours (Deadline: {$deadlineStr}).",
-                    '/customer/dashboard'
+                    $order->customerLink()
                 )
             );
 
@@ -156,7 +269,7 @@ class AdminPreOrderController extends Controller
                 new \App\Notifications\StatusUpdated(
                     'Pre-order Arrived — Ready for Pickup',
                     "Your pre-order for {$preorder->part_name} has arrived at the store! Please pick up and pay within 24 hours (Deadline: {$deadlineStr}).",
-                    '/customer/dashboard'
+                    $preorder->customerLink()
                 )
             );
 

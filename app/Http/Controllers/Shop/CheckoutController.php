@@ -87,14 +87,14 @@ class CheckoutController extends Controller
             auth()->user()->notify(new StatusUpdated(
                 'Order Placed',
                 "Your order #{$transactionReference} has been placed successfully.",
-                '/customer/dashboard'
+                route('customer.dashboard', ['tab' => 'reservations']) . '#reservation-' . $transactionReference
             ));
 
             $owners = User::owners();
             Notification::send($owners, new StatusUpdated(
                 'New Reservation Received',
                 "Customer " . auth()->user()->name . " has placed a new reservation #{$transactionReference}.",
-                "/sales/{$transactionReference}/receipt"
+                route('dashboard', ['tab' => 'reservations'])
             ));
         }
 

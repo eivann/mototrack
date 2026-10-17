@@ -1,6 +1,6 @@
 <x-app-layout>
     <div x-data="{ 
-        activeTab: 'overview',
+        activeTab: (['overview','reservations','repairs','preorders','purchases'].includes(new URLSearchParams(window.location.search).get('tab')) ? new URLSearchParams(window.location.search).get('tab') : 'overview'),
         recentActivities: {{ Js::from(auth()->user()->unreadNotifications->take(5)->map(fn($n) => ['id' => $n->id, 'title' => $n->data['title'] ?? 'Notification', 'message' => $n->data['message'] ?? '', 'time' => $n->created_at->diffForHumans(), 'is_repair' => str_contains(strtolower($n->data['title'] ?? ''), 'repair')])) }},
         initEcho() {
             if (window.Echo) {
@@ -66,7 +66,7 @@
                             class="w-full text-left py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-600 dark:text-gray-300 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-between group"
                         >
                             <span class="flex items-center gap-3">
-                                <i data-lucide="{{ $navIcons[$id] }}" class="w-5 h-5 transition-transform group-hover:scale-110" :class="activeTab === '{{ $id }}' ? 'text-white' : 'text-gray-400 group-hover:text-indigo-500'"></i>
+                                <span class="nav-icon inline-flex w-5 h-5 shrink-0 items-center justify-center transition-transform group-hover:scale-110" :class="activeTab === '{{ $id }}' ? 'text-white' : 'text-gray-400 group-hover:text-indigo-500'" data-nav-icon="{{ $id }}"><i data-lucide="{{ $navIcons[$id] }}" class="w-5 h-5"></i></span>
                                 {{ $label }}
                             </span>
                             <i data-lucide="chevron-right" class="w-4 h-4 opacity-50" :class="activeTab === '{{ $id }}' ? 'text-white opacity-100' : 'text-gray-400'"></i>
@@ -130,7 +130,7 @@
                         @if(isset($activeReservations) && $activeReservations->count() > 0)
                             <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Active Reservations</h3>
                             @foreach($activeReservations as $reservation)
-                                <div class="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-5">
+                                <div id="reservation-{{ $reservation->reference }}" class="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-5">
                                     <div class="flex flex-wrap items-center justify-between gap-3">
                                         <div>
                                             <div class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">Reservation</div>
@@ -199,7 +199,7 @@
                         @if(isset($reservationHistory) && $reservationHistory->count() > 0)
                             <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight pt-4">Reservation History</h3>
                             @foreach($reservationHistory as $reservation)
-                                <div class="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-4 opacity-90">
+                                <div id="reservation-{{ $reservation->reference }}" class="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 p-6 sm:p-8 shadow-sm space-y-4 opacity-90">
                                     <div class="flex flex-wrap items-center justify-between gap-3">
                                         <div>
                                             <div class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Reservation</div>
@@ -269,17 +269,33 @@
                                 <table class="w-full text-left">
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                                         @foreach($preorders as $order)
-                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                            <tr id="preorder-{{ $order->id }}" class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
                                                 <td class="p-6">
                                                     <div class="font-bold text-gray-900 dark:text-white">{{ $order->part_name }}</div>
                                                     <div class="text-[10px] text-gray-500 font-bold uppercase mt-1">{{ $order->model ?? 'Universal' }}</div>
                                                 </td>
                                                 <td class="p-6 font-black text-gray-900 dark:text-white text-center">x{{ $order->quantity }}</td>
                                                 <td class="p-6">
-                                                    <span class="px-3 py-1 rounded-lg {{ strtolower($order->status ?? 'pending') === 'pending' ? 'bg-yellow-50 text-yellow-600' : (in_array(strtolower($order->status ?? 'pending'), ['completed','done','ready']) ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600') }} font-black text-[10px] uppercase tracking-widest">
-                                                        {{ $order->status ?? 'pending' }}
+                                                    @php
+                                                        $stage = $order->stage();
+                                                        $steps = ['pending_sourcing' => 'Pending Sourcing', 'awaiting_arrival' => 'Sourced / Awaiting Arrival', 'ready' => 'Ready for Pickup', 'completed' => 'Completed'];
+                                                        $stepKeys = array_keys($steps);
+                                                        $currentIdx = array_search($stage['key'], $stepKeys, true);
+                                                        $terminal = in_array($stage['key'], ['cancelled', 'expired'], true);
+                                                    @endphp
+                                                    <span class="px-3 py-1 rounded-lg {{ $terminal ? 'bg-red-50 text-red-600' : ($stage['key'] === 'completed' ? 'bg-emerald-50 text-emerald-600' : ($stage['key'] === 'ready' ? 'bg-blue-50 text-blue-600' : 'bg-yellow-50 text-yellow-600')) }} font-black text-[10px] uppercase tracking-widest">
+                                                        {{ $stage['label'] }}
                                                     </span>
-                                                    @if($order->is_stocked && $order->pickup_expires_at && !in_array($order->status, ['completed', 'cancelled']))
+                                                    @unless($terminal)
+                                                        <ol class="mt-2 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[10px] font-bold" aria-label="Pre-order progress">
+                                                            @foreach($steps as $key => $stepLabel)
+                                                                <li class="flex items-center gap-1 {{ $loop->index <= $currentIdx ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-300 dark:text-gray-600' }}">
+                                                                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-current"></span>{{ $stepLabel }}@if(!$loop->last)<span class="text-gray-300 ml-1">›</span>@endif
+                                                                </li>
+                                                            @endforeach
+                                                        </ol>
+                                                    @endunless
+                                                    @if($order->is_stocked && $order->pickup_expires_at && !in_array($order->status, ['completed', 'cancelled', 'expired']))
                                                         @if(now()->lt($order->pickup_expires_at))
                                                             <div class="mt-2 flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-md">
                                                                 <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -294,8 +310,7 @@
                                                 </td>
                                                 <td class="p-6 text-right">
                                                     <div class="font-black text-gray-900 dark:text-white mb-1">Total: {{ ($order->total ?? 0) > 0 ? '₱'.number_format((float)($order->total), 2) : 'TBD' }}</div>
-                                                    <div class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">Paid DP: ₱{{ number_format((float)($order->down_payment ?? 0), 2) }}</div>
-                                                    <div class="text-xs text-amber-600 dark:text-amber-400 font-bold">Bal: {{ ($order->total ?? 0) > 0 ? '₱'.number_format((float)(($order->total ?? 0) - ($order->down_payment ?? 0)), 2) : 'TBD' }}</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400 font-bold">{{ $order->is_paid ? 'Paid' : 'Cash payment at pickup' }}</div>
 
                                                     @php
                                                         // Cancel is offered only while the request is still an
