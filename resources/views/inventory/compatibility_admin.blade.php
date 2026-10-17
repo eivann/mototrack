@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 font-sans" x-data="fitmentManager(@js($restore))" @keydown.escape.window="open && close()">
         <div class="max-w-7xl mx-auto">
 
             @if(session('success'))
@@ -30,6 +30,27 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Back to Inventory
                 </a>
+            </div>
+
+            {{-- Searchable product selector: pick any part and open its fitment form directly. --}}
+            <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+                <label for="quick-part" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Quick add: find a product to link to motorcycles</label>
+                <div class="relative">
+                    <input id="quick-part" type="search" x-model="pickQuery" @input.debounce.250ms="searchParts()" autocomplete="off"
+                           placeholder="Type a part name, brand or SKU (2+ characters)..."
+                           class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <ul x-show="pickResults.length > 0" x-cloak class="absolute z-30 mt-1 w-full max-h-72 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg divide-y divide-gray-100 dark:divide-gray-700">
+                        <template x-for="p in pickResults" :key="p.id">
+                            <li>
+                                <button type="button" @click="pickPart(p)" class="w-full text-left px-4 py-2.5 hover:bg-indigo-50 dark:hover:bg-gray-700 text-sm">
+                                    <span class="font-bold text-gray-900 dark:text-white" x-text="p.part_name"></span>
+                                    <span class="ml-2 text-xs text-gray-500 dark:text-gray-400" x-text="[p.brand, p.sku].filter(Boolean).join(' · ')"></span>
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
+                    <p x-show="pickEmpty" x-cloak class="mt-2 text-xs text-gray-500 dark:text-gray-400">No product matches that search.</p>
+                </div>
             </div>
 
             <form method="GET" action="{{ route('compatibility.manage') }}" class="mb-6 flex flex-col sm:flex-row gap-3">
@@ -63,7 +84,7 @@
                                     {{ $fits->count() }} {{ \Illuminate\Support\Str::plural('fitment', $fits->count()) }}
                                 </span>
                                 <button type="button"
-                                        @click="$dispatch('open-fitment', { item: {{ $item->id }} })"
+                                        @click="openAdd({{ $item->id }}, {{ Js::from($item->part_name) }})"
                                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                                     + Add Fitment
                                 </button>
@@ -93,7 +114,7 @@
                                                 <td class="p-4 text-gray-500 dark:text-gray-400 text-xs">{{ $m->pivot->notes ?: '—' }}</td>
                                                 <td class="p-4 text-right whitespace-nowrap">
                                                     <button type="button"
-                                                                    @click="$dispatch('open-fitment', { item: {{ $item->id }}, edit: {{ $m->id }}, record: {{ Js::from(['brand' => $m->brand, 'model' => $m->model, 'year' => $m->year, 'engine_type' => $m->engine_type, 'notes' => $m->pivot->notes]) }} })"
+                                                                    @click="openEdit({{ $item->id }}, {{ Js::from($item->part_name) }}, {{ $m->id }}, {{ Js::from(['brand' => $m->brand, 'model' => $m->model, 'year' => $m->year, 'engine_type' => $m->engine_type, 'notes' => $m->pivot->notes]) }})"
                                                                     class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-bold text-xs mr-3">Edit</button>
                                                     <form action="{{ route('compatibility.destroy', [$item->id, $m->id]) }}" method="POST" class="inline"
                                                                       onsubmit="return confirm('Remove this fitment record?');">
@@ -127,90 +148,171 @@
             </div>
         </div>
 
-        {{-- Add / edit fitment modal. One form per page, moved into place with Alpine. --}}
-        <div x-data="{
-                open: false,
-                itemId: null,
-                editId: null,
-                options: { brands: [], models: [], years: [] },
-                editRecord: null,
-                init() {
-                    this.$watch('open', value => {
-                        if (value) {
-                            fetch('{{ route('compatibility.manage.options') }}', { headers: { 'Accept': 'application/json' } })
-                                .then(r => r.json())
-                                .then(data => { this.options = data; })
-                                .catch(() => {});
-                        }
-                    });
-                }
-             }"
-             x-init="init()"
-             @open-fitment.window="open = true; itemId = $event.detail.item; editId = $event.detail.edit ?? null; editRecord = editId ? $event.detail.record ?? null : null;"
-             x-show="open" x-cloak
+        {{-- Add / edit fitment modal: part of the page-level fitmentManager() scope above. --}}
+        <div x-show="open" x-cloak
              class="fixed inset-0 z-50 flex items-center justify-center p-4"
              role="dialog" aria-modal="true" aria-labelledby="fitment-modal-title">
-            <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="open = false"></div>
+            <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="close()"></div>
             <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-                <h3 id="fitment-modal-title" class="text-lg font-black text-gray-900 dark:text-white mb-1">Fitment Record</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-5">Link this part to a motorcycle. A part can fit several makes, models and years.</p>
+                <h3 id="fitment-modal-title" class="text-lg font-black text-gray-900 dark:text-white mb-1" x-text="editId ? 'Edit fitment note' : 'Add fitment'"></h3>
+                <p class="text-xs font-bold text-indigo-600 dark:text-indigo-400 mb-1" x-text="itemName"></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-5" x-text="editId ? 'Only the note can be changed. To fix the make, model or year, remove this fitment and add the correct one.' : 'Link this part to a motorcycle. A part can fit several makes, models and years.'"></p>
 
-                <form :action="editId
-                        ? `{{ url('/inventory') }}/${itemId}/compatibility/${editId}`
-                        : `{{ url('/inventory') }}/${itemId}/compatibility`"
-                      method="POST"
-                      class="space-y-4">
+                <form :action="actionUrl()" method="POST" class="space-y-4" @submit="submitting = true">
                     @csrf
+                    <input type="hidden" name="_item" :value="itemId">
+                    <input type="hidden" name="_edit" :value="editId">
                     <template x-if="editId"><input type="hidden" name="_method" value="PATCH"></template>
 
                     <div>
                         <label for="fit-brand" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Make / Brand</label>
                         <input id="fit-brand" type="text" name="brand" list="fit-brand-list" autocomplete="off" required placeholder="e.g. Honda"
-                               x-model="editRecord.brand"
-                               class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                               x-model="form.brand" :readonly="!!editId" :disabled="!!editId"
+                               class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60">
                         <datalist id="fit-brand-list">
                             <template x-for="b in options.brands" :key="b"><option :value="b"></option></template>
                         </datalist>
                     </div>
 
                     <div>
-                        <label for="fit-model" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Model</label>
-                        <input id="fit-model" type="text" name="model" list="fit-model-list" autocomplete="off" required placeholder="e.g. TMX 125"
-                               x-model="editRecord.model"
-                               class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <label for="fit-model" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Model(s)</label>
+                        <input id="fit-model" type="text" name="model" list="fit-model-list" autocomplete="off" required placeholder="e.g. TMX 125  (several: TMX 125, TMX 155)"
+                               x-model="form.model" :readonly="!!editId" :disabled="!!editId"
+                               class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60">
                         <datalist id="fit-model-list">
-                            <template x-for="m in options.models" :key="m.brand + m.model"><option :value="m.model"></option></template>
+                            <template x-for="m in modelOptions()" :key="m"><option :value="m"></option></template>
                         </datalist>
+                        <p x-show="!editId" class="mt-1 text-[10px] text-gray-400">To link this part to several models of the same brand, separate them with commas.</p>
                     </div>
 
                     <div>
                         <label for="fit-year" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Year <span class="normal-case font-semibold text-gray-400">(single year or range, optional)</span></label>
                         <input id="fit-year" type="text" name="year" inputmode="numeric" placeholder="e.g. 2020 or 2018-2022"
-                               x-model="editRecord.year"
-                               class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <p class="mt-1 text-[10px] text-gray-400">Leave blank if the part fits all years.</p>
+                               x-model="form.year" :readonly="!!editId" :disabled="!!editId"
+                               class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60">
+                        <p class="mt-1 text-[10px] text-gray-400">Leave blank if the part fits all years. The customer Year filter only appears once at least one fitment has a year.</p>
                     </div>
 
                     <div>
                         <label for="fit-engine" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Engine Type <span class="normal-case font-semibold text-gray-400">(optional)</span></label>
                         <input id="fit-engine" type="text" name="engine_type" placeholder="e.g. 125cc"
-                               x-model="editRecord.engine_type"
-                               class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                               x-model="form.engine_type" :readonly="!!editId" :disabled="!!editId"
+                               class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60">
                     </div>
 
                     <div>
                         <label for="fit-notes" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Notes <span class="normal-case font-semibold text-gray-400">(optional)</span></label>
-                        <textarea id="fit-notes" name="notes" rows="2" placeholder="e.g. Fits the Caliper variant only"
-                                  x-model="editRecord.notes"
+                        <textarea id="fit-notes" name="notes" rows="2" maxlength="255" placeholder="e.g. Fits the Caliper variant only"
+                                  x-model="form.notes"
                                   class="w-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
 
                     <div class="flex gap-3 pt-2">
-                        <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save Fitment</button>
-                        <button type="button" @click="open = false" class="px-6 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+                        <button type="submit" :disabled="submitting" class="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" x-text="submitting ? 'Saving...' : (editId ? 'Save Note' : 'Save Fitment')">Save Fitment</button>
+                        <button type="button" @click="close()" class="px-6 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Cancel</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
+    <style>[x-cloak] { display: none !important; }</style>
+    <script>
+        function fitmentManager(restore) {
+            const blank = () => ({ brand: '', model: '', year: '', engine_type: '', notes: '' });
+            const norm = (v) => String(v || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+            return {
+                open: false,
+                itemId: null,
+                itemName: '',
+                editId: null,
+                submitting: false,
+                options: { brands: [], models: [] },
+                form: blank(),
+                pickQuery: '',
+                pickResults: [],
+                pickEmpty: false,
+                loaded: false,
+
+                init() {
+                    // After a failed save the server redirects back; reopen the form with what was typed.
+                    if (restore && restore.itemId) {
+                        this.itemId = restore.itemId;
+                        this.itemName = restore.itemName || '';
+                        this.editId = restore.editId || null;
+                        this.form = Object.assign(blank(), restore.form || {});
+                        this.open = true;
+                        this.loadOptions();
+                    }
+                },
+
+                actionUrl() {
+                    const base = @js(url('/inventory')) + '/' + this.itemId + '/compatibility';
+                    return this.editId ? base + '/' + this.editId : base;
+                },
+
+                openAdd(id, name) {
+                    this.itemId = id;
+                    this.itemName = name;
+                    this.editId = null;
+                    this.form = blank();
+                    this.submitting = false;
+                    this.open = true;
+                    this.loadOptions();
+                },
+
+                openEdit(id, name, motorcycleId, record) {
+                    this.itemId = id;
+                    this.itemName = name;
+                    this.editId = motorcycleId;
+                    this.form = Object.assign(blank(), record || {});
+                    this.submitting = false;
+                    this.open = true;
+                },
+
+                close() {
+                    this.open = false;
+                    this.submitting = false;
+                    this.editId = null;
+                    this.itemId = null;
+                    this.itemName = '';
+                    this.form = blank();
+                },
+
+                loadOptions() {
+                    if (this.loaded) return;
+                    fetch(@js(route('compatibility.manage.options')), { headers: { 'Accept': 'application/json' } })
+                        .then(r => r.ok ? r.json() : { brands: [], models: [] })
+                        .then(data => { this.options = { brands: data.brands || [], models: data.models || [] }; this.loaded = true; })
+                        .catch(() => {});
+                },
+
+                modelOptions() {
+                    const brand = norm(this.form.brand);
+                    const names = this.options.models
+                        .filter(m => brand === '' || norm(m.brand) === brand)
+                        .map(m => m.model);
+                    return [...new Set(names)];
+                },
+
+                searchParts() {
+                    const q = this.pickQuery.trim();
+                    this.pickEmpty = false;
+                    if (q.length < 2) { this.pickResults = []; return; }
+                    fetch(@js(route('compatibility.manage.parts')) + '?q=' + encodeURIComponent(q), { headers: { 'Accept': 'application/json' } })
+                        .then(r => r.ok ? r.json() : [])
+                        .then(rows => { this.pickResults = rows; this.pickEmpty = rows.length === 0; })
+                        .catch(() => { this.pickResults = []; });
+                },
+
+                pickPart(p) {
+                    this.pickQuery = '';
+                    this.pickResults = [];
+                    this.pickEmpty = false;
+                    this.openAdd(p.id, p.part_name);
+                },
+            };
+        }
+    </script>
 </x-app-layout>

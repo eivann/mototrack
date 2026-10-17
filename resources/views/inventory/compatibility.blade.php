@@ -28,11 +28,11 @@
                         </div>
                         <div class="w-full relative">
                             <label for="modelSelect" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-2 mb-1.5">Model</label>
-                            <select id="modelSelect" name="model" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors text-sm">
-                                <option value="">All Models</option>
+                            <select id="modelSelect" name="model" disabled class="disabled:opacity-60 disabled:cursor-not-allowed w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors text-sm">
+                                <option value="">Select a brand first</option>
                             </select>
                         </div>
-                        <div class="w-full relative">
+                        <div id="yearWrap" class="w-full relative hidden">
                             <label for="yearSelect" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-2 mb-1.5">Year</label>
                             <select id="yearSelect" name="year" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors text-sm">
                                 <option value="">All Years</option>
@@ -60,6 +60,10 @@
                         </button>
                     </div>
                 </div>
+
+                <p id="noFitmentNote" class="hidden mt-4 text-center text-[13px] font-semibold text-gray-500 dark:text-gray-400">
+                    Brand and model lists appear once compatible motorcycles are recorded for our parts. You can still search by part name.
+                </p>
 
                 <!-- RESULTS GRID -->
                 <div id="resultsBox" class="mt-8 transition-all duration-300 relative z-10">
@@ -94,12 +98,12 @@
         const suggestionTimers = {};
 
         async function loadSelectOptions(type, params = {}, selectElement, defaultText) {
-            if (!selectElement) return;
+            if (!selectElement) return [];
             const currentVal = selectElement.value;
             try {
                 const queryParams = new URLSearchParams({ type, ...params });
                 const res = await fetch(`{{ route('compatibility.options') }}?${queryParams.toString()}`);
-                if (!res.ok) return;
+                if (!res.ok) return [];
                 const data = await res.json();
                 selectElement.innerHTML = `<option value="">${defaultText}</option>`;
                 data.forEach(val => {
@@ -109,9 +113,48 @@
                     if (val === currentVal) opt.selected = true;
                     selectElement.appendChild(opt);
                 });
+                return data;
             } catch (e) {
                 console.error('Error loading options:', e);
+                return [];
             }
+        }
+
+        const yearWrap = document.getElementById('yearWrap');
+        const noFitmentNote = document.getElementById('noFitmentNote');
+
+        function esc(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // Year is an optional advanced filter: shown only when at least one recorded fitment carries a year.
+        let anyYears = null;
+        async function refreshYears() {
+            if (anyYears === null) {
+                const all = await fetch(`{{ route('compatibility.options') }}?type=years`)
+                    .then(r => r.ok ? r.json() : [])
+                    .catch(() => []);
+                anyYears = Array.isArray(all) && all.length > 0;
+            }
+            if (yearWrap) yearWrap.classList.toggle('hidden', !anyYears);
+            if (!anyYears) {
+                if (yearSelect) yearSelect.value = '';
+                return;
+            }
+            await loadSelectOptions('years', { make: makeSelect.value.trim(), model: modelSelect.value.trim() }, yearSelect, 'All Years');
+        }
+
+        // Model choices exist only for a chosen brand.
+        async function refreshModels() {
+            const makeVal = makeSelect.value.trim();
+            if (makeVal === '') {
+                modelSelect.innerHTML = '<option value="">Select a brand first</option>';
+                modelSelect.disabled = true;
+                return [];
+            }
+            const models = await loadSelectOptions('models', { make: makeVal }, modelSelect, 'All models of this brand');
+            modelSelect.disabled = false;
+            return models;
         }
 
         function loadSuggestions(field, value, datalistId) {
@@ -208,8 +251,17 @@
             if (!query || !text) return text;
             const terms = query.trim().split(/\s+/).filter(t => t.length > 0);
             if(terms.length === 0) return text;
-            const regex = new RegExp(`(${terms.join('|')})`, 'gi');
+            const escapeRe = t => t.replace(/[.*+?^$|(){}\[\]\\]/g, '\\$&');
+            const regex = new RegExp('(' + terms.map(escapeRe).join('|') + ')', 'gi');
             return String(text).replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        function noticeHtml(title, body) {
+            return `
+                <div class="bg-amber-50/80 dark:bg-amber-900/10 rounded-[2rem] border border-amber-200/60 dark:border-amber-900/30 p-8 text-center max-w-3xl mx-auto mt-4">
+                    <p class="font-bold text-[17px] text-amber-700 dark:text-amber-400 mb-2">${esc(title)}</p>
+                    <p class="text-[13px] text-amber-600 dark:text-amber-500 font-bold tracking-wide">${esc(body)}</p>
+                </div>`;
         }
 
         function triggerSearch(e) {
@@ -224,6 +276,12 @@
 
             if (query.length < 2) {
                 resultsBox.innerHTML = '';
+                return;
+            }
+
+            if (makeVal === '' && (modelVal !== '' || yearVal !== '')) {
+                resultsBox.innerHTML = noticeHtml('Select a brand first', 'Choose a make / brand before picking a model or year. No compatibility is shown without one.');
+                spinner.classList.add('hidden');
                 return;
             }
 
@@ -249,13 +307,17 @@
                         resultsBox.innerHTML = '';
 
                         if (!Array.isArray(data) || data.length === 0) {
-                            resultsBox.innerHTML = `
-                                <div class="bg-red-50/80 dark:bg-red-900/10 rounded-[2rem] border border-red-200/60 dark:border-red-900/30 p-8 text-center max-w-3xl mx-auto mt-4">
-                                    <p class="font-bold text-[17px] text-[#dc2626] dark:text-red-400 mb-2">No matching parts found</p>
-                                    <p class="text-[13px] text-red-400 dark:text-red-500 font-bold tracking-wide">Try adjusting your search terms or check a different motorcycle model.</p>
-                                </div>
-                            `;
+                            const bike = [makeVal, modelVal].filter(Boolean).join(' ');
+                            resultsBox.innerHTML = makeVal !== ''
+                                ? noticeHtml(`No confirmed compatible parts for ${bike}${partVal ? ' matching "' + partVal + '"' : ''}`, 'Only parts our shop has confirmed for this motorcycle are listed. Try another model, or search by part name only.')
+                                : noticeHtml('No matching parts found', 'Try a different part name.');
                         } else {
+                            const heading = document.createElement('p');
+                            heading.className = 'mb-3 text-[13px] font-bold text-gray-500 dark:text-gray-400';
+                            heading.textContent = makeVal !== ''
+                                ? `Confirmed compatible with ${[makeVal, modelVal].filter(Boolean).join(' ')}${modelVal === '' ? ' (any model)' : ''}`
+                                : 'Parts matching your search. Pick a brand and model to confirm they fit your motorcycle.';
+                            resultsBox.appendChild(heading);
                             const grid = document.createElement('div');
                             grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
                             
@@ -276,14 +338,14 @@
                                     actionBtn = `<a href="{{ route('login') }}" class="mt-3 block text-center w-full bg-gray-100 text-gray-600 text-sm font-semibold py-2 rounded-lg hover:bg-gray-200">Login to Order</a>`;
                                 }
 
-                                const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${item.brand}</p>` : '';
+                                const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${esc(item.brand)}</p>` : '';
                                 const fitText = (item.matched_fitment && item.matched_fitment.length)
-                                    ? `<p class="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">&#10003; Confirmed fit: ${item.matched_fitment.map(f => String(f).replace(/[<>&"]/g, '')).join(', ')}</p>`
+                                    ? `<p class="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">&#10003; Confirmed fit: ${item.matched_fitment.map(f => esc(f)).join(', ')}</p>`
                                     : '';
                                 const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
                                 
                                 const imageHtml = item.image_url 
-                                    ? `<img src="${item.image_url}" alt="${item.part_name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNlY4YTIgMiAwIDAgMC0xLTEuNzNsLTctNGEyIDIgMCAwIDAtMiAwbC03IDRBMiAyIDAgMCAwIDMgOHY4YTIgMiAwIDAgMCAxIDEuNzNsNyA0YTIgMiAwIDAgMCAyIDBsNy00QTIgMiAwIDAgMCAyMSAxNnoiPjwvcGF0aD48cG9seWxpbmUgcG9pbnRzPSIzLjI3IDYuOTYgMTIgMTIuMDEgMjAuNzMgNi45NiI+PC9wb2x5bGluZT48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiPjwvbGluZT48L3N2Zz4=';">`
+                                    ? `<img src="${item.image_url}" alt="${esc(item.part_name)}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNlY4YTIgMiAwIDAgMC0xLTEuNzNsLTctNGEyIDIgMCAwIDAtMiAwbC03IDRBMiAyIDAgMCAwIDMgOHY4YTIgMiAwIDAgMCAxIDEuNzNsNyA0YTIgMiAwIDAgMCAyIDBsNy00QTIgMiAwIDAgMCAyMSAxNnoiPjwvcGF0aD48cG9seWxpbmUgcG9pbnRzPSIzLjI3IDYuOTYgMTIgMTIuMDEgMjAuNzMgNi45NiI+PC9wb2x5bGluZT48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiPjwvbGluZT48L3N2Zz4=';">`
                                     : `<svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`;
 
                                 card.innerHTML = `
@@ -293,8 +355,8 @@
                                     </div>
                                     <div class="p-4 flex-1 flex flex-col">
                                         ${brandText}
-                                        <h3 class="text-sm font-medium text-gray-800 dark:text-white line-clamp-2 leading-snug flex-1" title="${item.part_name}">
-                                            ${highlightText(item.part_name, query)}
+                                        <h3 class="text-sm font-medium text-gray-800 dark:text-white line-clamp-2 leading-snug flex-1" title="${esc(item.part_name)}">
+                                            ${highlightText(esc(item.part_name), query)}
                                         </h3>
                                         ${modelBadge}
                                         ${fitText}
@@ -331,18 +393,16 @@
         // Verified dependent dropdown options linkage
         if (makeSelect) {
             makeSelect.addEventListener('change', async () => {
-                const makeVal = makeSelect.value.trim();
-                await loadSelectOptions('models', { make: makeVal }, modelSelect, 'All Models');
-                await loadSelectOptions('years', { make: makeVal, model: modelSelect.value.trim() }, yearSelect, 'All Years');
+                modelSelect.value = '';
+                await refreshModels();
+                await refreshYears();
                 triggerSearch();
             });
         }
 
         if (modelSelect) {
             modelSelect.addEventListener('change', async () => {
-                const makeVal = makeSelect ? makeSelect.value.trim() : '';
-                const modelVal = modelSelect.value.trim();
-                await loadSelectOptions('years', { make: makeVal, model: modelVal }, yearSelect, 'All Years');
+                await refreshYears();
                 triggerSearch();
             });
         }
@@ -364,9 +424,10 @@
 
         // Auto-load verified makes and auto-trigger search if query exists
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadSelectOptions('makes', {}, makeSelect, 'All Makes / Brands');
-            await loadSelectOptions('models', {}, modelSelect, 'All Models');
-            await loadSelectOptions('years', {}, yearSelect, 'All Years');
+            const makes = await loadSelectOptions('makes', {}, makeSelect, 'All Makes / Brands');
+            if (noFitmentNote) noFitmentNote.classList.toggle('hidden', Array.isArray(makes) && makes.length > 0);
+            await refreshModels();
+            await refreshYears();
             if ((makeSelect && makeSelect.value) || (modelSelect && modelSelect.value) || (yearSelect && yearSelect.value) || (partInput && partInput.value)) {
                 triggerSearch();
             }

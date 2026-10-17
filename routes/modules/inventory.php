@@ -30,6 +30,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     // Owner compatibility-record management (fitment database maintenance).
     Route::get('/compatibility/manage', [AdminCompatibilityController::class, 'index'])->name('compatibility.manage');
     Route::get('/compatibility/manage/options', [AdminCompatibilityController::class, 'options'])->name('compatibility.manage.options');
+    Route::get('/compatibility/manage/parts', [AdminCompatibilityController::class, 'parts'])->name('compatibility.manage.parts');
     Route::post('/inventory/{item}/compatibility', [AdminCompatibilityController::class, 'store'])->name('compatibility.store');
     Route::patch('/inventory/{item}/compatibility/{motorcycle}', [AdminCompatibilityController::class, 'update'])->name('compatibility.update');
     Route::delete('/inventory/{item}/compatibility/{motorcycle}', [AdminCompatibilityController::class, 'destroy'])->name('compatibility.destroy');

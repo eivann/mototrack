@@ -61,7 +61,7 @@ test('an unrelated make or model never returns a part', function () {
 test('model comparison is exact, so TMX 15 does not match TMX 155 but casing and spacing are ignored', function () {
     fit(accPart('TMX Chain'), accBike('Honda', 'TMX 155', '2020'));
 
-    expect(check(['model' => 'TMX 15']))->toBeEmpty();
+    expect(check(['make' => 'Honda', 'model' => 'TMX 15']))->toBeEmpty();
     expect(names(check(['model' => '  tmx   155 ', 'make' => 'HONDA'])))->toBe(['TMX Chain']);
 });
 
@@ -69,19 +69,19 @@ test('year boundaries are inclusive and outside the range returns nothing', func
     fit(accPart('Range Part'), accBike('Honda', 'TMX 155', '2018-2022'));
 
     foreach (['2018', '2022'] as $inside) {
-        expect(names(check(['model' => 'TMX 155', 'year' => $inside])))->toBe(['Range Part']);
+        expect(names(check(['make' => 'Honda', 'model' => 'TMX 155', 'year' => $inside])))->toBe(['Range Part']);
     }
     foreach (['2017', '2023'] as $outside) {
-        expect(check(['model' => 'TMX 155', 'year' => $outside]))->toBeEmpty();
+        expect(check(['make' => 'Honda', 'model' => 'TMX 155', 'year' => $outside]))->toBeEmpty();
     }
 });
 
 test('a single-year fitment matches only that year', function () {
     fit(accPart('Single Year'), accBike('Honda', 'Wave', '2020'));
 
-    expect(names(check(['model' => 'Wave', 'year' => '2020'])))->toBe(['Single Year']);
-    expect(check(['model' => 'Wave', 'year' => '2021']))->toBeEmpty();
-    expect(check(['model' => 'Wave', 'year' => '202']))->toBeEmpty();
+    expect(names(check(['make' => 'Honda', 'model' => 'Wave', 'year' => '2020'])))->toBe(['Single Year']);
+    expect(check(['make' => 'Honda', 'model' => 'Wave', 'year' => '2021']))->toBeEmpty();
+    expect(check(['make' => 'Honda', 'model' => 'Wave', 'year' => '202']))->toBeEmpty();
 });
 
 test('make, model and year must all hold on the SAME fitment record', function () {
@@ -100,7 +100,7 @@ test('free-text model on the part and Universal labels do not create compatibili
     fit(accPart('Linked Part'), accBike('Honda', 'TMX 155', null));
 
     expect(names(check(['make' => 'Honda', 'model' => 'TMX 155'])))->toBe(['Linked Part']);
-    expect(names(check(['model' => 'Click 125'])))->toBeEmpty();
+    expect(names(check(['make' => 'Honda', 'model' => 'Click 125'])))->toBeEmpty();
 });
 
 test('a part with no fitment records is not returned for any selected motorcycle', function () {
@@ -124,7 +124,7 @@ test('duplicate fitment rows return the part once', function () {
 test('a fitment record without a year applies to every year of that model', function () {
     fit(accPart('Any Year'), accBike('Honda', 'Beat', null));
 
-    expect(names(check(['model' => 'Beat', 'year' => '2015'])))->toBe(['Any Year']);
+    expect(names(check(['make' => 'Honda', 'model' => 'Beat', 'year' => '2015'])))->toBe(['Any Year']);
 });
 
 test('one part linked to several models appears for each of them', function () {
@@ -132,9 +132,9 @@ test('one part linked to several models appears for each of them', function () {
     fit($part, accBike('Honda', 'TMX 155', '2020'));
     fit($part, accBike('Honda', 'Wave 110', '2020'));
 
-    expect(names(check(['model' => 'TMX 155'])))->toBe(['Shared Part']);
-    expect(names(check(['model' => 'Wave 110'])))->toBe(['Shared Part']);
-    expect(check(['model' => 'Click']))->toBeEmpty();
+    expect(names(check(['make' => 'Honda', 'model' => 'TMX 155'])))->toBe(['Shared Part']);
+    expect(names(check(['make' => 'Honda', 'model' => 'Wave 110'])))->toBe(['Shared Part']);
+    expect(check(['make' => 'Honda', 'model' => 'Click']))->toBeEmpty();
 });
 
 test('searching by part name alone makes no compatibility claim', function () {

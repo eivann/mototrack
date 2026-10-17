@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Inventory;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
 use App\Models\Motorcycle;
+use App\Services\CompatibilityMatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -33,12 +34,43 @@ class AdminCompatibilityController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('inventory.compatibility_admin', compact('parts', 'search'));
+        // After a failed save the form is reopened with what the owner typed.
+        $restore = null;
+        if (old('_item')) {
+            $form = [
+                'brand' => (string) old('brand', ''),
+                'model' => (string) old('model', ''),
+                'year' => (string) old('year', ''),
+                'engine_type' => (string) old('engine_type', ''),
+                'notes' => (string) old('notes', ''),
+            ];
+
+            if (old('_edit') && ($bike = Motorcycle::find((int) old('_edit')))) {
+                $form = array_merge($form, [
+                    'brand' => (string) $bike->brand,
+                    'model' => (string) $bike->model,
+                    'year' => (string) $bike->year,
+                    'engine_type' => (string) $bike->engine_type,
+                ]);
+            }
+
+            $restore = [
+                'itemId' => (int) old('_item'),
+                'itemName' => (string) InventoryItem::query()->whereKey((int) old('_item'))->value('part_name'),
+                'editId' => old('_edit') ? (int) old('_edit') : null,
+                'form' => $form,
+            ];
+        }
+
+        return view('inventory.compatibility_admin', compact('parts', 'search', 'restore'));
     }
 
     /**
-     * Add a motorcycle fitment to a part. The same part can be linked to many
-     * makes/models/years — one row per combination in `part_compatibility`.
+     * Add one or more motorcycle fitments to a part. The model field accepts a
+     * comma/semicolon/newline separated list ("TMX 125, TMX 155") so one part can
+     * be linked to several models of the same brand in one save. Brand and model
+     * spellings are reused from existing records (case/spacing-insensitive) so the
+     * customer dropdowns never show the same bike twice.
      */
     public function store(Request $request, InventoryItem $item)
     {
@@ -46,28 +78,59 @@ class AdminCompatibilityController extends Controller
 
         $data = $this->validated($request);
 
-        $motorcycle = Motorcycle::firstOrCreate(
-            [
-                'brand' => $data['brand'],
-                'model' => $data['model'],
-                'year' => $data['year'] ?? null,
-            ],
-            ['engine_type' => $data['engine_type'] ?? null]
-        );
+        $models = collect(preg_split('/[,;\r\n]+/', (string) $data['model']))
+            ->map(fn ($m) => trim((string) preg_replace('/\s+/u', ' ', $m)))
+            ->filter()
+            ->unique(fn ($m) => mb_strtolower($m))
+            ->values();
 
-        $alreadyLinked = $item->motorcycles()->where('motorcycles.id', $motorcycle->id)->exists();
+        if ($models->isEmpty()) {
+            return back()->withErrors(['model' => 'Enter at least one model.'])->withInput();
+        }
 
-        if ($alreadyLinked) {
+        foreach ($models as $name) {
+            if (mb_strlen($name) > 100) {
+                return back()->withErrors(['model' => 'Each model name must be 100 characters or fewer.'])->withInput();
+            }
+        }
+
+        $year = $data['year'] ?? null;
+        $added = [];
+        $skipped = [];
+
+        DB::transaction(function () use ($models, $data, $year, $item, &$added, &$skipped) {
+            // Serialise concurrent saves for the same part so a double submit or a
+            // second tab cannot attach the same fitment twice.
+            InventoryItem::query()->whereKey($item->id)->lockForUpdate()->first();
+
+            $brand = $this->canonicalBrand($data['brand']);
+
+            foreach ($models as $name) {
+                $motorcycle = $this->findOrCreateMotorcycle($brand, $name, $year, $data['engine_type'] ?? null);
+                $label = $this->label($motorcycle);
+
+                if ($item->motorcycles()->where('motorcycles.id', $motorcycle->id)->exists()) {
+                    $skipped[] = $label;
+                    continue;
+                }
+
+                $item->motorcycles()->attach($motorcycle->id, ['notes' => $data['notes'] ?? null]);
+                $added[] = $label;
+            }
+        });
+
+        if ($added === []) {
             return back()->withErrors([
-                'fitment' => "{$motorcycle->brand} {$motorcycle->model}" . ($motorcycle->year ? " ({$motorcycle->year})" : '') . ' is already compatible with this part.',
+                'fitment' => implode(', ', $skipped) . (count($skipped) > 1 ? ' are' : ' is') . ' already compatible with this part.',
             ])->withInput();
         }
 
-        $item->motorcycles()->attach($motorcycle->id, [
-            'notes' => $data['notes'] ?? null,
-        ]);
+        $message = 'Fitment added: ' . implode(', ', $added) . '.';
+        if ($skipped !== []) {
+            $message .= ' Already linked (skipped): ' . implode(', ', $skipped) . '.';
+        }
 
-        return back()->with('success', "Fitment added: {$data['brand']} {$data['model']}.");
+        return back()->with('success', $message);
     }
 
     /**
@@ -132,6 +195,71 @@ class AdminCompatibilityController extends Controller
     }
 
     /**
+     * Searchable product selector: id, name, SKU and brand of matching parts.
+     */
+    public function parts(Request $request)
+    {
+        Gate::authorize('viewAny', InventoryItem::class);
+
+        $term = trim((string) $request->query('q', ''));
+        $likeOp = DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
+
+        if (mb_strlen($term) < 2) {
+            return response()->json([]);
+        }
+
+        return response()->json(
+            InventoryItem::query()
+                ->where(function ($q) use ($term, $likeOp) {
+                    $q->where('part_name', $likeOp, "%{$term}%")
+                        ->orWhere('sku', $likeOp, "%{$term}%")
+                        ->orWhere('brand', $likeOp, "%{$term}%");
+                })
+                ->orderBy('part_name')
+                ->limit(15)
+                ->get(['id', 'part_name', 'sku', 'brand'])
+        );
+    }
+
+    private function label(Motorcycle $m): string
+    {
+        return trim("{$m->brand} {$m->model}") . ($m->year ? " ({$m->year})" : '');
+    }
+
+    /**
+     * Reuse the spelling already on record for a brand, ignoring case and spacing.
+     */
+    private function canonicalBrand(string $brand): string
+    {
+        $brand = trim((string) preg_replace('/\s+/u', ' ', $brand));
+        $key = CompatibilityMatcher::normalize($brand);
+
+        $existing = Motorcycle::query()->pluck('brand')
+            ->first(fn ($b) => CompatibilityMatcher::normalize($b) === $key);
+
+        return $existing ?? $brand;
+    }
+
+    private function findOrCreateMotorcycle(string $brand, string $model, ?string $year, ?string $engine): Motorcycle
+    {
+        $modelKey = CompatibilityMatcher::normalize($model);
+        $brandKey = CompatibilityMatcher::normalize($brand);
+
+        $found = Motorcycle::query()->get()->first(
+            fn ($m) => CompatibilityMatcher::normalize($m->brand) === $brandKey
+                && CompatibilityMatcher::normalize($m->model) === $modelKey
+                && trim((string) $m->year) === trim((string) $year)
+        );
+
+        return $found ?? Motorcycle::create([
+            'brand' => $brand,
+            'model' => $model,
+            'year' => $year,
+            'engine_type' => $engine,
+        ]);
+    }
+
+    /**
      * @return array{brand: string, model: string, year: string|null, engine_type: string|null, notes: string|null}
      */
     private function validated(Request $request): array
@@ -140,7 +268,7 @@ class AdminCompatibilityController extends Controller
 
         return $request->validate([
             'brand' => 'required|string|min:1|max:100',
-            'model' => 'required|string|min:1|max:100',
+            'model' => 'required|string|min:1|max:600',
             'year' => [
                 'nullable',
                 'string',

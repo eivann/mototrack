@@ -119,6 +119,17 @@ class PublicBrowseController extends Controller
         return view('inventory.compatibility', compact('searchQuery'));
     }
 
+    /**
+     * Customer compatibility checker. A part is "compatible" ONLY through an
+     * owner-confirmed fitment record (part_compatibility); nothing is inferred
+     * from part names, free-text model columns or "Universal".
+     *
+     *   brand                      -> parts fitted to any model of that brand
+     *   brand + model [+ year]     -> parts fitted to that motorcycle
+     *   any of the above + part    -> only the matching parts among those
+     *   part only                  -> matching parts, NO compatibility claim
+     *   model/year without brand   -> nothing (the page asks for a brand first)
+     */
     public function checkCompatibility(Request $request)
     {
         try {
@@ -127,8 +138,17 @@ class PublicBrowseController extends Controller
             $year = trim((string) $request->input('year', ''));
             $part = trim((string) $request->input('part', ''));
 
-            if ($model === '' && $request->filled('q')) {
-                $model = trim((string) $request->input('q'));
+            // Free-text `q` is a part-name search; it never stands in for a motorcycle model.
+            if ($part === '' && $request->filled('q')) {
+                $part = trim((string) $request->input('q'));
+            }
+
+            if ($make === '' && ($model !== '' || $year !== '')) {
+                return response()->json([])->header('X-Compat-Notice', 'brand-required');
+            }
+
+            if ($make === '' && $part === '') {
+                return response()->json([]);
             }
 
             $likeOp = DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
@@ -141,29 +161,31 @@ class PublicBrowseController extends Controller
                 });
             }
 
-            $vehicleSelected = $make !== '' || $model !== '' || $year !== '';
             $matchedIds = collect();
 
-            if ($vehicleSelected) {
-                // Confirmed fitment only: the part must be linked (part_compatibility)
-                // to a motorcycle row matching every selected criterion.
+            if ($make !== '') {
                 $matchedIds = app(CompatibilityMatcher::class)->motorcycleIds($make, $model, $year);
+
+                if ($matchedIds->isEmpty()) {
+                    return response()->json([]);
+                }
 
                 $query->whereHas('motorcycles', fn ($mq) => $mq->whereIn('motorcycles.id', $matchedIds->all()));
             }
 
-            $items = $query->take(30)->get();
+            $items = $query->orderBy('part_name')->take(30)->get();
 
-            if ($vehicleSelected) {
+            if ($make !== '') {
                 $ids = $matchedIds->flip();
                 $items->each(function ($item) use ($ids) {
                     $fits = $item->motorcycles->filter(fn ($m) => $ids->has($m->id));
                     $item->setAttribute('compatibility_status', 'confirmed');
                     $item->setAttribute('matched_fitment', $fits->map(
                         fn ($m) => trim("{$m->brand} {$m->model}" . ($m->year ? " ({$m->year})" : ''))
-                    )->values()->all());
+                    )->unique()->values()->all());
                 });
             }
+            // Part-name-only results deliberately carry no compatibility_status.
 
             return response()->json($items);
         } catch (\Throwable $e) {
