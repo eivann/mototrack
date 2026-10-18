@@ -93,6 +93,7 @@
         const resultsBox = document.getElementById('resultsBox');
         const spinner = document.getElementById('loadingSpinner');
         const toastContainer = document.getElementById('toast-container');
+        const inventorySourced = {{ config('compatibility.inventory_sourced') ? 'true' : 'false' }}; // false = Release B behaviour and wording
         const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
         let timeout = null;
         const suggestionTimers = {};
@@ -149,6 +150,11 @@
             const makeVal = makeSelect.value.trim();
             if (makeVal === '') {
                 modelSelect.innerHTML = '<option value="">Select a brand first</option>';
+                modelSelect.disabled = true;
+                return [];
+            }
+            if (inventorySourced && makeVal.toLowerCase() === 'universal') {
+                modelSelect.innerHTML = '<option value="">Not applicable for Universal</option>';
                 modelSelect.disabled = true;
                 return [];
             }
@@ -295,11 +301,16 @@
                     part: partVal
                 });
 
+                let resultMeta = { total: 0, limit: 0 };
                 fetch(`{{ route('compatibility.check') }}?${searchParams.toString()}`, {
                     headers: { 'Accept': 'application/json' }
                 })
                     .then(res => {
                         if (!res.ok) throw new Error('Network response was not ok');
+                        resultMeta = {
+                            total: parseInt(res.headers.get('X-Result-Total') || '0', 10) || 0,
+                            limit: parseInt(res.headers.get('X-Result-Limit') || '0', 10) || 0,
+                        };
                         return res.json();
                     })
                     .then(data => {
@@ -314,10 +325,32 @@
                         } else {
                             const heading = document.createElement('p');
                             heading.className = 'mb-3 text-[13px] font-bold text-gray-500 dark:text-gray-400';
-                            heading.textContent = makeVal !== ''
-                                ? `Confirmed compatible with ${[makeVal, modelVal].filter(Boolean).join(' ')}${modelVal === '' ? ' (any model)' : ''}`
-                                : 'Parts matching your search. Pick a brand and model to confirm they fit your motorcycle.';
+                            const isUniversal = makeVal.toLowerCase() === 'universal';
+                            const isFamily = inventorySourced && /\(general\)\s*$/i.test(modelVal);
+                            if (!inventorySourced) {
+                                // Release B wording, unchanged.
+                                heading.textContent = makeVal !== ''
+                                    ? `Confirmed compatible with ${[makeVal, modelVal].filter(Boolean).join(' ')}${modelVal === '' ? ' (any model)' : ''}`
+                                    : 'Parts matching your search. Pick a brand and model to confirm they fit your motorcycle.';
+                            } else if (isUniversal) {
+                                heading.textContent = 'Parts labelled Universal by the shop. Fit is not guaranteed for every motorcycle - confirm before buying.';
+                            } else if (makeVal !== '' && modelVal === '') {
+                                heading.textContent = `Parts recorded for ${makeVal} models. Each part shows the model it was recorded for - choose a model to check your motorcycle.`;
+                            } else if (makeVal !== '' && isFamily) {
+                                heading.textContent = `Parts recorded for the general ${modelVal.replace(/\s*\(general\)\s*$/i, '')} line (no variant given). Please confirm your exact ${makeVal} variant with the shop.`;
+                            } else if (makeVal !== '') {
+                                heading.textContent = `Confirmed compatible with ${makeVal} ${modelVal}`;
+                            } else {
+                                heading.textContent = 'Parts matching your search. Pick a brand and model to confirm they fit your motorcycle.';
+                            }
                             resultsBox.appendChild(heading);
+                            if (resultMeta.total > data.length) {
+                                const limitNote = document.createElement('p');
+                                limitNote.id = 'resultLimitNote';
+                                limitNote.className = 'mb-3 text-[12px] font-bold text-amber-600 dark:text-amber-400';
+                                limitNote.textContent = `Showing the first ${data.length} of ${resultMeta.total} matching parts. Choose a model or enter a Part Name to narrow the list.`;
+                                resultsBox.appendChild(limitNote);
+                            }
                             const grid = document.createElement('div');
                             grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
                             
@@ -326,26 +359,29 @@
                                 card.className = 'bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg border border-gray-100 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300 flex flex-col group';
                                 
                                 const stockBadge = item.quantity > 0
-                                    ? `<span class="text-[11px] font-medium text-gray-500">${item.quantity} in stock</span>`
+                                    ? `<span class="text-[11px] font-medium text-gray-500">${esc(item.quantity)} in stock</span>`
                                     : `<span class="text-[11px] font-medium text-red-500">Out of Stock</span>`;
 
                                 let actionBtn = '';
                                 if (isAuthenticated) {
                                     actionBtn = item.quantity > 0
-                                        ? `<button data-id="${item.id}" class="add-to-cart-btn mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer">Add to Cart</button>`
-                                        : `<a href="/preorder/${item.id}" class="mt-3 block text-center w-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95">Pre-order</a>`;
+                                        ? `<button data-id="${esc(item.id)}" class="add-to-cart-btn mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer">Add to Cart</button>`
+                                        : `<a href="/preorder/${esc(item.id)}" class="mt-3 block text-center w-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95">Pre-order</a>`;
                                 } else {
                                     actionBtn = `<a href="{{ route('login') }}" class="mt-3 block text-center w-full bg-gray-100 text-gray-600 text-sm font-semibold py-2 rounded-lg hover:bg-gray-200">Login to Order</a>`;
                                 }
 
                                 const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${esc(item.brand)}</p>` : '';
-                                const fitText = (item.matched_fitment && item.matched_fitment.length)
-                                    ? `<p class="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">&#10003; Confirmed fit: ${item.matched_fitment.map(f => esc(f)).join(', ')}</p>`
+                                const noteText = item.compatibility_note
+                                    ? `<p class="mt-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">${esc(item.compatibility_note)}</p>`
                                     : '';
-                                const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
+                                const fitText = (item.matched_fitment && item.matched_fitment.length)
+                                    ? `<p class="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">&#10003; ${item.compatibility_status === 'recorded_general' ? 'Recorded for' : 'Confirmed fit'}: ${item.matched_fitment.map(f => esc(f)).join(', ')}</p>`
+                                    : '';
+                                const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${esc(item.model)}</span></div>` : '';
                                 
                                 const imageHtml = item.image_url 
-                                    ? `<img src="${item.image_url}" alt="${esc(item.part_name)}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNlY4YTIgMiAwIDAgMC0xLTEuNzNsLTctNGEyIDIgMCAwIDAtMiAwbC03IDRBMiAyIDAgMCAwIDMgOHY4YTIgMiAwIDAgMCAxIDEuNzNsNyA0YTIgMiAwIDAgMCAyIDBsNy00QTIgMiAwIDAgMCAyMSAxNnoiPjwvcGF0aD48cG9seWxpbmUgcG9pbnRzPSIzLjI3IDYuOTYgMTIgMTIuMDEgMjAuNzMgNi45NiI+PC9wb2x5bGluZT48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiPjwvbGluZT48L3N2Zz4=';">`
+                                    ? `<img src="${esc(item.image_url)}" alt="${esc(item.part_name)}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNlY4YTIgMiAwIDAgMC0xLTEuNzNsLTctNGEyIDIgMCAwIDAtMiAwbC03IDRBMiAyIDAgMCAwIDMgOHY4YTIgMiAwIDAgMCAxIDEuNzNsNyA0YTIgMiAwIDAgMCAyIDBsNy00QTIgMiAwIDAgMCAyMSAxNnoiPjwvcGF0aD48cG9seWxpbmUgcG9pbnRzPSIzLjI3IDYuOTYgMTIgMTIuMDEgMjAuNzMgNi45NiI+PC9wb2x5bGluZT48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiPjwvbGluZT48L3N2Zz4=';">`
                                     : `<svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`;
 
                                 card.innerHTML = `
@@ -360,6 +396,7 @@
                                         </h3>
                                         ${modelBadge}
                                         ${fitText}
+                                        ${noteText}
                                         <div class="flex items-end justify-between mt-3">
                                             <div class="leading-none">
                                                 <span class="text-xs font-semibold text-orange-500 align-top">₱</span><span class="text-lg font-bold text-orange-500">${parseFloat(item.price).toFixed(2)}</span>

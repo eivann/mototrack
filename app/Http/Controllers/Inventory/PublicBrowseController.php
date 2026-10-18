@@ -151,6 +151,16 @@ class PublicBrowseController extends Controller
                 return response()->json([]);
             }
 
+            // Inventory-sourced compatibility (flag-gated; off in production until authorised).
+            if (\App\Services\InventoryCompatibilityResolver::enabled() && $make !== '') {
+                $resolver = app(\App\Services\InventoryCompatibilityResolver::class);
+                $found = $resolver->resolve($make, $model, $year, $part)->values();
+
+                return response()->json($found)
+                    ->header('X-Result-Total', (string) max($resolver->lastTotal, $found->count()))
+                    ->header('X-Result-Limit', (string) config('compatibility.result_limit', 100));
+            }
+
             $likeOp = DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
             $query = InventoryItem::with(['motorcycles', 'variations']);
 
@@ -201,6 +211,20 @@ class PublicBrowseController extends Controller
             $make = trim((string) $request->query('make', ''));
             $model = trim((string) $request->query('model', ''));
             $likeOp = DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
+
+            // Inventory-sourced mode: fixed five Makes; Models come from the reference catalogue
+            // (independent of current inventory). Inventory carries no year data, so Years is empty.
+            if (\App\Services\InventoryCompatibilityResolver::enabled()) {
+                $resolver = app(\App\Services\InventoryCompatibilityResolver::class);
+                if ($type === 'makes') {
+                    return response()->json($resolver->makes());
+                }
+                if ($type === 'models') {
+                    return response()->json($resolver->models($make));
+                }
+
+                return response()->json([]);
+            }
 
             // Options come ONLY from motorcycle (fitment) records so every choice
             // the customer can make corresponds to data the checker can match.
