@@ -309,9 +309,7 @@
                         if (!Array.isArray(data) || data.length === 0) {
                             const bike = [makeVal, modelVal].filter(Boolean).join(' ');
                             resultsBox.innerHTML = makeVal !== ''
-                                ? (modelVal !== '' && !partVal
-                                    ? noticeHtml('No confirmed compatible parts found for this motorcycle yet', `Our shop has not yet confirmed any part for ${bike}. This model stays listed; check back later or search by part name.`)
-                                    : noticeHtml(`No confirmed compatible parts for ${bike}${partVal ? ' matching "' + partVal + '"' : ''}`, 'Only parts our shop has confirmed for this motorcycle are listed. Try another model, or search by part name only.'))
+                                ? noticeHtml(`No confirmed compatible parts for ${bike}${partVal ? ' matching "' + partVal + '"' : ''}`, 'Only parts our shop has confirmed for this motorcycle are listed. Try another model, or search by part name only.')
                                 : noticeHtml('No matching parts found', 'Try a different part name.');
                         } else {
                             const heading = document.createElement('p');
