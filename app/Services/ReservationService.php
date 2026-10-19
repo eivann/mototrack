@@ -144,10 +144,13 @@ class ReservationService
         $title = $status === OrderStatus::SALE_EXPIRED ? 'Reservation Expired' : 'Reservation Cancelled';
         $message = "Reservation #{$reference} has been {$status}. Reason: " . rtrim(trim($reason), '.') . '.';
 
-        // Named routes: the admin dashboard lives at /dashboard, so a hardcoded
-        // '/admin/dashboard' path produced a broken "View Details" redirect.
-        $customerLink = route('customer.dashboard', ['tab' => 'reservations']) . '#reservation-' . $reference;
-        $ownerLink = route('dashboard', ['tab' => 'reservations']);
+        // Cancelled and expired reservations link to customer's historical purchase
+        // record (tab=purchases) rather than the active pending-reservations tab.
+        $isSettled = in_array($status, [OrderStatus::SALE_CANCELLED, OrderStatus::SALE_EXPIRED], true);
+        $customerLink = $isSettled
+            ? route('customer.dashboard', ['tab' => 'purchases']) . '#purchase-' . $reference
+            : route('customer.dashboard', ['tab' => 'reservations']) . '#reservation-' . $reference;
+        $ownerLink = route('dashboard', ['tab' => 'reservations']) . '#reservation-' . $reference;
 
         try {
             $dispatcher = app(NotificationDispatcher::class);

@@ -63,10 +63,13 @@
                                     <!-- Actions -->
                                     <div class="mt-4 flex items-center gap-4">
                                         @if(!empty($notification->data['link']))
-                                            <a href="{{ $notification->data['link'] }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1">
-                                                View details
-                                                <i data-lucide="arrow-right" class="w-3 h-3"></i>
-                                            </a>
+                                            <form action="{{ route('notifications.follow', $notification->id) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1 focus:outline-none">
+                                                    View details
+                                                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                                                </button>
+                                            </form>
                                         @endif
 
                                         @if($notification->unread())

@@ -35,6 +35,20 @@
 
                     <!-- Right Form Column -->
                     <div class="lg:col-span-7">
+                        @if ($errors->any())
+                            <div class="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-2xl text-red-700 dark:text-red-300 text-xs font-bold space-y-1 mb-4">
+                                <div class="flex items-center gap-2 font-black uppercase tracking-wider text-[11px] text-red-800 dark:text-red-200">
+                                    <i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i>
+                                    Please correct the following errors:
+                                </div>
+                                <ul class="list-disc list-inside space-y-0.5 ml-1 pt-1">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <form method="POST" action="/preorder/store" class="space-y-4" x-data="{ loading: false }" @submit="loading = true">
                             @csrf
 
@@ -42,9 +56,10 @@
                             <div>
                                 <label for="custom-part-name" class="block text-[11px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                                     <i data-lucide="package" class="w-3.5 h-3.5 text-indigo-500"></i>
-                                    Part Name <span class="text-red-500">*</span>
+                                    Part Name / Description <span class="text-red-500">*</span>
                                 </label>
-                                <input id="custom-part-name" type="text" name="part_name" placeholder="e.g. Brembo RCS 19 Master Cylinder" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all placeholder-gray-400" required>
+                                <input id="custom-part-name" type="text" name="part_name" value="{{ old('part_name') }}" placeholder="e.g. Brembo RCS 19 Corsa Corta (Part Brand & Name)" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all placeholder-gray-400" required>
+                                <p class="text-[10px] text-gray-400 mt-1">Specify the requested part and parts manufacturer/brand (e.g., Brembo, RCB, Uma Racing, Akrapovic).</p>
                             </div>
 
                             <!-- Model & Quantity -->
@@ -52,16 +67,17 @@
                                 <div>
                                     <label for="custom-model" class="block text-[11px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                                         <i data-lucide="info" class="w-3.5 h-3.5 text-blue-500"></i>
-                                        Motorcycle Model
+                                        Motorcycle Make &amp; Model <span class="text-red-500">*</span>
                                     </label>
-                                    <input id="custom-model" type="text" name="model" placeholder="e.g. Yamaha R6 2018" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all placeholder-gray-400">
+                                    <input id="custom-model" type="text" name="model" value="{{ old('model') }}" placeholder="e.g. Yamaha R6 2018 or Honda Click 125i (or 'Universal')" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all placeholder-gray-400" required>
+                                    <p class="text-[10px] text-gray-400 mt-1">Target motorcycle (Make, Model, Year). Any model is accepted. Enter "Universal" if not bike-specific.</p>
                                 </div>
                                 <div>
                                     <label for="custom-quantity" class="block text-[11px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                                         <i data-lucide="hash" class="w-3.5 h-3.5 text-emerald-500"></i>
                                         Quantity <span class="text-red-500">*</span>
                                     </label>
-                                    <input id="custom-quantity" type="number" name="quantity" min="1" value="1" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm font-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-center">
+                                    <input id="custom-quantity" type="number" name="quantity" min="1" max="100" value="{{ old('quantity', 1) }}" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm font-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-center" required>
                                 </div>
                             </div>
 

@@ -294,7 +294,10 @@
                                     @endif
 
                                     <!-- Link Overlay -->
-                                    <a href="{{ $notification->data['link'] ?? '#' }}" class="absolute inset-0 z-0 {{ $notification->unread() ? 'pr-12' : '' }}"></a>
+                                    <form action="{{ route('notifications.follow', $notification->id) }}" method="POST" class="absolute inset-0 z-0 {{ $notification->unread() ? 'pr-12' : '' }}">
+                                        @csrf
+                                        <button type="submit" aria-label="View notification details" class="w-full h-full cursor-pointer text-left bg-transparent border-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-xl"></button>
+                                    </form>
                                 </div>
                             @empty
                                 <div class="p-8 text-center">

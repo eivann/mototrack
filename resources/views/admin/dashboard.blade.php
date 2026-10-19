@@ -387,7 +387,7 @@
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                                         @forelse($pendingReservations->groupBy(fn ($r) => $r->transaction_reference ?? 'row-'.$r->id) as $ref => $group)
                                             @php $res = $group->first(); $groupTotal = (float) $group->sum('total_price'); $deadline = $res->expires_at ?? ($res->reserved_at ? $res->reserved_at->addHours(24) : $res->created_at->addHours(24)); @endphp
-                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                            <tr id="reservation-{{ $res->transaction_reference }}" class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
                                                 <td class="p-6">
                                                     @foreach($group as $line)
                                                         <div class="font-bold text-gray-900 dark:text-white">{{ $line->item?->part_name ?? 'Unknown Item' }}</div>
@@ -461,7 +461,7 @@
                                     </thead>
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                                         @foreach($settledReservations as $res)
-                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                            <tr id="reservation-{{ $res->transaction_reference }}" class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
                                                 <td class="p-6">
                                                     <div class="font-bold text-gray-900 dark:text-white">{{ $res->item?->part_name ?? 'Unknown Item' }}</div>
                                                     <div class="text-[10px] font-mono text-gray-400 uppercase mt-0.5">{{ $res->transaction_reference }}</div>

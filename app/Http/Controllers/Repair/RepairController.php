@@ -65,7 +65,7 @@ class RepairController extends Controller
             $repair->customer->user->notify(new \App\Notifications\StatusUpdated(
                 'Repair Status Updated',
                 "Your repair job for {$repair->bike_model} is now: " . strtoupper($request->status),
-                route('customer.dashboard', ['tab' => 'repairs'])
+                route('customer.dashboard', ['tab' => 'repairs']) . '#repair-' . $repair->id
             ));
         }
 
@@ -127,14 +127,14 @@ class RepairController extends Controller
             Notification::send($owners, new StatusUpdated(
                 'Repair Payment Received',
                 "Payment of ₱" . number_format($repair->cost, 2) . " received for {$repair->bike_model} ({$repair->customer_name}).",
-                "/repairs"
+                route('repairs.index') . '#repair-' . $repair->id
             ));
 
             if ($repair->customer && $repair->customer->user) {
                 $repair->customer->user->notify(new StatusUpdated(
                     'Payment Confirmed',
                     "Your payment of ₱" . number_format($repair->cost, 2) . " for {$repair->bike_model} has been received. Thank you!",
-                    route('customer.dashboard', ['tab' => 'repairs'])
+                    route('customer.dashboard', ['tab' => 'repairs']) . '#repair-' . $repair->id
                 ));
             }
 

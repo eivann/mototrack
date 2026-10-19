@@ -89,7 +89,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
                             @forelse($repairs as $repair)
-                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+                            <tr id="repair-{{ $repair->id }}" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
                                 <td class="p-4 align-top">
                                     <div class="font-bold text-gray-900 dark:text-white">{{ $repair->customer_name }}</div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">

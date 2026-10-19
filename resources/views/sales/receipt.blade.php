@@ -48,7 +48,8 @@
                     <span class="text-lg font-black text-indigo-600 dark:text-indigo-400">₱{{ number_format($grandTotal, 2) }}</span>
                 </div>
 
-                @if($sales->first()->amount_tendered)
+                @php $isPaid = $sales->first()->payment_confirmed_at !== null || $sales->first()->status === 'completed'; @endphp
+                @if($isPaid && $sales->first()->amount_tendered)
                 <div class="flex justify-between items-center mt-1.5 text-xs text-gray-600 dark:text-gray-400">
                     <span>Amount Tendered:</span>
                     <span class="font-medium">₱{{ number_format($sales->first()->amount_tendered, 2) }}</span>
@@ -56,6 +57,11 @@
                 <div class="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
                     <span>Change:</span>
                     <span class="font-bold text-gray-900 dark:text-white">₱{{ number_format($sales->first()->change, 2) }}</span>
+                </div>
+                @elseif(!$isPaid)
+                <div class="flex justify-between items-center mt-1.5 text-xs text-amber-700 dark:text-amber-400 font-semibold">
+                    <span>Payment Status:</span>
+                    <span>Pending Counter Payment</span>
                 </div>
                 @endif
             </div>

@@ -238,7 +238,7 @@
                                     </thead>
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                                         @foreach($repairs as $repair)
-                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                            <tr id="repair-{{ $repair->id }}" class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
                                                 <td class="p-6 font-bold text-gray-900 dark:text-white">{{ $repair->bike_model }}</td>
                                                 <td class="p-6 text-sm text-gray-500">{{ Str::limit($repair->issue ?? '', 30) }}</td>
                                                 <td class="p-6">
@@ -383,10 +383,10 @@
                         </div>
                         @if(isset($purchases) && $purchases->count() > 0)
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left" x-data="{ expanded: null }">
+                                <table class="w-full text-left" x-data="{ expanded: (window.location.hash.startsWith('#purchase-') ? window.location.hash.replace('#purchase-', '') : null) }">
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                                         @foreach($purchases as $trx => $items)
-                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer" @click="expanded = (expanded === '{{ $trx }}' ? null : '{{ $trx }}')">
+                                            <tr id="purchase-{{ $trx }}" class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer" @click="expanded = (expanded === '{{ $trx }}' ? null : '{{ $trx }}')">
                                                 <td class="p-6">
                                                     <div class="flex items-center gap-3">
                                                         <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="expanded === '{{ $trx }}' ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>

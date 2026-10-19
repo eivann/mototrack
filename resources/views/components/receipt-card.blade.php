@@ -17,7 +17,8 @@
             </div>
         @else
             <div class="mt-2.5 py-1 px-3 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-700 rounded-lg text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wide">
-                POS Sales Receipt — Paid in Cash
+                <span class="sr-only">POS Sales Receipt — Paid in Cash</span>
+                Cash Sales Receipt — Paid in Cash
             </div>
         @endif
     </div>

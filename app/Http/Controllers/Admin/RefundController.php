@@ -84,10 +84,11 @@ class RefundController extends Controller
                     ? ' Please pick up your refund at the scheduled time.'
                     : '');
 
+            $trxRef = $refundRequest->sale?->transaction_reference;
             $user->notify(new StatusUpdated(
                 'Refund Approved',
                 "Your refund request for {$refundRequest->sale->item?->part_name} has been approved.{$methodMsg}",
-                route('customer.dashboard', ['tab' => 'purchases'])
+                route('customer.dashboard', ['tab' => 'purchases']) . ($trxRef ? '#purchase-' . $trxRef : '')
             ));
         }
 
@@ -127,10 +128,11 @@ class RefundController extends Controller
 
         $user = $refundRequest->customer->user;
         if ($user) {
+            $trxRef = $refundRequest->sale?->transaction_reference;
             $user->notify(new StatusUpdated(
                 'Refund Denied',
                 "Your refund request for {$refundRequest->sale->item?->part_name} has been denied. Reason: " . $request->admin_notes,
-                route('customer.dashboard', ['tab' => 'purchases'])
+                route('customer.dashboard', ['tab' => 'purchases']) . ($trxRef ? '#purchase-' . $trxRef : '')
             ));
         }
 

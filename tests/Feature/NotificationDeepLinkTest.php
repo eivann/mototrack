@@ -76,15 +76,15 @@ test('new customer pre-order request links the owner to that record', function (
     expect(lastLink($owner, 'New Pre-order Request'))->toContain('/preorders')->toEndWith('#preorder-' . $created->id);
 });
 
-test('reservation cancellation links to the Reservations tab for customer and owner', function () {
+test('reservation cancellation links to the Purchases tab for customer and Reservations tab for owner', function () {
     [$owner, $user, $customer, $item] = linkSetup();
     Sale::create(['inventory_item_id' => $item->id, 'customer_id' => $customer->id, 'quantity' => 1, 'price' => 100, 'total_price' => 100,
         'transaction_reference' => 'TXN-LINK-1', 'status' => 'pending', 'reserved_at' => now(), 'expires_at' => now()->addHours(24)]);
 
     $this->actingAs($user)->post(route('customer.reservation.cancel', ['reference' => 'TXN-LINK-1']));
 
-    expect(lastLink($user, 'Reservation Cancelled'))->toContain('tab=reservations')->toEndWith('#reservation-TXN-LINK-1')
-        ->and(lastLink($owner, 'Reservation Cancelled'))->toContain('tab=reservations');
+    expect(lastLink($user, 'Reservation Cancelled'))->toContain('tab=purchases')->toEndWith('#purchase-TXN-LINK-1')
+        ->and(lastLink($owner, 'Reservation Cancelled'))->toContain('tab=reservations')->toEndWith('#reservation-TXN-LINK-1');
 });
 
 test('repair and refund notices open their own customer tabs', function () {
@@ -95,14 +95,14 @@ test('repair and refund notices open their own customer tabs', function () {
         ->and($src)->not->toContain("'/customer/dashboard'");
 });
 
-test('the notifications page View details uses the stored deep link unchanged', function () {
+test('the notifications page View details uses the follow route', function () {
     [$owner, $user, , , $pre] = linkSetup();
     $this->actingAs($owner)->post(route('preorders.stock', $pre));
-    $link = lastLink($user, 'Pre-order Arrived — Ready for Pickup');
+    $notif = $user->fresh()->notifications()->first();
 
     $html = $this->actingAs($user)->get(route('notifications.index'))->assertOk()->getContent();
 
-    expect($html)->toContain('href="' . $link . '"')->and($html)->toContain('View details');
+    expect($html)->toContain(route('notifications.follow', $notif->id))->and($html)->toContain('View details');
 });
 
 test('the customer dashboard opens the tab named in the link and ignores unknown tabs', function () {
