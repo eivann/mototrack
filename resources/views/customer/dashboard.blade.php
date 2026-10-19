@@ -49,7 +49,7 @@
             <div class="flex flex-col md:flex-row gap-8 items-start">
                 
                 <!-- Sidebar Navigation (Left) -->
-                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2 md:sticky md:top-[200px]">
+                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2 md:sticky md:top-[176px]">
                     @php
                         $navIcons = [
                             'overview' => 'layout-dashboard',
@@ -79,9 +79,9 @@
                     
                     <!-- Overview Tab -->
                     <div x-show="activeTab === 'overview'" x-transition class="space-y-8">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Welcome Hero Card (Takes up 2 columns on lg) -->
-                        <div class="lg:col-span-2 bg-indigo-600 rounded-[1.5rem] p-5 sm:p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-300 dark:shadow-none">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        <!-- Welcome Hero Card (Takes up 2 columns on lg, stabilized height) -->
+                        <div class="lg:col-span-2 bg-indigo-600 rounded-[1.5rem] p-5 sm:p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-300 dark:shadow-none min-h-[190px] flex flex-col justify-between">
                             <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
                             <div class="relative z-10">
                                 <h3 class="text-xl font-black tracking-tighter mb-2">Welcome back, {{ explode(' ', Auth::user()->name)[0] }}!</h3>
@@ -157,7 +157,7 @@
                                     </div>
 
                                     <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
-                                        <div class="text-sm font-black text-gray-900 dark:text-white">Due at store: <span class="text-indigo-600">₱{{ number_format($reservation->total, 2) }}</span> <span class="text-xs font-bold text-gray-400">(unpaid)</span></div>
+                                        <div class="text-sm font-black text-gray-900 dark:text-white">Due at store: <span class="text-indigo-600">₱{{ number_format($reservation->total, 2) }}</span> <span class="text-xs font-bold text-gray-400">(Cash payment at pickup)</span></div>
                                         @if($reservation->deadline && now()->lt($reservation->deadline))
                                             <div class="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
                                                 <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -228,6 +228,14 @@
                         @if(isset($repairs) && $repairs->count() > 0)
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left">
+                                    <thead class="bg-gray-50/50 dark:bg-gray-800/30 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                        <tr>
+                                            <th class="p-6">Bike Model</th>
+                                            <th class="p-6">Service / Issue</th>
+                                            <th class="p-6">Status</th>
+                                            <th class="p-6 text-right">Cost</th>
+                                        </tr>
+                                    </thead>
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                                         @foreach($repairs as $repair)
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
@@ -267,6 +275,14 @@
                         @if(isset($preorders) && $preorders->count() > 0)
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left">
+                                    <thead class="bg-gray-50/50 dark:bg-gray-800/30 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                        <tr>
+                                            <th class="p-6">Requested Part</th>
+                                            <th class="p-6 text-center">Qty</th>
+                                            <th class="p-6">Status &amp; Progress</th>
+                                            <th class="p-6 text-right">Total &amp; Actions</th>
+                                        </tr>
+                                    </thead>
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                                         @foreach($preorders as $order)
                                             <tr id="preorder-{{ $order->id }}" class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">

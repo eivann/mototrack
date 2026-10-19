@@ -11,7 +11,8 @@
             'mobile_label' => 'Home',
             'href' => url('/'),
             'icon' => 'home',
-            'active' => request()->is('/'),
+            'section' => 'home',
+            'active' => request()->is('/') && !request()->routeIs('faq'),
             'show' => true,
         ],
         [
@@ -21,6 +22,7 @@
             'mobile_label' => 'Browse Parts',
             'href' => route('browse'),
             'icon' => 'package',
+            'section' => null,
             'active' => request()->routeIs('browse'),
             'show' => !$isAdmin,
         ],
@@ -29,6 +31,7 @@
             'mobile_label' => 'Compatibility Checker',
             'href' => route('compatibility'),
             'icon' => 'check-circle-2',
+            'section' => null,
             'active' => request()->routeIs('compatibility*'),
             'show' => true,
         ],
@@ -37,6 +40,7 @@
             'mobile_label' => 'Admin Panel',
             'href' => route('dashboard'),
             'icon' => 'shield',
+            'section' => null,
             'active' => request()->routeIs('dashboard'),
             'show' => $isAdmin,
             'dropdown' => [
@@ -50,6 +54,7 @@
             'mobile_label' => 'Pre-orders',
             'href' => route('preorder.parts'),
             'icon' => 'clipboard-list',
+            'section' => null,
             'active' => request()->routeIs('preorder.parts') || request()->is('preorder-parts') || request()->is('preorder-custom') || request()->is('preorder/*'),
             'show' => !$isAdmin,
         ],
@@ -58,6 +63,7 @@
             'mobile_label' => 'Services',
             'href' => url('/#services'),
             'icon' => 'settings',
+            'section' => 'services',
             'active' => request()->is('services'),
             'show' => !$isAdmin,
         ],
@@ -66,10 +72,11 @@
             'mobile_label' => 'About',
             'href' => url('/#about'),
             'icon' => 'info',
+            'section' => 'about',
             'active' => request()->is('about') || request()->routeIs('faq'),
             'show' => !$isAdmin,
             'dropdown' => [
-                ['label' => 'About Us', 'href' => url('/#about'), 'icon' => 'info'],
+                ['label' => 'About Us', 'href' => url('/#about'), 'icon' => 'info', 'section' => 'about'],
                 ['label' => 'FAQ', 'href' => route('faq'), 'icon' => 'help-circle'],
             ],
         ],
@@ -78,13 +85,46 @@
             'mobile_label' => 'Contact Us',
             'href' => url('/#contact'),
             'icon' => 'phone',
+            'section' => 'contact',
             'active' => request()->is('contact'),
             'show' => !$isAdmin,
         ],
     ];
 @endphp
 
-<div x-data="{ open: false }" class="sticky top-0 z-50 w-full">
+<div x-data="{
+    open: false,
+    activeSection: (window.location.pathname === '/' || window.location.pathname === '')
+        ? (window.location.hash ? window.location.hash.substring(1) : (window.scrollY < 300 ? 'home' : ''))
+        : '',
+    init() {
+        if (window.location.pathname === '/' || window.location.pathname === '') {
+            const handleHash = () => {
+                if (window.location.hash) {
+                    this.activeSection = window.location.hash.substring(1);
+                } else if (window.scrollY < 300) {
+                    this.activeSection = 'home';
+                }
+            };
+            window.addEventListener('hashchange', handleHash);
+
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            this.activeSection = entry.target.id;
+                        }
+                    });
+                }, { rootMargin: '-25% 0px -50% 0px' });
+
+                ['home', 'services', 'about', 'contact'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) observer.observe(el);
+                });
+            }
+        }
+    }
+}" class="sticky top-0 z-50 w-full">
 <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
     <div class="w-full px-4 lg:px-6">
         <div class="flex justify-between items-center h-16 md:h-20 lg:h-[88px]">
@@ -105,6 +145,7 @@
             <!-- Navigation Links -->
             <div class="hidden lg:flex justify-center space-x-4 lg:space-x-6 h-full items-center px-2 mx-4">
                     @php
+                        $isLanding = request()->is('/') && !request()->routeIs('faq');
                         $linkClasses = "inline-flex items-center text-[12px] lg:text-[13px] font-bold transition-all duration-300 relative whitespace-nowrap";
                         $activeClasses = "text-indigo-600 dark:text-indigo-400";
                         $inactiveClasses = "text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white";
@@ -115,14 +156,22 @@
                             @if(!empty($item['dropdown']))
                                 {{-- Dropdown nav item --}}
                                 <div class="relative" x-data="{ dropdownOpen: false }" @mouseenter="dropdownOpen = true" @mouseleave="dropdownOpen = false">
-                                    <button @click="dropdownOpen = !dropdownOpen" class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }} gap-1">
+                                    <button @click="dropdownOpen = !dropdownOpen"
+                                        class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }} gap-1"
+                                        @if($isLanding && !empty($item['section']))
+                                            :class="activeSection === '{{ $item['section'] }}' ? '{{ $activeClasses }}' : '{{ $inactiveClasses }}'"
+                                        @endif>
                                         <span>{{ $item['label'] }}</span>
                                         <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="dropdownOpen ? 'rotate-180' : ''"></i>
                                     </button>
                                     <div x-show="dropdownOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-1" x-cloak
                                         class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-xl py-2 z-50">
                                         @foreach($item['dropdown'] as $subItem)
-                                            <a href="{{ $subItem['href'] }}" class="flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                            <a href="{{ $subItem['href'] }}"
+                                               @if($isLanding && !empty($subItem['section']))
+                                                   @click="activeSection = '{{ $subItem['section'] }}'; dropdownOpen = false"
+                                               @endif
+                                               class="flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                                                 <i data-lucide="{{ $subItem['icon'] }}" class="w-4 h-4"></i>
                                                 {{ $subItem['label'] }}
                                             </a>
@@ -130,7 +179,12 @@
                                     </div>
                                 </div>
                             @else
-                                <a href="{{ $item['href'] }}" class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }}">
+                                <a href="{{ $item['href'] }}"
+                                   class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }}"
+                                   @if($isLanding && !empty($item['section']))
+                                       :class="activeSection === '{{ $item['section'] }}' ? '{{ $activeClasses }}' : '{{ $inactiveClasses }}'"
+                                       @click="activeSection = '{{ $item['section'] }}'"
+                                   @endif>
                                     <span>{{ $item['label'] }}</span>
                                 </a>
                             @endif

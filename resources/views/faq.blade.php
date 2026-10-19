@@ -144,7 +144,7 @@
                     </button>
                     <div x-show="open === 8" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
-                            <p>Yes. You can cancel any unpaid reservation directly from your dashboard prior to pickup. The reserved item is immediately released back to catalog stock.</p>
+                            <p>Yes. You can cancel any reservation directly from your dashboard prior to pickup. The reserved item is immediately released back to catalog stock.</p>
                         </div>
                     </div>
                 </div>

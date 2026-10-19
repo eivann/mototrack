@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 font-sans flex justify-center transition-colors duration-300">
+    <div class="min-h-screen bg-gray-100 dark:bg-gray-900 py-6 px-4 sm:px-6 font-sans flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6 transition-colors duration-300">
         
         <!-- Error Alert -->
         @if(session('error'))
@@ -7,31 +7,31 @@
         @endif
 
         <!-- Receipt Container -->
-        <div class="bg-white dark:bg-gray-800 w-full max-w-md shadow-2xl rounded-sm overflow-hidden border border-gray-100 dark:border-gray-700" id="printableArea">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-md shadow-xl rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700" id="printableArea">
             
             <!-- Receipt Header -->
-            <div class="p-8 text-center border-b border-gray-200 dark:border-gray-700 border-dashed">
-                <div class="flex justify-center items-center mb-3 text-indigo-600 dark:text-indigo-400">
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <div class="p-5 text-center border-b border-gray-200 dark:border-gray-700 border-dashed">
+                <div class="flex justify-center items-center mb-2 text-indigo-600 dark:text-indigo-400">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                 </div>
-                <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white tracking-wider">MOTOTRACK</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Pandi, Bulacan, Philippines</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Reservation Ref #: <span class="font-bold text-gray-800 dark:text-gray-200">{{ $trx ?? 'TRX-' . rand(1000,9999) }}</span></p>
-                <p class="text-xs text-gray-400 dark:text-gray-500">Date: {{ now()->format('M d, Y h:i A') }}</p>
-                <div class="mt-4 py-2 px-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wide">
+                <h1 class="text-xl font-extrabold text-gray-900 dark:text-white tracking-wider">MOTOTRACK</h1>
+                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
+                <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">Pandi, Bulacan, Philippines</p>
+                <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">Reservation Ref #: <span class="font-bold text-gray-800 dark:text-gray-200">{{ $trx ?? 'TRX-' . rand(1000,9999) }}</span></p>
+                <p class="text-[11px] text-gray-400 dark:text-gray-500">Date: {{ now()->format('M d, Y h:i A') }}</p>
+                <div class="mt-2.5 py-1 px-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg text-[10px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wide">
                     Reservation Acknowledgement — No Payment Collected — Not an Official Receipt
                 </div>
             </div>
 
             <!-- Receipt Items -->
-            <div class="p-6">
-                <table class="w-full text-sm">
+            <div class="p-4 sm:p-5">
+                <table class="w-full text-xs">
                     <thead>
                         <tr class="border-b border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">
-                            <th class="py-2 text-left font-semibold">Qty</th>
-                            <th class="py-2 text-left font-semibold">Item</th>
-                            <th class="py-2 text-right font-semibold">Amount</th>
+                            <th class="py-1.5 text-left font-semibold">Qty</th>
+                            <th class="py-1.5 text-left font-semibold">Item</th>
+                            <th class="py-1.5 text-right font-semibold">Amount</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-800 dark:text-gray-200">
@@ -42,17 +42,17 @@
                                 $grandTotal += $total; 
                             @endphp
                             <tr>
-                                <td class="py-3 font-medium align-top">{{ $item->quantity }}x</td>
-                                <td class="py-3 px-2 align-top">
+                                <td class="py-2 font-medium align-top">{{ $item->quantity }}x</td>
+                                <td class="py-2 px-2 align-top">
                                     <div class="font-bold text-gray-900 dark:text-white">{{ $item->item->part_name ?? $item->part_name }}</div>
                                     @if(isset($item->item) && $item->item->model)
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ $item->item->model }}</div>
+                                    <div class="text-[11px] text-gray-500 dark:text-gray-400">{{ $item->item->model }}</div>
                                     @elseif($item->model)
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ $item->model }}</div>
+                                    <div class="text-[11px] text-gray-500 dark:text-gray-400">{{ $item->model }}</div>
                                     @endif
-                                    <div class="text-xs text-gray-400 dark:text-gray-500">@ ₱{{ number_format($item->price, 2) }} each</div>
+                                    <div class="text-[10px] text-gray-400 dark:text-gray-500">@ ₱{{ number_format($item->price, 2) }} each</div>
                                 </td>
-                                <td class="py-3 text-right font-bold align-top text-gray-900 dark:text-white">₱{{ number_format($total, 2) }}</td>
+                                <td class="py-2 text-right font-bold align-top text-gray-900 dark:text-white">₱{{ number_format($total, 2) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -60,24 +60,24 @@
             </div>
 
             <!-- Receipt Totals -->
-            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50">
-                <div class="flex justify-between items-center mb-1 text-sm text-gray-600 dark:text-gray-400">
+            <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50">
+                <div class="flex justify-between items-center mb-1 text-xs text-gray-600 dark:text-gray-400">
                     <span>Subtotal:</span>
-                    <span class="text-gray-900 dark:text-white">₱{{ number_format($grandTotal, 2) }}</span>
+                    <span class="text-gray-900 dark:text-white font-semibold">₱{{ number_format($grandTotal, 2) }}</span>
                 </div>
                 
-                <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-300 dark:border-gray-600 border-dashed">
-                    <span class="text-lg font-bold text-gray-900 dark:text-white">GRAND TOTAL:</span>
-                    <span class="text-xl font-extrabold text-gray-900 dark:text-white">₱{{ number_format($grandTotal, 2) }}</span>
+                <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-300 dark:border-gray-600 border-dashed">
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">GRAND TOTAL:</span>
+                    <span class="text-base font-extrabold text-gray-900 dark:text-white">₱{{ number_format($grandTotal, 2) }}</span>
                 </div>
 
                 @if($orders->first() && $orders->first()->amount_tendered > 0)
-                <div class="flex justify-between items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <div class="flex justify-between items-center mt-1.5 text-xs text-gray-600 dark:text-gray-400">
                     <span>Amount Paid:</span>
                     <span class="font-medium text-gray-900 dark:text-white">₱{{ number_format($orders->first()->amount_tendered, 2) }}</span>
                 </div>
                 @if($orders->first()->amount_tendered < $grandTotal)
-                <div class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
+                <div class="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
                     <span>Remaining Balance:</span>
                     <span class="font-bold text-gray-900 dark:text-white">₱{{ number_format($grandTotal - $orders->first()->amount_tendered, 2) }}</span>
                 </div>
@@ -86,20 +86,20 @@
             </div>
 
             <!-- Footer -->
-            <div class="p-6 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-gray-700">
-                <p class="font-bold text-amber-700 dark:text-amber-400 mb-1">Reservation Acknowledgement — No Payment Collected — Not an Official Receipt</p>
-                <p>Please present this document to the counter within 24 hours to pay and pick up your items.</p>
-                <p class="mt-4 opacity-50 text-[10px] uppercase tracking-widest">POWERED BY MOTOTRACK</p>
+            <div class="p-4 sm:p-5 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-gray-700">
+                <p class="font-bold text-amber-700 dark:text-amber-400 mb-0.5 text-[11px]">Reservation Acknowledgement — No Payment Collected</p>
+                <p class="text-[11px]">Please present this document to the counter within 24 hours to pay and pick up your items.</p>
+                <p class="mt-2 opacity-50 text-[9px] uppercase tracking-widest">POWERED BY MOTOTRACK</p>
             </div>
         </div>
 
-        <!-- Receipt Actions -->
-        <div class="ml-8 hidden lg:flex flex-col gap-4">
-            <a href="{{ route('checkout.receipt.download', ['transaction' => $trx]) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        <!-- Receipt Actions (Visible on both desktop & mobile) -->
+        <div class="w-full max-w-md lg:w-48 flex flex-row lg:flex-col gap-3 shrink-0">
+            <a href="{{ route('checkout.receipt.download', ['transaction' => $trx]) }}" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 Download PDF
             </a>
-            <a href="/customer/dashboard" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-bold py-3 px-6 rounded-xl shadow-sm text-center transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            <a href="/customer/dashboard" class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-bold py-2.5 px-4 rounded-xl shadow-sm text-center transition-all active:scale-95 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
                 Back to Dashboard
             </a>
         </div>

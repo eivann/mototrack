@@ -203,7 +203,7 @@
                                         <div>
                                             <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">5. Cancellation Policy</h4>
                                             <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>You may cancel an unpaid reservation at any time prior to pickup directly through your customer dashboard with immediate stock restoration.</li>
+                                                <li>You may cancel a reservation at any time prior to pickup directly through your customer dashboard with immediate stock restoration.</li>
                                             </ul>
                                         </div>
 

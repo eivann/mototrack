@@ -1,20 +1,20 @@
 <x-app-layout>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4">
 
     {{-- Two columns on desktop (item summary beside the form) so the whole
          pre-order fits one screen without scrolling; single column on mobile. --}}
     <div class="max-w-5xl mx-auto">
 
-        <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
+        <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
             <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
             Pre-order Item
         </h2>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
         <!-- ITEM INFO & PRICE BREAKDOWN -->
         <div class="overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm lg:sticky lg:top-24">
-            <div class="p-6 sm:p-8 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-6 items-start">
+            <div class="p-5 sm:p-6 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-5 items-start">
                 @if($item->image)
                     <div class="w-full sm:w-32 h-32 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center overflow-hidden shrink-0">
                         <img src="{{ Storage::url($item->image) }}" alt="{{ $item->part_name }}" class="max-w-full max-h-full object-contain p-2">
@@ -36,13 +36,13 @@
             </div>
 
             <!-- Dynamic Price Breakdown via Alpine -->
-            <div class="p-6 sm:p-8 bg-white dark:bg-gray-800" x-data="{
+            <div class="p-5 sm:p-6 bg-white dark:bg-gray-800" x-data="{
                 price: {{ $item->price }},
                 qty: 1,
                 get total() { return this.price * this.qty; }
             }" @qty-changed.window="qty = parseInt($event.detail.value) || 1">
                 
-                <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Price Breakdown</h4>
+                <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Price Breakdown</h4>
                 
                 <div class="space-y-3">
                     <div class="flex justify-between items-center text-sm">
@@ -69,7 +69,7 @@
         </div>
 
         <!-- FORM COLUMN -->
-        <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-lg rounded-2xl p-6 sm:p-8">
+        <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-lg rounded-2xl p-5 sm:p-6">
 
         @if ($errors->any())
             <div class="mb-4 text-red-500 dark:text-red-400 text-sm">
@@ -94,7 +94,7 @@
 
 
             <!-- Google reCAPTCHA -->
-            <div class="mb-4 flex flex-col items-center">
+            <div class="mb-3 flex flex-col items-center">
                 <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
             </div>
 
@@ -106,7 +106,7 @@
             @endif
 
             <!-- TERMS & CONDITIONS CHECKBOX -->
-            <div class="mb-5 border-t border-gray-100 dark:border-gray-700 pt-5">
+            <div class="mb-4 border-t border-gray-100 dark:border-gray-700 pt-4">
                 <div class="flex items-start gap-3">
                     <input type="checkbox" id="agree-terms-preorder" x-model="agreed" :disabled="!scrolledToBottom"
                         class="mt-0.5 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-amber-600 focus:ring-amber-500 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity">
@@ -121,7 +121,7 @@
             </div>
 
             <!-- Buttons -->
-            <div class="flex justify-between items-center mt-6">
+            <div class="flex justify-between items-center mt-4">
                 <a href="/preorder-parts" class="text-gray-600 dark:text-gray-400 hover:underline">← Back</a>
                 <button type="submit" :disabled="loading || !agreed" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg x-show="loading" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>

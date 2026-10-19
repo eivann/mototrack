@@ -67,7 +67,7 @@
         <!-- FILTER SIDEBAR (Sticky on Desktop, Fixed bottom sheet on Mobile) -->
         <div id="filter-panel"
              :class="showFilters ? '' : 'hidden lg:block'"
-             class="lg:col-span-3 lg:sticky lg:top-44 lg:self-start z-30"
+             class="lg:col-span-3 lg:sticky lg:top-28 lg:self-start z-30"
              x-show="showFilters || window.innerWidth >= 1024"
              x-cloak>
             {{-- On mobile the panel is pinned to the viewport so it opens where the

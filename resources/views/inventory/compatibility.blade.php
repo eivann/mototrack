@@ -5,21 +5,21 @@
         <!-- Toast Notification Container -->
         <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
-        <div class="max-w-3xl mx-auto mt-10">
+        <div class="max-w-5xl xl:max-w-6xl mx-auto mt-6">
             <!-- Header -->
-            <div class="text-center mb-10">
-                <h2 class="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight sm:text-5xl">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight sm:text-4xl">
                     Compatibility Checker
                 </h2>
-                <p class="mt-4 text-lg text-gray-500 dark:text-gray-400">
+                <p class="mt-2 text-base text-gray-500 dark:text-gray-400">
                     Find the perfect parts for your motorcycle. Search by model, part name, or category.
                 </p>
             </div>
 
             <!-- Search Area -->
             <form id="compatForm" class="relative group z-20">
-                <div class="bg-white dark:bg-gray-800 rounded-[2rem] shadow-[0_8px_30px_rgba(82,68,225,0.15)] dark:shadow-none p-3 md:p-4 border border-gray-50 dark:border-gray-700">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 items-end">
+                <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-[0_8px_30px_rgba(82,68,225,0.15)] dark:shadow-none p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+                    <div id="inputsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 items-end">
                         <div class="w-full relative">
                             <label for="makeSelect" class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-2 mb-1.5">Make / Brand</label>
                             <select id="makeSelect" name="make" class="w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-0 font-bold transition-colors text-sm">
@@ -137,7 +137,14 @@
                     .catch(() => []);
                 anyYears = Array.isArray(all) && all.length > 0;
             }
-            if (yearWrap) yearWrap.classList.toggle('hidden', !anyYears);
+            if (yearWrap) {
+                yearWrap.classList.toggle('hidden', !anyYears);
+                const inputsGrid = document.getElementById('inputsGrid');
+                if (inputsGrid) {
+                    inputsGrid.classList.toggle('lg:grid-cols-4', anyYears);
+                    inputsGrid.classList.toggle('lg:grid-cols-3', !anyYears);
+                }
+            }
             if (!anyYears) {
                 if (yearSelect) yearSelect.value = '';
                 return;

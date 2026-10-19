@@ -38,7 +38,7 @@
             <div class="flex flex-col md:flex-row gap-8 items-start">
                 
                 <!-- Sidebar Navigation (Left) -->
-                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2 md:sticky md:top-[120px]">
+                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2 md:sticky md:top-[176px]">
                     @foreach([
                         'overview' => 'Overview',
                         'inventory' => 'Inventory',
@@ -46,7 +46,7 @@
                         'sales' => 'POS & Sales',
                         'repairs' => 'Service Jobs',
                         'preorders' => 'Pre-orders',
-                        'refunds' => 'Returns & Cancellations',
+                        'refunds' => 'Returns & Refunds',
                         'reports' => 'Reports'
                     ] as $id => $label)
                         <button
@@ -88,68 +88,79 @@
                 <div class="w-full md:flex-1 min-w-0 order-2">
                     
                     <!-- Overview Tab -->
-                    <div x-show="activeTab === 'overview'" x-transition class="space-y-8">
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div class="bg-white dark:bg-gray-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all h-full">
-                                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Total Products</div>
-                                    <div class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-4">{{ number_format($stats['totalProducts']) }}</div>
-                                    <div class="flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 dark:bg-green-900/20 w-fit px-3 py-1 rounded-full italic">+12.5% this month</div>
+                    <div x-show="activeTab === 'overview'" x-transition class="space-y-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                            <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="bg-white dark:bg-gray-900 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                                    <div>
+                                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Products</div>
+                                        <div class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-2">{{ number_format($stats['totalProducts']) }}</div>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-green-600 font-bold text-[11px] bg-green-50 dark:bg-green-900/20 w-fit px-2.5 py-0.5 rounded-full italic">+12.5% this month</div>
                                 </div>
-                                <div class="bg-white dark:bg-gray-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all h-full">
-                                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Daily Revenue</div>
-                                    <div class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-4">₱{{ number_format($stats['todayRevenue'], 2) }}</div>
-                                    <div class="flex items-center gap-2 text-indigo-600 font-bold text-xs bg-indigo-50 dark:bg-indigo-900/20 w-fit px-3 py-1 rounded-full italic">Today's collection</div>
+                                <div class="bg-white dark:bg-gray-900 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                                    <div>
+                                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Daily Revenue</div>
+                                        <div class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-2">₱{{ number_format($stats['todayRevenue'], 2) }}</div>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-indigo-600 font-bold text-[11px] bg-indigo-50 dark:bg-indigo-900/20 w-fit px-2.5 py-0.5 rounded-full italic">Today's collection</div>
                                 </div>
-                                <div class="bg-white dark:bg-gray-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all h-full">
-                                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Low Stock Alerts</div>
-                                    <div class="text-3xl sm:text-4xl font-black mb-4 {{ ($stats['lowStockCount'] ?? 0) > 0 ? 'text-amber-600' : 'text-gray-900 dark:text-white' }}">{{ number_format($stats['lowStockCount'] ?? 0) }}</div>
-                                    <a href="{{ route('low-stock.index') }}" class="inline-flex items-center gap-2 {{ ($stats['lowStockCount'] ?? 0) > 0 ? 'text-amber-600 font-bold text-xs bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 px-3 py-1 rounded-full' : 'text-gray-400 font-bold text-xs bg-gray-50 dark:bg-gray-800/50 px-3 py-1 rounded-full' }} transition-colors">
-                                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                                <div class="bg-white dark:bg-gray-900 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                                    <div>
+                                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Low Stock Alerts</div>
+                                        <div class="text-2xl sm:text-3xl font-black mb-2 {{ ($stats['lowStockCount'] ?? 0) > 0 ? 'text-amber-600' : 'text-gray-900 dark:text-white' }}">{{ number_format($stats['lowStockCount'] ?? 0) }}</div>
+                                    </div>
+                                    <a href="{{ route('low-stock.index') }}" class="inline-flex items-center gap-1.5 {{ ($stats['lowStockCount'] ?? 0) > 0 ? 'text-amber-600 font-bold text-[11px] bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 px-2.5 py-0.5 rounded-full' : 'text-gray-400 font-bold text-[11px] bg-gray-50 dark:bg-gray-800/50 px-2.5 py-0.5 rounded-full' }} transition-colors">
+                                        <i data-lucide="alert-triangle" class="w-3 h-3"></i>
                                         {{ ($stats['lowStockCount'] ?? 0) > 0 ? 'View restock list' : 'All stocked' }}
                                     </a>
                                 </div>
-                                <div class="bg-white dark:bg-gray-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all h-full">
-                                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Out of Stock</div>
-                                    <div class="text-3xl sm:text-4xl font-black mb-4 {{ ($outOfStockCount ?? 0) > 0 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">{{ number_format($outOfStockCount ?? 0) }}</div>
-                                    <a href="{{ route('low-stock.index') }}" class="inline-flex items-center gap-2 {{ ($outOfStockCount ?? 0) > 0 ? 'text-red-600 font-bold text-xs bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 px-3 py-1 rounded-full' : 'text-gray-400 font-bold text-xs bg-gray-50 dark:bg-gray-800/50 px-3 py-1 rounded-full' }} transition-colors">
-                                        <i data-lucide="package-x" class="w-3.5 h-3.5"></i>
+                                <div class="bg-white dark:bg-gray-900 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                                    <div>
+                                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Out of Stock</div>
+                                        <div class="text-2xl sm:text-3xl font-black mb-2 {{ ($outOfStockCount ?? 0) > 0 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">{{ number_format($outOfStockCount ?? 0) }}</div>
+                                    </div>
+                                    <a href="{{ route('low-stock.index') }}" class="inline-flex items-center gap-1.5 {{ ($outOfStockCount ?? 0) > 0 ? 'text-red-600 font-bold text-[11px] bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 px-2.5 py-0.5 rounded-full' : 'text-gray-400 font-bold text-[11px] bg-gray-50 dark:bg-gray-800/50 px-2.5 py-0.5 rounded-full' }} transition-colors">
+                                        <i data-lucide="package-x" class="w-3 h-3"></i>
                                         {{ ($outOfStockCount ?? 0) > 0 ? 'Needs urgent restock' : 'Nothing to restock' }}
                                     </a>
-                                </div>                            </div>
+                                </div>
+                            </div>
                             
                             <!-- Live Activity -->
-                            <div class="bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 h-full">
-                                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <div class="bg-white dark:bg-gray-900 p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col h-full">
+                                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                                     <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-ping"></span>
                                     Live Activity
                                 </h3>
-                                <div class="space-y-4 max-h-[150px] overflow-y-auto scrollbar-thin">
+                                <div class="space-y-3 flex-1 overflow-y-auto scrollbar-thin max-h-[190px]">
                                     <template x-for="activity in recentActivities" :key="activity.id">
-                                        <div class="flex gap-4 group">
-                                            <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 p-2 rounded-xl h-fit shrink-0">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                                        <div class="flex items-start gap-3 group">
+                                            <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 p-1.5 rounded-lg h-fit shrink-0 mt-0.5">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                                             </div>
-                                            <div class="min-w-0">
-                                                <div class="text-xs font-black text-gray-900 dark:text-white truncate uppercase tracking-tight" x-text="activity.title"></div>
-                                                <div class="text-[10px] font-bold text-gray-400 mt-0.5" x-text="activity.time"></div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="text-xs font-bold text-gray-900 dark:text-white truncate uppercase tracking-tight" x-text="activity.title"></div>
+                                                <div class="text-[10px] font-medium text-gray-400" x-text="activity.time"></div>
                                             </div>
                                         </div>
                                     </template>
-                                    <div x-show="recentActivities.length === 0" style="display: none;" class="text-center py-4 text-gray-400 text-xs font-bold italic">No recent activity</div>
+                                    <div x-show="recentActivities.length === 0" style="display: none;" class="text-center py-6 text-gray-400 text-xs font-bold italic">No recent activity</div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Store Health (The Big Blue Card) -->
-                        <div class="bg-indigo-600 rounded-2xl sm:rounded-[1.5rem] p-5 sm:p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-300 dark:shadow-none">
+                        <!-- Store Health (Operation Center) -->
+                        <div class="bg-indigo-600 rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden shadow-lg shadow-indigo-200 dark:shadow-none">
                             <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-                            <div class="relative z-10">
-                                <h3 class="text-xl font-black tracking-tighter mb-2 italic">Operation Center</h3>
-                                <p class="text-indigo-100 text-xs sm:text-sm max-w-md font-medium leading-relaxed mb-4">System is tracking <span class="text-white font-black underline">{{ $stats['activeRepairs'] }} service jobs</span>. Stock levels for {{ $stats['lowStockCount'] }} parts are currently critical.</p>
-                                <div class="flex flex-wrap gap-3">
-                                    <button @click="activeTab = 'repairs'" class="px-6 py-3 bg-white text-indigo-600 rounded-xl font-black text-xs hover:scale-105 transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Manage Jobs</button>
-                                    <button @click="activeTab = 'inventory'" class="px-6 py-3 bg-indigo-500/50 text-white border border-white/20 rounded-xl font-black text-xs hover:bg-indigo-400 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">Quick Audit</button>
+                            <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <h3 class="text-lg font-black tracking-tight mb-1">Operation Center</h3>
+                                    <p class="text-indigo-100 text-xs font-medium leading-relaxed">System is tracking <span class="text-white font-black underline">{{ $stats['activeRepairs'] }} service jobs</span>. Stock levels for {{ $stats['lowStockCount'] }} parts are currently critical.</p>
+                                </div>
+                                <div class="flex flex-wrap gap-2.5 shrink-0">
+                                    <button @click="activeTab = 'repairs'" class="px-5 py-2.5 bg-white text-indigo-600 rounded-xl font-black text-xs hover:scale-105 transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-white">Manage Jobs</button>
+                                    <button @click="activeTab = 'inventory'" class="px-5 py-2.5 bg-indigo-500/50 text-white border border-white/20 rounded-xl font-black text-xs hover:bg-indigo-400 transition-all focus:outline-none focus:ring-2 focus:ring-white">Quick Audit</button>
                                 </div>
                             </div>
                         </div>
@@ -327,8 +338,16 @@
                                                     </span>
                                                 </td>
                                                 <td class="p-6 font-black text-gray-900 dark:text-white text-right">
-                                                    ₱{{ number_format($preorder->down_payment, 2) }}
-                                                    <div class="text-[10px] font-bold text-gray-400 mt-1 uppercase">DP Received</div>
+                                                    ₱{{ number_format($preorder->total, 2) }}
+                                                    @if($preorder->is_paid)
+                                                        <div class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-1 uppercase">Paid in full</div>
+                                                    @elseif($preorder->status === 'cancelled' || $preorder->status === 'expired')
+                                                        <div class="text-[10px] font-bold text-gray-400 mt-1 uppercase">{{ $preorder->status }}</div>
+                                                    @elseif(($preorder->down_payment ?? 0) > 0)
+                                                        <div class="text-[10px] font-bold text-amber-600 dark:text-amber-400 mt-1 uppercase">DP: ₱{{ number_format($preorder->down_payment, 2) }}</div>
+                                                    @else
+                                                        <div class="text-[10px] font-bold text-gray-400 mt-1 uppercase">Cash at pickup</div>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @empty
@@ -466,13 +485,13 @@
                         @endif
                     </div>
 
-                    <!-- Returns & Cancellations Tab -->
+                    <!-- Returns & Refunds Tab -->
                     <div x-show="activeTab === 'refunds'" x-cloak class="space-y-6">
                         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                             <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                                 <div>
-                                    <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Returns & Cancellations</h3>
-                                    <p class="text-xs text-gray-400 font-bold mt-1">Manage physical POS counter returns, damaged items, and reservation cancellations</p>
+                                    <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Returns & Refunds</h3>
+                                    <p class="text-xs text-gray-400 font-bold mt-1">Manage physical POS counter returns, damaged items, and refund requests</p>
                                 </div>
                                 <a href="{{ route('inventory.adjustments.index') }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2">
                                     <i data-lucide="package-minus" class="w-4 h-4"></i>
@@ -593,48 +612,48 @@
                     </div>
 
                     <!-- Reports Tab -->
-                    <div x-show="activeTab === 'reports'" x-cloak class="space-y-6">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div x-show="activeTab === 'reports'" x-cloak class="space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <!-- Revenue Card -->
-                            <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm">
-                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Monthly Revenue</div>
-                                <div class="text-4xl font-black text-gray-900 dark:text-white mb-4">₱{{ number_format($stats['monthlyRevenue'], 2) }}</div>
-                                <div class="flex items-center gap-2 text-indigo-600 font-bold text-xs bg-indigo-50 dark:bg-indigo-900/20 w-fit px-3 py-1 rounded-full italic">{{ number_format($stats['totalSalesCount']) }} Total Transactions</div>
+                            <div class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Monthly Revenue</div>
+                                <div class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-2">₱{{ number_format($stats['monthlyRevenue'], 2) }}</div>
+                                <div class="flex items-center gap-2 text-indigo-600 font-bold text-[11px] bg-indigo-50 dark:bg-indigo-900/20 w-fit px-2.5 py-0.5 rounded-full italic">{{ number_format($stats['totalSalesCount']) }} Total Transactions</div>
                             </div>
                             
                             <!-- Repair Card -->
-                            <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm">
-                                <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Completed Repairs</div>
-                                <div class="text-4xl font-black text-gray-900 dark:text-white mb-4">{{ number_format($stats['completedRepairs']) }}</div>
-                                <div class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 dark:bg-emerald-900/20 w-fit px-3 py-1 rounded-full italic">All time</div>
+                            <div class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Completed Repairs</div>
+                                <div class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-2">{{ number_format($stats['completedRepairs']) }}</div>
+                                <div class="flex items-center gap-2 text-emerald-600 font-bold text-[11px] bg-emerald-50 dark:bg-emerald-900/20 w-fit px-2.5 py-0.5 rounded-full italic">All time</div>
                             </div>
                         </div>
 
                         <!-- Revenue Chart -->
-                        <div class="bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm">
-                            <div class="flex items-center justify-between mb-6">
+                        <div class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                            <div class="flex items-center justify-between mb-3">
                                 <div>
                                     <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Daily Revenue</h3>
-                                    <p class="text-[10px] text-gray-400 mt-1">Last 30 days</p>
+                                    <p class="text-[10px] text-gray-400">Last 30 days</p>
                                 </div>
-                                <div class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full">
+                                <div class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full">
                                     <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
                                     ₱{{ number_format(array_sum($chartData), 2) }} total
                                 </div>
                             </div>
-                            <div class="relative" style="height: 300px;">
+                            <div class="relative h-48 sm:h-52">
                                 <canvas id="revenueChart"></canvas>
                             </div>
                         </div>
 
-                        <div class="bg-indigo-600 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-xl">
+                        <div class="bg-indigo-600 rounded-2xl p-5 sm:p-6 text-white relative overflow-hidden shadow-lg shadow-indigo-200 dark:shadow-none">
                             <div class="absolute -right-20 -top-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-                            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
-                                    <h3 class="text-2xl font-black tracking-tighter mb-2 italic">Full Sales History</h3>
-                                    <p class="text-indigo-100 text-sm font-medium">Export and view all detailed POS transactions and receipts.</p>
+                                    <h3 class="text-lg font-black tracking-tight mb-1">Full Sales History</h3>
+                                    <p class="text-indigo-100 text-xs font-medium">Export and view all detailed POS transactions and receipts.</p>
                                 </div>
-                                <a href="/sales/history" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-lg whitespace-nowrap">View History</a>
+                                <a href="/sales/history" class="px-6 py-2.5 bg-white text-indigo-600 rounded-xl font-black text-xs hover:scale-105 transition-all shadow-md whitespace-nowrap shrink-0">View History</a>
                             </div>
                         </div>
                     </div>
