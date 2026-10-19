@@ -1,0 +1,125 @@
+name: Deploy to New MotoTrack VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mototrack-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Test PHP and compile frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+          coverage: none
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare isolated CI environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run tests (CI only)
+        run: php artisan test
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Validate frontend build
+        run: |
+          npm ci
+          npm run build
+
+  deploy:
+    name: Deploy verified commit (no migrations)
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH to new VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -T 10 -H "$SERVER_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy from private repo mirror on VPS
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          DEPLOY_COMMIT: ${{ github.sha }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 \
+            -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            "$SERVER_USER@$SERVER_HOST" "DEPLOY_COMMIT=$DEPLOY_COMMIT bash -se" <<'REMOTE'
+          set -euo pipefail
+          umask 0027
+
+          SRC=/home/deploy/mototrack-source
+          APP=/var/www/mototrack
+          export GIT_SSH_COMMAND='ssh -i /home/deploy/.ssh/id_ed25519_mototrack -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes'
+
+          test "$(id -un)" = deploy
+          test -f "$APP/.env"
+          test -d "$APP/storage/app"
+          test -f "$SRC/.git/config"
+          test -z "$(git -C "$SRC" status --porcelain)"
+
+          git -C "$SRC" fetch origin main
+          test "$(git -C "$SRC" rev-parse origin/main)" = "$DEPLOY_COMMIT"
+          git -C "$SRC" merge --ff-only "$DEPLOY_COMMIT"
+
+          # Copy application code but do not delete production-only files.
+          rsync -rlpt --chmod=Dug+rx,Fug+r \
+            --exclude='/.git/' \
+            --exclude='/.github/' \
+            --exclude='/.env' \
+            --exclude='/storage/' \
+            --exclude='/public/storage' \
+            --exclude='/public/images/' \
+            --exclude='/public/build/' \
+            --exclude='/bootstrap/cache/' \
+            --exclude='/vendor/' \
+            --exclude='/node_modules/' \
+            "$SRC/" "$APP/"
+
+          cd "$APP"
+          composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader --no-scripts
+          npm ci --no-audit --no-fund
+          npm run build
+
+          # PHP-FPM runs as www-data. Only grant group READ access to code/assets.
+          for dir in app bootstrap config database lang public resources routes vendor; do
+            if [ -d "$dir" ]; then chmod -R g+rX "$dir"; fi
+          done
+          chmod g+r composer.json composer.lock
+          chmod 2750 "$APP" "$APP/public"
+          php artisan package:discover --no-ansi
+          php artisan optimize:clear
+
+          echo "DEPLOYED COMMIT: $DEPLOY_COMMIT"
+          echo 'No migrations, APP_KEY generation, or deletion of uploaded assets performed.'
+          echo 'NOTICE: Restart queue and Reverb manually until limited restart permission is configured.'
+          REMOTE
