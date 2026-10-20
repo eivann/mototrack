@@ -1,9 +1,8 @@
 name: Deploy to New MotoTrack VPS
 
+# First production deployment must be started manually.
+# Only add a push-to-main trigger after a successful and reviewed run.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -84,14 +83,14 @@ jobs:
           test "$(id -un)" = deploy
           test -f "$APP/.env"
           test -d "$APP/storage/app"
-          test -f "$SRC/.git/config"
+          test -d "$SRC/.git"
           test -z "$(git -C "$SRC" status --porcelain)"
 
           git -C "$SRC" fetch origin main
           test "$(git -C "$SRC" rev-parse origin/main)" = "$DEPLOY_COMMIT"
           git -C "$SRC" merge --ff-only "$DEPLOY_COMMIT"
 
-          # Copy application code but do not delete production-only files.
+          # Never delete production data; keep uploaded images and storage.
           rsync -rlpt --chmod=Dug+rx,Fug+r \
             --exclude='/.git/' \
             --exclude='/.github/' \
@@ -99,6 +98,7 @@ jobs:
             --exclude='/storage/' \
             --exclude='/public/storage' \
             --exclude='/public/images/' \
+            --exclude='/MotoTrack_product_images/' \
             --exclude='/public/build/' \
             --exclude='/bootstrap/cache/' \
             --exclude='/vendor/' \
@@ -110,16 +110,39 @@ jobs:
           npm ci --no-audit --no-fund
           npm run build
 
-          # PHP-FPM runs as www-data. Only grant group READ access to code/assets.
-          for dir in app bootstrap config database lang public resources routes vendor; do
-            if [ -d "$dir" ]; then chmod -R g+rX "$dir"; fi
+          # Prevent recurrence of deploy:deploy / 0600 web-access errors.
+          for dir in app config database lang resources routes vendor; do
+            if [ -d "$dir" ]; then
+              chgrp -R www-data "$dir"
+              chmod -R g+rX "$dir"
+            fi
           done
+          chgrp www-data public/index.php
+          chmod g+r public/index.php
+
+          if [ -d public/build ]; then
+            chgrp -R www-data public/build
+            chmod -R g+rX public/build
+          fi
+          if [ -f bootstrap/app.php ]; then
+            chgrp www-data bootstrap/app.php
+            chmod g+r bootstrap/app.php
+          fi
+          if [ -f bootstrap/providers.php ]; then
+            chgrp www-data bootstrap/providers.php
+            chmod g+r bootstrap/providers.php
+          fi
+          chgrp www-data composer.json composer.lock
           chmod g+r composer.json composer.lock
           chmod 2750 "$APP" "$APP/public"
           php artisan package:discover --no-ansi
           php artisan optimize:clear
 
+          # Health-check origin locally without relying on Cloudflare DNS.
+          curl --noproxy '*' -fkSs --max-time 20 \
+            --resolve mototrack.online:443:127.0.0.1 \
+            -o /dev/null https://mototrack.online/
           echo "DEPLOYED COMMIT: $DEPLOY_COMMIT"
-          echo 'No migrations, APP_KEY generation, or deletion of uploaded assets performed.'
-          echo 'NOTICE: Restart queue and Reverb manually until limited restart permission is configured.'
+          echo 'No migrations, APP_KEY generation, or deletion of uploaded files performed.'
+          echo 'Queue worker and Reverb restarts remain manual.'
           REMOTE
