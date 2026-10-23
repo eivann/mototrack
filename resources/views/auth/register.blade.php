@@ -1,18 +1,31 @@
+@php
+    $rawOldPhone = (string) old('phone', '');
+    $digitsOnly = preg_replace('/[^0-9]/', '', $rawOldPhone);
+    if (str_starts_with($digitsOnly, '639') && strlen($digitsOnly) === 12) {
+        $initialPhoneDisplay = substr($digitsOnly, 2);
+    } elseif (str_starts_with($digitsOnly, '09') && strlen($digitsOnly) === 11) {
+        $initialPhoneDisplay = substr($digitsOnly, 1);
+    } elseif (str_starts_with($digitsOnly, '9') && strlen($digitsOnly) === 10) {
+        $initialPhoneDisplay = $digitsOnly;
+    } else {
+        $initialPhoneDisplay = $rawOldPhone;
+    }
+@endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'MotoTrack') }} - Register</title>
-    
+    <title>Create your account - {{ config('app.name', 'MotoTrack') }}</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@0.460.0"></script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    
+
     <script>
         (function() {
             var theme = localStorage.getItem('theme');
@@ -23,499 +36,449 @@
             }
         })();
     </script>
-    
+
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top, #eef2ff, #f8fafc);
-            color: #0f172a;
-            min-height: 100svh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0.75rem;
-            overflow-x: hidden;
-            transition: background 0.3s ease;
-            color-scheme: light;
-        }
-
-        *,
-        *::before,
-        *::after {
-            box-sizing: inherit;
-        }
-        
-        .dark body {
-            background: radial-gradient(circle at top, #1e1b4b, #0f172a);
-            color: white;
-            color-scheme: dark;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-        }
-        
-        .dark .card {
-            background: #1e293b;
-            border-color: #334155;
-            box-shadow: none;
-        }
-        
-        .btn {
-            border-radius: 14px;
-            padding: 10px 20px;
-            font-weight: 500;
-            transition: 0.25s;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg,#2563eb,#4f46e5);
-            color: white;
-            border: none;
-        }
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(37,99,235,0.3);
-        }
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .input-field {
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
-            padding: 10px 14px;
-            padding-left: 44px;
-            width: 100%;
-            background: #f8fafc;
-        }
-        
-        .dark .input-field {
-            background: #334155;
-            border-color: #475569;
-            color: white;
-        }
-        
-        .input-field:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-            outline: none;
-            background: white;
-        }
-        
-        .dark .input-field:focus {
-            background: #1e293b;
-        }
-
-        .input-field.error {
-            border-color: #ef4444;
-            background: #fef2f2;
-        }
-
-        .dark .input-field.error {
-            background: #451a1a;
-            border-color: #991b1b;
-        }
-        
-        .shake {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-
+        body { font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
             20%, 80% { transform: translate3d(2px, 0, 0); }
             30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
             40%, 60% { transform: translate3d(4px, 0, 0); }
         }
-
-        .error-banner {
-            animation: slideDown 0.4s ease-out forwards;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .register-wrapper {
-            width: 100%;
-            max-width: 42rem;
-            position: relative;
-            z-index: 10;
-        }
-
-        .register-header {
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        .register-header a {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            margin-bottom: 0.75rem;
-            color: inherit;
-            text-decoration: none;
-        }
-
-        .register-header img {
-            height: 3rem;
-            width: auto;
-        }
-
-        .register-header h1 {
-            margin: 0;
-            font-size: 1.125rem;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .register-header h2 {
-            margin: 0;
-            font-size: clamp(1.5rem, 3vw, 1.875rem);
-            line-height: 1.15;
-            font-weight: 800;
-        }
-
-        .register-header p {
-            margin: 0.25rem 0 0;
-            font-size: 0.875rem;
-        }
-
-        .register-card {
-            padding: 1.25rem;
-        }
-
-        .register-form {
-            display: grid;
-            grid-template-columns: 1fr;
-            column-gap: 1rem;
-            row-gap: 0.75rem;
-        }
-
-        .register-form .input-group {
-            margin: 0;
-        }
-
-        .register-form label {
-            display: block;
-            margin-bottom: 0.375rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .dark .register-form label {
-            color: #d1d5db;
-        }
-
-        .register-form .field-shell {
-            position: relative;
-        }
-
-        .register-form .field-shell > i[data-lucide] {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            width: 1.25rem;
-            height: 1.25rem;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            pointer-events: none;
-        }
-
-        .register-form .field-shell > button[type="button"] {
-            position: absolute;
-            right: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            border: 0;
-            background: transparent;
-            color: #9ca3af;
-            cursor: pointer;
-        }
-
-        .register-form .span-all,
-        .register-form .google-section {
-            grid-column: 1 / -1;
-        }
-
-        .register-form .captcha-field {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .register-form .google-section {
-            margin-top: 0.25rem;
-        }
-
-        .register-form button[type="submit"],
-        .register-form .google-section a {
-            width: 100%;
-            min-height: 44px;
-        }
-
-        .register-form .google-section a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.625rem 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.75rem;
-            background: #ffffff;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: inherit;
-            text-decoration: none;
-        }
-
-        .dark .register-form .google-section a {
-            background: #334155;
-            border-color: #475569;
-            color: #e5e7eb;
-        }
-
-        .register-form .google-section svg {
-            width: 1.25rem;
-            height: 1.25rem;
-            flex: 0 0 auto;
-            margin-right: 0;
-        }
-
-        .register-footer {
-            margin-top: 1rem;
-            text-align: center;
-            font-size: 0.875rem;
-            color: #4b5563;
-        }
-
-        .dark .register-footer {
-            color: #9ca3af;
-        }
-
-        .register-footer a {
-            color: #2563eb;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .register-footer a:hover {
-            text-decoration: underline;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        [x-cloak] { display: none !important; }
-
         @media (max-width: 360px) {
             .g-recaptcha {
                 transform: scale(0.85);
                 transform-origin: center;
             }
         }
-
-        @media (min-width: 640px) {
-            .register-header img {
-                height: 3.5rem;
-            }
-
-            .register-card {
-                padding: 1.5rem;
-            }
-
-            .register-form {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
     </style>
 </head>
-<body class="min-h-[100svh] flex items-center justify-center p-3 sm:p-4 relative overflow-x-hidden">
-    
-    <!-- Background accents -->
-    <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200/40 rounded-full blur-3xl pointer-events-none"></div>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col antialiased">
 
-    <div class="register-wrapper w-full max-w-2xl relative z-10">
-        
-        <div class="register-header text-center mb-3">
-            <a href="/" class="inline-flex flex-col items-center gap-1 mb-2 hover:opacity-80 transition-opacity">
-                <img src="{{ asset('images/logo-light.svg') }}" alt="EM Parts" class="h-12 sm:h-16 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300 block dark:hidden">
-                <img src="{{ asset('images/logo-dark.svg') }}" alt="EM Parts" class="h-12 sm:h-16 w-auto drop-shadow-xl hover:scale-105 transition-transform duration-300 hidden dark:block">
-                <div class="text-center">
-                    <h1 class="font-bold text-base text-gray-900 dark:text-white tracking-tight">MOTOTRACK</h1>
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>
-                </div>
-            </a>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">Create an Account</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Sign up to pre-order parts and track services</p>
-        </div>
+    <div class="min-h-screen flex flex-col lg:flex-row flex-1">
 
-        <div class="register-card card p-4 sm:p-5 {{ $errors->any() || session('error') ? 'shake' : '' }}">
-            
-            @if($errors->any() || session('error'))
-                <div role="alert" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400 error-banner">
-                    <div class="bg-red-100 dark:bg-red-900/40 p-2 rounded-lg shrink-0">
-                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        <!-- LEFT PANEL: Dark Branded Hero -->
+        <div class="lg:w-[460px] xl:w-[500px] 2xl:w-[540px] shrink-0 bg-[#0b1320] text-white p-7 sm:p-10 lg:p-12 xl:p-16 flex flex-col justify-between relative overflow-hidden">
+
+            <!-- Subtle background glows -->
+            <div class="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+            <!-- Top: Brand Header -->
+            <div class="relative z-10">
+                <a href="/" class="inline-flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-xl p-1 -m-1 transition-transform hover:translate-x-0.5">
+                    <div class="w-11 h-11 rounded-xl bg-blue-600 group-hover:bg-blue-500 transition-colors flex items-center justify-center text-white font-extrabold text-base tracking-wider shadow-lg shadow-blue-600/30">
+                        EM
                     </div>
                     <div>
-                        <p class="text-sm font-bold">Registration Failed</p>
-                        <p class="text-xs opacity-80">
-                            {{ session('error') ?: 'Please correct the errors below.' }}
-                        </p>
+                        <span class="block text-white font-extrabold text-lg tracking-wider leading-none">MOTOTRACK</span>
+                        <span class="block text-slate-400 text-xs font-medium tracking-normal mt-1">Edmar Motorcycle Parts</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Middle: Headlines & Feature Highlights -->
+            <div class="my-8 lg:my-auto relative z-10">
+                <h1 class="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-white tracking-tight leading-[1.15]">
+                    Find the right part.<br>
+                    <span class="text-slate-100">Reserve it today.</span>
+                </h1>
+                <p class="mt-4 text-slate-300 text-sm sm:text-base leading-relaxed max-w-sm">
+                    One account to pre-order parts, check what fits your bike, and follow your repairs.
+                </p>
+
+                <!-- Value propositions -->
+                <div class="mt-8 sm:mt-10 space-y-5">
+                    <!-- Feature 1: Compatibility Checker -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-blue-400 shrink-0 mt-0.5">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-white font-bold text-sm sm:text-base">Compatibility checker</h2>
+                            <p class="text-slate-300 text-xs sm:text-sm mt-0.5 leading-normal">
+                                See which parts fit your motorcycle model.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2: Pre-order reservations -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-blue-400 shrink-0 mt-0.5">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-white font-bold text-sm sm:text-base">Pre-order reservations</h2>
+                            <p class="text-slate-300 text-xs sm:text-sm mt-0.5 leading-normal">
+                                Reserve now, pay when you pick up within 24 hours.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3: Service tracking -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-blue-400 shrink-0 mt-0.5">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-white font-bold text-sm sm:text-base">Service tracking</h2>
+                            <p class="text-slate-300 text-xs sm:text-sm mt-0.5 leading-normal">
+                                Follow the status of your repair.
+                            </p>
+                        </div>
                     </div>
                 </div>
-            @endif
+            </div>
 
-            <form method="POST" action="{{ route('register') }}" x-data="{ showPassword: false, isSubmitting: false }" @submit="isSubmitting = true" class="register-form grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
-                @csrf
+            <!-- Bottom: Location & Store Hours -->
+            <div class="pt-6 border-t border-slate-800/80 relative z-10 text-xs text-slate-300 flex items-center justify-between">
+                <span>Pandi, Bulacan &bull; Open daily 6:00 AM &ndash; 6:00 PM</span>
+                <a href="/" class="text-slate-400 hover:text-white transition-colors underline font-medium">Home</a>
+            </div>
+        </div>
 
-                <!-- Name -->
-                <div class="relative input-group">
-                    <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
-                    <div class="field-shell relative">
-                        <i data-lucide="user" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
-                        <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" 
-                            class="input-field {{ $errors->has('name') ? 'error' : '' }}" placeholder="John Doe">
-                    </div>
-                    <x-input-error :messages="$errors->get('name')" class="mt-2 text-red-500 text-xs italic" />
-                </div>
+        <!-- RIGHT PANEL: Registration Form -->
+        <div class="flex-1 bg-white dark:bg-slate-900 flex flex-col justify-center items-center p-6 sm:p-10 lg:p-12 xl:p-16">
+            <div class="w-full max-w-[480px]">
 
-                <!-- Email Address -->
-                <div class="relative input-group">
-                    <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
-                    <div class="field-shell relative">
-                        <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" 
-                            class="input-field {{ $errors->has('email') ? 'error' : '' }}" placeholder="example@gmail.com">
-                    </div>
-                    <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-500 text-xs italic" />
-                </div>
-
-                <!-- Phone Number -->
-                <div class="relative input-group">
-                    <label for="phone" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Phone Number</label>
-                    <div class="field-shell relative">
-                        <i data-lucide="phone" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
-                        <input id="phone" type="text" name="phone" value="{{ old('phone') }}" required autocomplete="tel" 
-                            class="input-field {{ $errors->has('phone') ? 'error' : '' }}" 
-                            placeholder="09123456789 or +639123456789"
-                            maxlength="13"
-                            oninput="this.value = this.value.replace(/[^0-9+]/g, '')"
-                            title="Format: 09123456789 or +639123456789">
-                    </div>
-                    <x-input-error :messages="$errors->get('phone')" class="mt-2 text-red-500 text-xs italic" />
-                </div>
-
-                <!-- Password -->
-                <div class="relative input-group">
-                    <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
-                    <div class="field-shell relative">
-                        <i data-lucide="lock" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
-                        <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="new-password" 
-                            class="input-field pr-12 {{ $errors->has('password') ? 'error' : '' }}" placeholder="••••••••">
-                        
-                        <button type="button" @click="showPassword = !showPassword"
-                                :aria-label="showPassword ? 'Hide password' : 'Show password'"
-                                class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded">
-                            <i x-show="!showPassword" data-lucide="eye" class="w-5 h-5"></i>
-                            <i x-show="showPassword" x-cloak data-lucide="eye-off" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                    <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500 text-xs italic" />
-                    <p class="mt-1.5 text-[10px] text-gray-400 dark:text-gray-500 font-medium">
-                        Must be at least 8 characters with upper/lower case, numbers, and symbols.
+                <!-- Form Header -->
+                <div class="mb-7">
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                        Create your account
+                    </h2>
+                    <p class="mt-1.5 text-sm text-slate-600 dark:text-slate-400">
+                        Pre-order parts and track your repairs in one place.
                     </p>
                 </div>
 
-                <div class="relative input-group">
-                    <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Confirm Password</label>
-                    <div class="field-shell relative">
-                        <i data-lucide="shield-check" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors"></i>
-                        <input id="password_confirmation" :type="showPassword ? 'text' : 'password'" name="password_confirmation" required autocomplete="new-password" 
-                            class="input-field pr-12 {{ $errors->has('password_confirmation') ? 'error' : '' }}" placeholder="••••••••">
-                        
-                        <button type="button" @click="showPassword = !showPassword"
+                <!-- Error alert -->
+                @if($errors->any() || session('error'))
+                    <div role="alert" class="mb-6 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3 text-red-700 dark:text-red-300 shake">
+                        <svg class="w-5 h-5 shrink-0 mt-0.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        <div class="text-sm">
+                            <p class="font-bold">Registration Failed</p>
+                            <p class="text-xs opacity-90 mt-0.5">
+                                {{ session('error') ?: 'Please correct the indicated fields below.' }}
+                            </p>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Google Sign-up -->
+                <a href="{{ route('auth.google') }}" class="w-full min-h-[44px] inline-flex justify-center items-center gap-3 py-2.5 px-4 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    <span>Sign up with Google</span>
+                </a>
+
+                <!-- Divider -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
+                    </div>
+                    <div class="relative flex justify-center text-xs">
+                        <span class="px-3 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-medium">or sign up with email</span>
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <form method="POST" action="{{ route('register') }}"
+                    x-data="{
+                        phoneDisplay: @js($initialPhoneDisplay),
+                        password: '',
+                        showPassword: false,
+                        showConfirmPassword: false,
+                        isSubmitting: false,
+                        onPhoneInput(e) {
+                            let val = e.target.value;
+                            let clean = val.replace(/[^0-9+]/g, '');
+                            if (clean.startsWith('+63')) clean = clean.substring(3);
+                            else if (clean.startsWith('63') && clean.length > 10) clean = clean.substring(2);
+                            if (clean.startsWith('0')) clean = clean.substring(1);
+                            this.phoneDisplay = clean;
+                        },
+                        get rawPhone() {
+                            let digits = (this.phoneDisplay || '').replace(/[^0-9]/g, '');
+                            if (digits.startsWith('639') && digits.length === 12) {
+                                return '0' + digits.substring(2);
+                            }
+                            if (digits.startsWith('09') && digits.length === 11) {
+                                return digits;
+                            }
+                            if (digits.startsWith('9') && digits.length === 10) {
+                                return '0' + digits;
+                            }
+                            return (this.phoneDisplay || '').trim();
+                        },
+                        prepareSubmit() {
+                            this.isSubmitting = true;
+                            if (this.$refs.phoneInput) {
+                                this.$refs.phoneInput.value = this.rawPhone;
+                            }
+                        },
+                        get hasLength() { return this.password.length >= 8; },
+                        get hasUpperLower() { return /[a-z]/.test(this.password) && /[A-Z]/.test(this.password); },
+                        get hasNumber() { return /[0-9]/.test(this.password); },
+                        get hasSymbol() { return /[^a-zA-Z0-9]/.test(this.password); },
+                        get strengthScore() {
+                            let score = 0;
+                            if (this.hasLength) score++;
+                            if (this.hasUpperLower) score++;
+                            if (this.hasNumber) score++;
+                            if (this.hasSymbol) score++;
+                            return score;
+                        },
+                        get strengthLabel() {
+                            if (!this.password) return '';
+                            if (this.strengthScore === 4) return 'Strong password';
+                            if (this.strengthScore === 3) {
+                                if (!this.hasSymbol) return 'Almost there - add a symbol';
+                                if (!this.hasNumber) return 'Almost there - add a number';
+                                if (!this.hasUpperLower) return 'Almost there - mix upper & lower';
+                                return 'Good password';
+                            }
+                            if (this.strengthScore === 2) return 'Fair - make it stronger';
+                            return 'Too short / weak';
+                        }
+                    }"
+                    @submit="prepareSubmit()"
+                    class="space-y-4">
+                    @csrf
+
+                    <!-- Full Name -->
+                    <div>
+                        <label for="name" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            Full name
+                        </label>
+                        <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"
+                            placeholder="e.g. Juan Dela Cruz"
+                            class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-600 transition-all {{ $errors->has('name') ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : '' }}">
+                        @if ($errors->has('name'))
+                            <p class="mt-1.5 text-xs text-red-500 font-semibold">{{ $errors->first('name') }}</p>
+                        @endif
+                    </div>
+
+                    <!-- Email Address -->
+                    <div>
+                        <label for="email" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            Email address
+                        </label>
+                        <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username"
+                            placeholder="you@gmail.com"
+                            class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-600 transition-all {{ $errors->has('email') ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : '' }}">
+                        <p class="mt-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium">Only @gmail.com email addresses are allowed to register.</p>
+                        @if ($errors->has('email'))
+                            <p class="mt-1 text-xs text-red-500 font-semibold">{{ $errors->first('email') }}</p>
+                        @endif
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div>
+                        <label for="phone" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            Phone number
+                        </label>
+                        <div class="flex rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden focus-within:ring-4 focus-within:ring-blue-100 dark:focus-within:ring-blue-900/40 focus-within:border-blue-600 transition-all {{ $errors->has('phone') ? 'border-red-400' : '' }}">
+                            <span class="inline-flex items-center px-3.5 bg-slate-100 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-bold select-none">
+                                +63
+                            </span>
+                            <input id="phone" type="tel" name="phone" x-ref="phoneInput"
+                                :value="phoneDisplay"
+                                @input="onPhoneInput($event)"
+                                value="{{ old('phone') ?: $initialPhoneDisplay }}"
+                                required
+                                autocomplete="tel" maxlength="13"
+                                placeholder="912 345 6789"
+                                class="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 border-0 focus:ring-0 focus:outline-none">
+                        </div>
+                        <p class="mt-1.5 text-xs text-slate-600 dark:text-slate-400">
+                            We'll text you when your order is ready. Format: 912 345 6789 or 0912 345 6789.
+                        </p>
+                        <noscript>
+                            <p class="mt-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                Note: When JavaScript is disabled, enter your full 11-digit mobile number starting with 09 (e.g. 09123456789) without spaces to satisfy server validation.
+                            </p>
+                        </noscript>
+                        @if ($errors->has('phone'))
+                            <p class="mt-1 text-xs text-red-500 font-semibold">{{ $errors->first('phone') }}</p>
+                        @endif
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <input id="password" :type="showPassword ? 'text' : 'password'" name="password" x-model="password" required autocomplete="new-password"
+                                placeholder="Create your password"
+                                class="w-full px-4 py-2.5 pr-12 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-600 transition-all {{ $errors->has('password') ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : '' }}">
+                            <button type="button" @click="showPassword = !showPassword"
                                 :aria-label="showPassword ? 'Hide password' : 'Show password'"
-                                class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded">
-                            <i x-show="!showPassword" data-lucide="eye" class="w-5 h-5"></i>
-                            <i x-show="showPassword" x-cloak data-lucide="eye-off" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                    <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2 text-red-500 text-xs italic" />
-                </div>
-                
-                <!-- Google reCAPTCHA -->
-                <div class="captcha-field flex flex-col items-center justify-center">
-                    <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
-                    @if ($errors->has('g-recaptcha-response'))
-                        <p class="mt-2 text-red-500 text-xs font-semibold">{{ $errors->first('g-recaptcha-response') }}</p>
-                    @endif
-                </div>
-
-                <!-- Honeypot (Invisible Trap) -->
-                <div class="hidden span-all sm:col-span-2">
-                    <input type="text" name="my_extra_field" value="">
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" :disabled="isSubmitting" class="span-all btn btn-primary w-full min-h-[44px] text-base shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-span-2">
-                    <span x-show="!isSubmitting">Create Account</span>
-                    <span x-show="isSubmitting" x-cloak class="flex items-center gap-2">
-                        <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
-                        Registering...
-                    </span>
-                </button>
-                
-                <div class="google-section mt-0 sm:col-span-2">
-                    <div class="relative">
-                        <div class="absolute inset-0 flex items-center">
-                            <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                                class="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg">
+                                <svg x-show="!showPassword" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg x-show="showPassword" x-cloak class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
                         </div>
-                        <div class="relative flex justify-center text-sm">
-                            <span class="px-2 bg-white dark:bg-[#1e293b] text-gray-500 font-medium">Or continue with</span>
+
+                        <!-- Real-time Strength Meter & Criteria Checklist -->
+                        <div class="mt-2.5">
+                            <!-- 4-segment progress bar -->
+                            <div class="grid grid-cols-4 gap-1.5 h-1.5 w-full">
+                                <div class="rounded-full transition-all duration-300"
+                                    :class="strengthScore >= 1 ? (strengthScore === 1 ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-slate-200 dark:bg-slate-700'"></div>
+                                <div class="rounded-full transition-all duration-300"
+                                    :class="strengthScore >= 2 ? (strengthScore === 2 ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-slate-200 dark:bg-slate-700'"></div>
+                                <div class="rounded-full transition-all duration-300"
+                                    :class="strengthScore >= 3 ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'"></div>
+                                <div class="rounded-full transition-all duration-300"
+                                    :class="strengthScore >= 4 ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'"></div>
+                            </div>
+
+                            <!-- Status text -->
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="text-xs font-semibold text-slate-700 dark:text-slate-300" x-text="strengthLabel"></span>
+                            </div>
+
+                            <!-- 2-column checklist matching mockups -->
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-2.5 text-xs">
+                                <!-- 8+ characters -->
+                                <div class="flex items-center gap-1.5" :class="hasLength ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-slate-500 dark:text-slate-400'">
+                                    <svg x-show="hasLength" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    <svg x-show="!hasLength" class="w-3.5 h-3.5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="9" />
+                                    </svg>
+                                    <span>8+ characters</span>
+                                </div>
+
+                                <!-- Upper & lower case -->
+                                <div class="flex items-center gap-1.5" :class="hasUpperLower ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-slate-500 dark:text-slate-400'">
+                                    <svg x-show="hasUpperLower" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    <svg x-show="!hasUpperLower" class="w-3.5 h-3.5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="9" />
+                                    </svg>
+                                    <span>Upper & lower case</span>
+                                </div>
+
+                                <!-- A number -->
+                                <div class="flex items-center gap-1.5" :class="hasNumber ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-slate-500 dark:text-slate-400'">
+                                    <svg x-show="hasNumber" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    <svg x-show="!hasNumber" class="w-3.5 h-3.5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="9" />
+                                    </svg>
+                                    <span>A number</span>
+                                </div>
+
+                                <!-- A symbol (!@#$) -->
+                                <div class="flex items-center gap-1.5" :class="hasSymbol ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-slate-500 dark:text-slate-400'">
+                                    <svg x-show="hasSymbol" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    <svg x-show="!hasSymbol" class="w-3.5 h-3.5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="9" />
+                                    </svg>
+                                    <span>A symbol (!@#$)</span>
+                                </div>
+                            </div>
                         </div>
+
+                        @if ($errors->has('password'))
+                            <p class="mt-1.5 text-xs text-red-500 font-semibold">{{ $errors->first('password') }}</p>
+                        @endif
                     </div>
 
-                    <div class="mt-3">
-                        <a href="{{ route('auth.google') }}" class="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-[#334155] text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                            <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    <!-- Confirm Password -->
+                    <div>
+                        <label for="password_confirmation" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                            Confirm password
+                        </label>
+                        <div class="relative">
+                            <input id="password_confirmation" :type="showConfirmPassword ? 'text' : 'password'" name="password_confirmation" required autocomplete="new-password"
+                                placeholder="Re-enter your password"
+                                class="w-full px-4 py-2.5 pr-12 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-600 transition-all {{ $errors->has('password_confirmation') ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : '' }}">
+                            <button type="button" @click="showConfirmPassword = !showConfirmPassword"
+                                :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
+                                class="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg">
+                                <svg x-show="!showConfirmPassword" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg x-show="showConfirmPassword" x-cloak class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </div>
+                        @if ($errors->has('password_confirmation'))
+                            <p class="mt-1.5 text-xs text-red-500 font-semibold">{{ $errors->first('password_confirmation') }}</p>
+                        @endif
+                    </div>
+
+                    <!-- Google reCAPTCHA -->
+                    <div class="pt-2 flex flex-col items-center">
+                        <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                        @if ($errors->has('g-recaptcha-response'))
+                            <p class="mt-2 text-red-500 text-xs font-semibold">{{ $errors->first('g-recaptcha-response') }}</p>
+                        @endif
+                    </div>
+
+                    <!-- Honeypot -->
+                    <div class="hidden">
+                        <input type="text" name="my_extra_field" value="" tabindex="-1" autocomplete="off">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" :disabled="isSubmitting"
+                        class="w-full min-h-[46px] py-3 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-75 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900/40">
+                        <span x-show="!isSubmitting">Create account</span>
+                        <span x-show="isSubmitting" x-cloak class="inline-flex items-center gap-2">
+                            <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                             </svg>
-                            Sign up with Google
-                        </a>
-                    </div>
-                </div>
-            </form>
-        </div>
-        
-        <p class="register-footer text-center mt-3 text-gray-600 dark:text-gray-400 text-sm">
-            Already have an account? 
-            <a href="{{ route('login') }}" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Sign in</a>
-        </p>
-    </div>
+                            <span>Creating account...</span>
+                        </span>
+                    </button>
+                </form>
 
-    <script>
-        if (window.lucide) {
-            lucide.createIcons();
-        }
-    </script>
+                <!-- Footer Navigation -->
+                <p class="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
+                    Already have an account?
+                    <a href="{{ route('login') }}" class="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 hover:underline">
+                        Sign in
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
