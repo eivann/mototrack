@@ -56,7 +56,7 @@
             <!-- Top: Brand Header -->
             <div class="relative z-10">
                 <a href="/" class="inline-flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-xl p-1 -m-1 transition-transform hover:translate-x-0.5">
-                    <img src="{{ asset('favicon.ico') }}" alt="MotoTrack Logo" width="44" height="44" class="w-11 h-11 rounded-xl object-contain shadow-lg shadow-blue-600/30 shrink-0">
+                    <img src="{{ asset('brand/mototrack-em.png') }}" alt="MotoTrack Logo" width="44" height="44" class="w-11 h-11 rounded-xl object-contain shadow-lg shadow-blue-600/30 shrink-0">
                     <div>
                         <span class="block text-white font-extrabold text-lg tracking-wider leading-none">MOTOTRACK</span>
                         <span class="block text-slate-400 text-xs font-medium tracking-normal mt-1">Edmar Motorcycle Parts</span>

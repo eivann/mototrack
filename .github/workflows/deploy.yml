@@ -132,6 +132,17 @@ jobs:
             chgrp -R www-data public/build
             chmod -R g+rX public/build
           fi
+
+          # Keep deployed brand assets readable by Nginx.
+          if [ -f public/favicon.ico ]; then
+            chgrp www-data public/favicon.ico
+            chmod g+r public/favicon.ico
+          fi
+
+          if [ -d public/brand ]; then
+            chgrp -R www-data public/brand
+            chmod -R g+rX public/brand
+          fi
           if [ -f bootstrap/app.php ]; then
             chgrp www-data bootstrap/app.php
             chmod g+r bootstrap/app.php
