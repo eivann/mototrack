@@ -31,10 +31,27 @@ class PublicBrowseController extends Controller
         }
 
         if ($model !== '') {
-            // Same rule as the compatibility checker: only parts with a recorded
-            // fitment for this exact motorcycle model (no free-text guessing).
-            $ids = app(CompatibilityMatcher::class)->motorcycleIds('', $model, '');
-            $query->whereHas('motorcycles', fn ($mq) => $mq->whereIn('motorcycles.id', $ids->all()));
+            if (\App\Services\InventoryCompatibilityResolver::enabled()) {
+                // Inventory-sourced mode: identical rules to the /compatibility checker
+                // (catalogue entry -> explicit inventory aliases and/or owner fitment records).
+                $f = app(\App\Services\InventoryCompatibilityResolver::class)->modelFilter($model);
+                $query->where(function ($q) use ($f) {
+                    if ($f['raws'] === [] && $f['motorcycle_ids'] === []) {
+                        $q->whereRaw('1 = 0'); // unknown model or nothing recorded: never a guess
+                        return;
+                    }
+                    if ($f['raws'] !== []) {
+                        $q->whereIn('model', $f['raws']);
+                    }
+                    if ($f['motorcycle_ids'] !== []) {
+                        $q->orWhereHas('motorcycles', fn ($mq) => $mq->whereIn('motorcycles.id', $f['motorcycle_ids']));
+                    }
+                });
+            } else {
+                // Legacy rule: only parts with a recorded fitment for this exact motorcycle model.
+                $ids = app(CompatibilityMatcher::class)->motorcycleIds('', $model, '');
+                $query->whereHas('motorcycles', fn ($mq) => $mq->whereIn('motorcycles.id', $ids->all()));
+            }
         }
 
         if ($category !== '') {
@@ -87,6 +104,14 @@ class PublicBrowseController extends Controller
 
             if ($field === 'search') {
                 return response()->json($this->searchSuggestions($term));
+            }
+
+            if ($field === 'model' && \App\Services\InventoryCompatibilityResolver::enabled()) {
+                // Inventory-sourced mode: same catalogue models the checker offers.
+                return response()->json(
+                    collect(app(\App\Services\InventoryCompatibilityResolver::class)->modelSuggestions($term))
+                        ->map(fn ($v) => ['value' => $v, 'label' => $v, 'field' => 'model'])->values()
+                );
             }
 
             if ($field === 'model') {

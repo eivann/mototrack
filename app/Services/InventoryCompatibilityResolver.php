@@ -139,6 +139,64 @@ class InventoryCompatibilityResolver
     }
 
     /**
+     * Browse "model" filter under inventory-sourced mode (no Make is chosen on that page).
+     *
+     * Uses exactly the rules of resolve(): the typed text must be a catalogue model name or
+     * dropdown label of some make (case/space-insensitive); products match through that entry's
+     * explicit inventory aliases and/or owner fitment records. Nothing is matched by substring.
+     *
+     * @return array{raws:array<int,string>,motorcycle_ids:array<int,int>}
+     */
+    public function modelFilter(string $model): array
+    {
+        $entries = [];
+        $ids = [];
+        if (trim($model) !== '') {
+            foreach (array_keys(config('compatibility_catalogue.catalogue', [])) as $make) {
+                $entry = $this->findEntry($make, $model);
+                if ($entry === null) {
+                    continue;
+                }
+                $entries[] = $entry;
+                foreach (app(CompatibilityMatcher::class)->motorcycleIds($make, $entry['name'], '') as $id) {
+                    $ids[$id] = $id;
+                }
+            }
+        }
+
+        return [
+            'raws' => $entries === [] ? [] : $this->rawModelsFor($entries),
+            'motorcycle_ids' => array_values($ids),
+        ];
+    }
+
+    /**
+     * Model suggestions across all four makes for the Browse model box (prefix match on the
+     * dropdown label or the plain model name).
+     *
+     * @return array<int,string>
+     */
+    public function modelSuggestions(string $term, int $limit = 12): array
+    {
+        $needle = CompatibilityMatcher::normalize($term);
+        $out = [];
+        foreach (array_keys(config('compatibility_catalogue.catalogue', [])) as $make) {
+            foreach ($this->entries($make) as $entry) {
+                $label = self::label($entry);
+                if ($needle === ''
+                    || str_starts_with(CompatibilityMatcher::normalize($label), $needle)
+                    || str_starts_with(CompatibilityMatcher::normalize($entry['name']), $needle)) {
+                    $out[CompatibilityMatcher::normalize($label)] = $label;
+                }
+            }
+        }
+        $out = array_values($out);
+        natcasesort($out);
+
+        return array_slice(array_values($out), 0, $limit);
+    }
+
+    /**
      * Resolve products. Returns [] items for no match.
      *
      * @return Collection<int,InventoryItem>

@@ -18,6 +18,7 @@
             >
             <input type="hidden" name="category" value="{{ request('category') }}">
             <input type="hidden" name="sort" value="{{ request('sort') }}">
+            <input type="hidden" name="model" value="{{ request('model') }}">
             <datalist id="browse-search-suggestions">
                 <template x-for="suggestion in browseSearch" :key="suggestion.field + '-' + suggestion.value">
                     <option :value="suggestion.value" :label="suggestion.field"></option>
