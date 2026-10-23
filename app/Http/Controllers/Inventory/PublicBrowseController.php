@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Inventory;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
 use App\Services\CompatibilityMatcher;
+use App\Services\InventorySearchService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -66,6 +67,10 @@ class PublicBrowseController extends Controller
             $query->orderBy('price', 'desc');
         }
 
+        // Deterministic paging: a unique tiebreaker (the id) is always the last sort key, so
+        // equal prices, unsorted listings and concurrent stock updates never shuffle pages.
+        $query->orderBy('id', 'asc');
+
         $total = null;
         if ($search === '' && $model === '' && $category === '') {
             $total = Cache::remember('inventory_in_stock_parent_items_count_v2', now()->addMinutes(10), function () {
@@ -119,7 +124,7 @@ class PublicBrowseController extends Controller
                 return response()->json(
                     \App\Models\Motorcycle::query()
                         ->whereNotNull('model')->where('model', '!=', '')
-                        ->when($term !== '', fn ($q) => $q->where('model', DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE', $term . '%'))
+                        ->when($term !== '', fn ($q) => InventorySearchService::whereLike($q, 'model', $term, 'prefix'))
                         ->distinct()->orderBy('model')->limit(12)->pluck('model')
                         ->unique(fn ($v) => mb_strtolower($v))->values()
                         ->map(fn ($v) => ['value' => $v, 'label' => $v, 'field' => 'model'])
@@ -336,12 +341,10 @@ class PublicBrowseController extends Controller
             return collect();
         }
 
-        $likeOperator = DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
-
         return InventoryItem::query()
             ->select($field)
             ->whereNotNull($field)
-            ->when($term !== '', fn ($query) => $query->where($field, $likeOperator, $term.'%'))
+            ->when($term !== '', fn ($query) => InventorySearchService::whereLike($query, $field, $term, 'prefix'))
             ->distinct()
             ->orderBy($field)
             ->limit($limit)

@@ -19,7 +19,7 @@ class AdminInventoryController extends Controller
     $search = $request->search;
     $category = $request->category;
 
-    $query = InventoryItem::search($search)->orderBy('part_name', 'asc');
+    $query = InventoryItem::search($search)->orderBy('part_name', 'asc')->orderBy('id', 'asc');
     
     if ($category) {
         $query->where('category', $category);
