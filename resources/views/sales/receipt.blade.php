@@ -69,7 +69,7 @@
 
         <!-- Receipt Actions -->
         <div class="w-full max-w-md lg:w-48 flex flex-row lg:flex-col gap-3 shrink-0">
-            <a href="{{ route('sales.download', ['transaction' => $sales->first()->transaction_reference ?? $sales->first()->id]) }}" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+            <a href="{{ $downloadUrl ?? route('sales.download', ['transaction' => $sales->first()->transaction_reference ?? $sales->first()->id]) }}" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 Download PDF
             </a>

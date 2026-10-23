@@ -224,15 +224,89 @@ class SaleController extends Controller
         abort(405, 'Sale records cannot be deleted. Use cancellation or refund instead.');
     }
 
+    /**
+     * SYS4-01 (corrected): receipt accessed via sale primary key.
+     * Used exclusively by the Sales History page (route: sales.receipt.by-id).
+     *
+     * Resolution logic:
+     *   1. Find the specific sale by numeric primary key. 404 if missing or soft-deleted.
+     *   2. If that sale has a transaction_reference, load ALL non-deleted sale lines
+     *      sharing that reference â€” this preserves multi-item receipt completeness.
+     *   3. If transaction_reference is NULL (legacy sale), display only that single sale.
+     *
+     * This approach eliminates both ChatGPT-identified defects:
+     *   A) No collision: this route (/sales/by-id/{id}/receipt) is structurally
+     *      separate from the transaction-reference route (/sales/{id}/receipt).
+     *   B) Multi-item receipts are complete because we expand by transaction_reference
+     *      after finding the anchor sale, not by the numeric ID alone.
+     *
+     * Authorization: owner-only middleware on the route group.
+     */
+    private function resolveSalesByPrimaryKey(int $id): \Illuminate\Database\Eloquent\Collection
+    {
+        // Step 1: find the specific sale by PK (respects SoftDeletes scope).
+        $anchor = Sale::find($id);
+        if ($anchor === null) {
+            return Sale::newModelInstance()->newCollection(); // empty Eloquent collection
+        }
+
+        // Step 2a: if it has a transaction_reference, load all lines for that transaction.
+        if ($anchor->transaction_reference !== null) {
+            return Sale::with('item')
+                ->where('transaction_reference', $anchor->transaction_reference)
+                ->get();
+        }
+
+        // Step 2b: legacy sale with no reference â€” return just this sale.
+        return Sale::with('item')->whereKey($id)->get();
+    }
+
+    public function receiptById($id)
+    {
+        $sales = $this->resolveSalesByPrimaryKey((int) $id);
+        if ($sales->isEmpty()) {
+            abort(404, 'Receipt not found.');
+        }
+        // Use the by-id download route so legacy NULL-reference sales work correctly.
+        $downloadUrl = route('sales.download.by-id', ['id' => $id]);
+        return view('sales.receipt', compact('sales', 'downloadUrl'));
+    }
+
+    public function downloadReceiptById($id)
+    {
+        $sales = $this->resolveSalesByPrimaryKey((int) $id);
+        if ($sales->isEmpty()) {
+            abort(404, 'Receipt not found.');
+        }
+
+        $transactionId = $sales->first()->transaction_reference ?? 'SALE-' . $sales->first()->id;
+        $date = $sales->first()->created_at->format('F d, Y h:i A');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('sales.pdf_receipt', compact('sales', 'transactionId', 'date'));
+
+        return $pdf->download("Receipt_{$transactionId}.pdf");
+    }
+
+    /**
+     * Receipt accessed via transaction reference (e.g. from POS storeSale redirect).
+     * Route: sales.receipt — GET /sales/{id}/receipt
+     * The {id} route parameter carries a transaction_reference string (TRX-ULID).
+     */
     public function receipt($id)
     {
         $sales = Sale::with('item')->where('transaction_reference', $id)->get();
         if ($sales->isEmpty()) {
             abort(404, 'Receipt not found.');
         }
-        return view('sales.receipt', compact('sales'));
+        // Use the standard transaction-reference download route.
+        $downloadUrl = route('sales.download', ['transaction' => $id]);
+        return view('sales.receipt', compact('sales', 'downloadUrl'));
     }
 
+    /**
+     * PDF download accessed via transaction reference.
+     * Route: sales.download — GET /sales/{transaction}/download
+     */
     public function downloadReceipt($id)
     {
         $sales = Sale::with('item')->where('transaction_reference', $id)->get();
@@ -244,7 +318,7 @@ class SaleController extends Controller
         $date = $sales->first()->created_at->format('F d, Y h:i A');
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('sales.pdf_receipt', compact('sales', 'transactionId', 'date'));
-        
+
         return $pdf->download("Receipt_{$transactionId}.pdf");
     }
 }
