@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\HasAuditTrail;
 use App\Enums\OrderStatus;
+use App\Services\InventorySearchService;
+use Illuminate\Database\Eloquent\Builder;
 
 class Sale extends Model
 {
@@ -58,6 +60,65 @@ protected $casts = [
     'reserved_at' => 'datetime',
     'expires_at' => 'datetime',
 ];
+
+// ── Owner reservation search (SYS4-03 B2a) ──────────────────
+
+/**
+ * Does ONE search term match this reservation line? Fields: transaction reference,
+ * customer name / phone / email, reserved part name. Literal, case-insensitive
+ * substring (Stage B1 escaping). Missing customer / item never errors: the
+ * relation simply does not match.
+ */
+public function scopeMatchesReservationTerm(Builder $query, string $term): Builder
+{
+    return $query->where(function (Builder $w) use ($term) {
+        InventorySearchService::whereLike($w, 'sales.transaction_reference', $term, 'contains', 'or');
+        $w->orWhereHas('customer', function (Builder $c) use ($term) {
+            $c->where(function (Builder $cc) use ($term) {
+                foreach (['customers.name', 'customers.phone', 'customers.email'] as $column) {
+                    InventorySearchService::whereLike($cc, $column, $term, 'contains', 'or');
+                }
+            });
+        });
+        $w->orWhereHas('item', function (Builder $i) use ($term) {
+            // Grouped: the relation's join constraint must stay ANDed, never OR-ed with the LIKE.
+            $i->where(function (Builder $ii) use ($term) {
+                InventorySearchService::whereLike($ii, 'inventory_items.part_name', $term);
+            });
+        });
+    });
+}
+
+/**
+ * Reservation lines (restricted to $statuses) belonging to a reservation that matches
+ * EVERY term. A term may match on any line of the reservation (or its customer), but
+ * the lines returned are always ALL eligible lines of each matching reservation, never
+ * only the matching line, so group totals and pickup lines stay complete.
+ * Lines without a reference are their own one-line reservation.
+ *
+ * @param  array<int,string>  $terms
+ * @param  array<int,string>  $statuses
+ */
+public function scopeReservationSearch(Builder $query, array $terms, array $statuses): Builder
+{
+    $query->whereIn('sales.status', $statuses);
+
+    foreach ($terms as $term) {
+        $query->where(function (Builder $w) use ($term, $statuses) {
+            $w->whereIn(
+                'sales.transaction_reference',
+                static::query()->select('sales.transaction_reference')
+                    ->whereNotNull('sales.transaction_reference')
+                    ->whereIn('sales.status', $statuses)
+                    ->matchesReservationTerm($term)
+            )->orWhere(function (Builder $n) use ($term) {
+                $n->whereNull('sales.transaction_reference')->matchesReservationTerm($term);
+            });
+        });
+    }
+
+    return $query;
+}
 
 // ── Pickup & Refund Eligibility ─────────────────────────
 

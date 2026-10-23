@@ -71,8 +71,8 @@
                                 {{ $label }}
                             </span>
                             
-                            @if($id === 'reservations' && isset($pendingReservations) && $pendingReservations->count() > 0)
-                                <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-amber-500 rounded-full">{{ $pendingReservations->groupBy(fn ($r) => $r->transaction_reference ?? 'row-'.$r->id)->count() }}</span>
+                            @if($id === 'reservations' && ($pendingReservationCount ?? 0) > 0)
+                                <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-amber-500 rounded-full">{{ $pendingReservationCount }}</span>
                             @elseif($id === 'inventory' && ($stats['lowStockCount'] ?? 0) > 0)
                                 <span class="inline-flex items-center justify-center px-2 py-1 text-[10px] font-black leading-none text-white bg-red-500 rounded-full">{{ $stats['lowStockCount'] }}</span>
                             @elseif($id === 'refunds' && isset($pendingRefunds) && $pendingRefunds->count() > 0)
@@ -370,8 +370,32 @@
                                     <p class="text-xs text-gray-400 font-bold mt-1">Pending in-stock reservations awaiting 24-hour in-store payment and pickup</p>
                                 </div>
                                 <span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full font-black text-xs uppercase tracking-wider">
-                                    {{ $pendingReservations->groupBy(fn ($r) => $r->transaction_reference ?? 'row-'.$r->id)->count() }} Pending
+                                    {{ $pendingReservationCount }} Pending
                                 </span>
+                            </div>
+                            <div class="px-8 py-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/40 dark:bg-gray-800/20">
+                                <form method="GET" action="{{ route('dashboard') }}" role="search" class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                                    <input type="hidden" name="tab" value="reservations">
+                                    <label for="reservation-search" class="sr-only">Search reservations</label>
+                                    <input id="reservation-search" type="search" name="q" value="{{ request('q') }}" maxlength="80" autocomplete="off"
+                                           placeholder="Search reference, customer name, phone, email or part..."
+                                           class="w-full sm:flex-1 border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <div class="flex items-center gap-2">
+                                        <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Search</button>
+                                        @if(!empty($reservationSearch))
+                                            <a href="{{ route('dashboard', ['tab' => 'reservations']) }}" class="px-4 py-2.5 text-xs font-black uppercase tracking-wider text-gray-500 hover:text-indigo-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">Clear search</a>
+                                        @endif
+                                    </div>
+                                </form>
+                                @if(!empty($reservationSearch))
+                                    <p class="mt-3 text-xs font-bold text-gray-500 dark:text-gray-400" role="status">
+                                        Results for &ldquo;{{ $reservationSearch['query'] }}&rdquo;:
+                                        {{ $reservationSearch['pending_groups'] }} active, {{ $reservationSearch['settled_groups'] }} cancelled/expired.
+                                        @if($reservationSearch['settled_groups'] > $reservationSearch['settled_limit'])
+                                            Showing the {{ $reservationSearch['settled_limit'] }} most recent cancelled/expired matches.
+                                        @endif
+                                    </p>
+                                @endif
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left">
@@ -432,7 +456,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="p-12 text-center text-gray-400 font-bold italic">No active customer reservations.</td>
+                                                <td colspan="5" class="p-12 text-center text-gray-400 font-bold italic">{{ !empty($reservationSearch) ? 'No active reservations match your search.' : 'No active customer reservations.' }}</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
