@@ -9,6 +9,34 @@
                 <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Manage customer requests for out-of-stock or custom parts.</p>
             </div>
 
+            <form method="GET" action="{{ route('preorders.index') }}" role="search" class="mb-6 flex flex-col md:flex-row gap-3 md:items-center">
+                <label for="preorder-search" class="sr-only">Search pre-orders</label>
+                <input id="preorder-search" type="search" name="q" value="{{ $search }}" maxlength="80" autocomplete="off"
+                       placeholder="Search order no., customer, part or model..."
+                       class="w-full md:flex-1 border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <label for="preorder-stage" class="sr-only">Filter by status</label>
+                <select id="preorder-stage" name="stage"
+                        class="w-full md:w-60 border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-xl text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All statuses</option>
+                    @foreach(\App\Models\PreOrder::STAGES as $key => $label)
+                        <option value="{{ $key }}" @selected($stage === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <div class="flex items-center gap-2">
+                    <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Search</button>
+                    @if($filtered)
+                        <a href="{{ route('preorders.index') }}" class="px-4 py-2.5 text-xs font-black uppercase tracking-wider text-gray-500 hover:text-indigo-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">Clear</a>
+                    @endif
+                </div>
+            </form>
+            @if($filtered)
+                <p class="mb-4 text-xs font-bold text-gray-500 dark:text-gray-400" role="status">
+                    {{ $preorders->total() }} {{ \Illuminate\Support\Str::plural('pre-order', $preorders->total()) }} found
+                    @if($search !== '') for &ldquo;{{ $search }}&rdquo; @endif
+                    @if($stage !== '') &middot; {{ \App\Models\PreOrder::STAGES[$stage] }} @endif
+                </p>
+            @endif
+
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -109,8 +137,13 @@
                                 <td colspan="6" class="p-12 text-center text-gray-500 dark:text-gray-400">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                                        <p class="font-medium text-gray-600 dark:text-gray-400">No pre-orders found.</p>
-                                        <p class="text-sm mt-1 text-gray-500 dark:text-gray-500">When customers request parts, they will appear here.</p>
+                                        @if($filtered)
+                                            <p class="font-medium text-gray-600 dark:text-gray-400">No pre-orders match your search.</p>
+                                            <p class="text-sm mt-1 text-gray-500 dark:text-gray-500">Try different words, or clear the filters.</p>
+                                        @else
+                                            <p class="font-medium text-gray-600 dark:text-gray-400">No pre-orders found.</p>
+                                            <p class="text-sm mt-1 text-gray-500 dark:text-gray-500">When customers request parts, they will appear here.</p>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

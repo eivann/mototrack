@@ -10,10 +10,27 @@ use App\Models\InventoryItem;
 
 class AdminPreOrderController extends Controller
 {
-   public function index()
+   public function index(Request $request)
 {
-    $preorders  = PreOrder::with('customer')->latest()->paginate(10);
-    return view('preorders.admin_index', compact('preorders'));
+    // SYS4-03 B2b: optional search (number / customer / part / model) and derived-stage filter.
+    $search = trim((string) $request->query('q', ''));
+    $stage = (string) $request->query('stage', '');
+    $stage = array_key_exists($stage, PreOrder::STAGES) ? $stage : '';
+
+    $query = PreOrder::with('customer')->latest()->orderByDesc('id');
+
+    $terms = \App\Services\InventorySearchService::terms($search);
+    if ($terms !== []) {
+        $query->adminSearch($terms);
+    }
+    if ($stage !== '') {
+        $query->inStage($stage);
+    }
+
+    $preorders = $query->paginate(10)->withQueryString();
+    $filtered = $terms !== [] || $stage !== '';
+
+    return view('preorders.admin_index', compact('preorders', 'search', 'stage', 'filtered'));
 }
 
     public function pay(Request $request, PreOrder $preorder)
