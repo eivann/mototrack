@@ -155,19 +155,14 @@ test('a header owns many sales lines and each line points back to its header', f
         ->and($header->fresh()->lines)->toHaveCount(2);
 });
 
-test('legacy lines may have no header and every existing way of creating a sale still works', function () {
+test('legacy lines may have no header and direct Sale::create stays supported', function () {
     $legacy = shLine(null, ['transaction_reference' => null]);
     expect($legacy->fresh()->sale_header_id)->toBeNull()->and($legacy->header)->toBeNull();
 
-    // The real commit path is untouched in D1: it creates lines with no header.
-    $item = InventoryItem::create(['part_name' => 'Cable', 'sku' => 'SH-CO', 'price' => 50, 'quantity' => 5]);
-    app(\App\Actions\CommitOrder::class)->execute(
-        [['id' => $item->id, 'quantity' => 1]], 'TRX-SH-COMMIT', null, 'Out of stock: ',
-        fn ($f) => $f ? 100.0 : 0.0, fn ($f, $t) => $f ? round(100 - $t, 2) : 0.0, false, 'completed'
-    );
-
-    expect(Sale::where('transaction_reference', 'TRX-SH-COMMIT')->value('sale_header_id'))->toBeNull()
-        ->and(SaleHeader::count())->toBe(0);
+    // A sale created directly, as legacy code and older tests do, still has no header.
+    $withRef = shLine(null, ['transaction_reference' => 'TRX-SH-DIRECT']);
+    expect($withRef->fresh()->sale_header_id)->toBeNull()->and(SaleHeader::count())->toBe(0);
+    // (CommitOrder writes headers from Stage D2A on; see Sales/CommitOrderHeaderTest.)
 });
 
 // ── Integrity ────────────────────────────────────────────────────────────────

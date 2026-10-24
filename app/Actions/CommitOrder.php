@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\InventoryItem;
 use App\Models\Sale;
+use App\Models\SaleHeader;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -12,11 +13,18 @@ use Illuminate\Support\Facades\DB;
  * duplicated the two-pass "lock stock → compute grand total → create sales →
  * decrement" logic.
  *
- * The two call sites differ in how the tendered amount / change are recorded
- * (POS stamps every row and allows negative change; the online cart stamps
- * only the first row and clamps change at zero) and in whether a low-stock
- * alert is dispatched. Those differences are injected as closures/flags so the
- * behavior of each path is preserved exactly.
+ * The two call sites differ in what tendered amount / change they record and in
+ * whether a low-stock alert is dispatched. Today both put the tender and change on
+ * the FIRST line only (later lines get 0): POS records the cash received and the
+ * unclamped change (change can be negative), the online cart records 0 / 0 because
+ * nothing is collected at reservation time. Those differences are injected as
+ * closures/flags so the behavior of each path is preserved exactly.
+ *
+ * SYS4-06 D2A: every committed transaction also gets exactly one `sale_headers` row and
+ * every line created here carries its `sale_header_id`. The header, the lines and the stock
+ * decrements share the one DB transaction, so a failure anywhere leaves none of them behind.
+ * A transaction reference that is already used (by a header OR by existing sales lines) is
+ * refused outright; a new transaction is never attached to someone else's header.
  */
 class CommitOrder
 {
@@ -90,25 +98,61 @@ class CommitOrder
                 $locked[] = ['inventory' => $inventory, 'quantity' => $quantity];
             }
 
-            // Pass 2: create sales records against the accurate grand total.
+            // Pass 2: create the header, then the sales records against the accurate grand total.
+            $now = now();
+
+            // One reference = one transaction. Refuse (and roll back) rather than ever share a
+            // header; the unique index on sale_headers.transaction_reference backstops a race.
+            if (
+                SaleHeader::where('transaction_reference', $transactionReference)->exists()
+                || Sale::withTrashed()->where('transaction_reference', $transactionReference)->exists()
+            ) {
+                throw new \RuntimeException("Transaction reference {$transactionReference} is already in use.");
+            }
+
+            $isReservation = $status === 'pending';
+
+            // First-line tender/change are evaluated exactly once (tender, then change, as before)
+            // and the SAME values go to the header and to the first line, so they cannot diverge
+            // even if a callback is stateful. A shortfall still throws here, before any write.
+            $firstTender = $tenderFor(true, $grandTotal);
+            $firstChange = $changeFor(true, $grandTotal);
+
+            $header = SaleHeader::create([
+                'transaction_reference' => $transactionReference,
+                'customer_id' => $customerId,
+                'transaction_type' => $isReservation ? SaleHeader::TYPE_ONLINE_RESERVATION : SaleHeader::TYPE_POS,
+                'total_amount' => round($grandTotal, 2),
+                'amount_tendered' => $firstTender,
+                'change_amount' => $firstChange,
+                'reserved_at' => $isReservation ? $now : null,
+                'expires_at' => $isReservation ? $now->copy()->addHours(24) : null,
+                'payment_confirmed_at' => $status === 'completed' ? $now : null,
+            ]);
+
             $isFirst = true;
             foreach ($locked as $entry) {
                 $inventory = $entry['inventory'];
                 $quantity = $entry['quantity'];
 
+                // Later lines keep the original per-line callback calls (tender, then change).
+                $lineTender = $isFirst ? $firstTender : $tenderFor(false, $grandTotal);
+                $lineChange = $isFirst ? $firstChange : $changeFor(false, $grandTotal);
+
                 Sale::create([
+                    'sale_header_id' => $header->id,
                     'inventory_item_id' => $inventory->id,
                     'customer_id' => $customerId,
                     'quantity' => $quantity,
                     'price' => $inventory->price,
                     'total_price' => $inventory->price * $quantity,
                     'transaction_reference' => $transactionReference,
-                    'amount_tendered' => $tenderFor($isFirst, $grandTotal),
-                    'change' => $changeFor($isFirst, $grandTotal),
+                    'amount_tendered' => $lineTender,
+                    'change' => $lineChange,
                     'status' => $status,
-                    'reserved_at' => $status === 'pending' ? now() : null,
-                    'expires_at' => $status === 'pending' ? now()->addHours(24) : null,
-                    'payment_confirmed_at' => $status === 'completed' ? now() : null,
+                    'reserved_at' => $isReservation ? $now : null,
+                    'expires_at' => $isReservation ? $now->copy()->addHours(24) : null,
+                    'payment_confirmed_at' => $status === 'completed' ? $now : null,
                 ]);
 
                 $inventory->decrement('quantity', $quantity);
