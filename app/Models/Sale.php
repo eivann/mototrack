@@ -27,6 +27,11 @@ public function customer()
     return $this->belongsTo(Customer::class);
 }
 
+public function header()
+{
+    return $this->belongsTo(SaleHeader::class, 'sale_header_id');
+}
+
 public function refundRequests()
 {
     return $this->hasMany(RefundRequest::class);
@@ -38,6 +43,7 @@ public function productReturns()
 }
 
 protected $fillable = [
+    'sale_header_id',
     'inventory_item_id',
     'customer_id',
     'quantity',
