@@ -36,6 +36,12 @@ class SecurityHeaders
                    "connect-src 'self' wss: https:;";
             
             $response->header('Content-Security-Policy', $csp);
+
+            // SYS4-07: HSTS, production only (browsers ignore it over HTTP, and local/Laragon/testing
+            // must never pin a development host to HTTPS). No 'preload' directive on purpose.
+            if (app()->environment('production')) {
+                $response->header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+            }
         }
 
         return $response;
