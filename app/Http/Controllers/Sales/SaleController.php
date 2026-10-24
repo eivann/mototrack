@@ -17,16 +17,37 @@ class SaleController extends Controller
 {
     use HandlesExceptions;
 
+    private const PRICE_CHANGED_MESSAGE = 'A price changed after this sale was started. The cart was refreshed with the current prices; please review the total and complete the sale again.';
+
     public function __construct(protected CommitOrder $commitOrder)
     {
     }
 
     public function recordSaleForm()
     {
-        $items = InventoryItem::select('id', 'sku', 'part_name', 'brand', 'model', 'price', 'quantity')
+        // Only the fields the POS uses. Plain arrays keep the model's appended `image_url` (a base64
+        // placeholder for every item without a picture) out of the page: on a full catalogue that
+        // placeholder alone made up most of a ~1 MB POS page.
+        $items = InventoryItem::select('id', 'sku', 'part_name', 'brand', 'model', 'category', 'price', 'quantity')
             ->orderBy('part_name')
-            ->get();
-        return view('sales.create', compact('items'));
+            ->get()
+            ->map(fn (InventoryItem $item) => [
+                'id' => $item->id,
+                'sku' => $item->sku,
+                'part_name' => $item->part_name,
+                'brand' => $item->brand,
+                'model' => $item->model,
+                'category' => $item->category,
+                'price' => number_format((float) $item->price, 2, '.', ''),
+                'quantity' => (int) $item->quantity,
+            ])
+            ->values();
+
+        // After a refused checkout the cashier's cart is restored from the browser draft and re-priced
+        // with the current catalogue; a fresh "New Sale" always starts empty.
+        $restoreDraft = session()->has('error') || session()->has('errors');
+
+        return view('sales.create', compact('items', 'restoreDraft'));
     }
 
     public function storeSale(StoreSaleRequest $request)
@@ -41,9 +62,24 @@ class SaleController extends Controller
             if (!isset($cartItem['id'], $cartItem['quantity'])
                 || !is_numeric($cartItem['id'])
                 || !is_numeric($cartItem['quantity'])
-                || $cartItem['quantity'] < 1) {
+                || $cartItem['quantity'] < 1
+                // Optional per-item price snapshot (what the POS displayed): a plain 2-decimal amount.
+                || (array_key_exists('price', $cartItem) && !(
+                    (is_string($cartItem['price']) || is_int($cartItem['price']) || is_float($cartItem['price']))
+                    && preg_match('/^\d+(\.\d{1,2})?$/', (string) $cartItem['price'])
+                ))) {
                 return back()->with('error', 'Invalid cart data.');
             }
+        }
+
+        // The POS screen sends the total it displayed and, per line, the unit price it displayed. If a
+        // price changed after the screen was opened (even when changes offset each other in the total),
+        // refuse with a clear message instead of charging amounts the cashier never saw; the cart is
+        // restored with current prices. Both are re-checked under the stock lock below. Requests
+        // without these optional fields (older clients, tests) behave exactly as before.
+        $expectedTotal = $request->filled('expected_total') ? round((float) $request->expected_total, 2) : null;
+        if ($this->posPricesChanged($cartItems, $expectedTotal)) {
+            return back()->with('error', self::PRICE_CHANGED_MESSAGE);
         }
 
         // H-6: Use ULID for collision-resistant, non-guessable transaction IDs
@@ -53,7 +89,7 @@ class SaleController extends Controller
         // shared CommitOrder action. POS semantics: the tendered amount is
         // stamped on every row and change is not clamped (can show negatives),
         // and a low-stock alert is dispatched per item.
-        return $this->attempt(function () use ($cartItems, $transactionReference, $request) {
+        return $this->attempt(function () use ($cartItems, $transactionReference, $request, $expectedTotal) {
             $lines = [];
             foreach ($cartItems as $cartItem) {
                 $lines[] = ['id' => $cartItem['id'], 'quantity' => $cartItem['quantity']];
@@ -66,7 +102,18 @@ class SaleController extends Controller
                 $transactionReference,
                 null,
                 'Not enough stock for ',
-                function (bool $isFirst, float $grandTotal) use ($tendered) {
+                function (bool $isFirst, float $grandTotal) use ($tendered, $expectedTotal, $cartItems) {
+                    // Evaluated before anything is written, after CommitOrder has locked the stock rows:
+                    // a price change between the check above and the lock still refuses the sale rather
+                    // than charging an unseen amount (the re-read sees the locked, final prices).
+                    if ($isFirst && (
+                        ($expectedTotal !== null && abs(round($grandTotal, 2) - $expectedTotal) >= 0.005)
+                        || $this->posPricesChanged($cartItems, null)
+                    )) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'expected_total' => self::PRICE_CHANGED_MESSAGE,
+                        ]);
+                    }
                     if ($tendered < $grandTotal) {
                         throw \Illuminate\Validation\ValidationException::withMessages([
                             'amount_tendered' => 'Insufficient cash received.',
@@ -80,6 +127,38 @@ class SaleController extends Controller
 
             return redirect("/sales/{$transactionReference}/receipt")->with('success', 'Transaction completed successfully!');
         }, 'Transaction failed. Please check stock levels and try again.');
+    }
+
+    /**
+     * Whether the current catalogue prices differ from what the POS displayed: the optional per-line
+     * `price` snapshots and/or the optional expected total. Missing fields are simply not checked.
+     * An item that no longer exists is left to the stock check (reported as such, not as a price change).
+     */
+    private function posPricesChanged(array $cartItems, ?float $expectedTotal): bool
+    {
+        $hasSnapshots = collect($cartItems)->contains(fn ($line) => array_key_exists('price', $line));
+        if ($expectedTotal === null && !$hasSnapshots) {
+            return false;
+        }
+
+        $prices = InventoryItem::query()->toBase()
+            ->whereIn('id', array_map(fn ($line) => (int) $line['id'], $cartItems))
+            ->pluck('price', 'id');
+
+        $currentTotal = 0.0;
+        foreach ($cartItems as $line) {
+            $id = (int) $line['id'];
+            if (!$prices->has($id)) {
+                return false;
+            }
+            $current = round((float) $prices[$id], 2);
+            if (array_key_exists('price', $line) && abs($current - round((float) $line['price'], 2)) >= 0.005) {
+                return true;
+            }
+            $currentTotal += $current * (int) $line['quantity'];
+        }
+
+        return $expectedTotal !== null && abs(round($currentTotal, 2) - $expectedTotal) >= 0.005;
     }
 
     public function history(Request $request)

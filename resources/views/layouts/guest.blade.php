@@ -18,6 +18,8 @@
         </script>
 
         <title>{{ config('app.name', 'Laravel') }}</title>
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+        <link rel="apple-touch-icon" href="{{ asset('brand/mototrack-em.png') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,9 +31,14 @@
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
+            {{-- Same MotoTrack mark as the login and registration screens (OTP, e-mail verification, password confirmation). --}}
             <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                <a href="/" class="inline-flex items-center gap-3 rounded-xl p-1 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <img src="{{ asset('brand/mototrack-em.png') }}" alt="MotoTrack Logo" width="48" height="48" class="w-12 h-12 rounded-xl object-contain shadow-lg shadow-indigo-600/20 shrink-0">
+                    <span class="text-left">
+                        <span class="block text-gray-900 dark:text-white font-extrabold text-lg tracking-wider leading-none">MOTOTRACK</span>
+                        <span class="block text-gray-500 dark:text-gray-400 text-xs font-medium mt-1">Edmar Motorcycle Parts</span>
+                    </span>
                 </a>
             </div>
 

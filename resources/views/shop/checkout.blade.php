@@ -82,7 +82,21 @@
             <div>
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
                     <form method="POST" action="/checkout" class="space-y-6"
-                          x-data="{ loading: false, agreed: false, showTerms: false, scrolledToBottom: false }"
+                          x-data="{ loading: false, agreed: false, showTerms: false, scrolledToBottom: false,
+                          openTerms() {
+                              this.showTerms = true;
+                              this.$nextTick(() => requestAnimationFrame(() => this.checkTermsRead()));
+                          },
+                          // The terms count as read once their end has been visible: immediately when they fit
+                          // without scrolling (tall screens), otherwise after scrolling to the bottom.
+                          checkTermsRead() {
+                              const el = this.$refs.termsContent;
+                              if (!this.showTerms || !el || el.clientHeight === 0) return;
+                              if (el.scrollHeight <= el.clientHeight + 2 || el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
+                                  this.scrolledToBottom = true;
+                              }
+                          } }"
+                          @resize.window.debounce.150ms="checkTermsRead()"
                           @submit="if (!agreed) { $event.preventDefault(); return; } loading = true">
                         @csrf
 
@@ -111,7 +125,7 @@
                                     class="mt-0.5 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity">
                                 <label for="agree-terms" class="text-sm text-gray-600 dark:text-gray-400 leading-snug">
                                     I have read and agree to the
-                                    <button type="button" @click="showTerms = true" class="text-blue-600 dark:text-blue-400 font-bold hover:underline focus:outline-none">Terms and Conditions</button>.
+                                    <button type="button" @click="openTerms()" class="text-blue-600 dark:text-blue-400 font-bold hover:underline focus:outline-none">Terms and Conditions</button>.
                                     <span x-show="!scrolledToBottom" x-cloak class="block mt-1 text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider">
                                         Please read the Terms and Conditions first
                                     </span>
@@ -162,12 +176,7 @@
                                     <!-- Scrollable Content -->
                                     <div class="overflow-y-auto flex-1 px-6 sm:px-8 py-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-6"
                                          x-ref="termsContent"
-                                         @scroll="
-                                            let el = $refs.termsContent;
-                                            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
-                                                scrolledToBottom = true;
-                                            }
-                                         ">
+                                         @scroll="checkTermsRead()">
 
                                         <div>
                                             <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Reservation & Order Details</h4>

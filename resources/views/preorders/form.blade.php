@@ -15,16 +15,13 @@
         <!-- ITEM INFO & PRICE BREAKDOWN -->
         <div class="overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm lg:sticky lg:top-24">
             <div class="p-5 sm:p-6 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-5 items-start">
-                @if($item->image)
-                    <div class="w-full sm:w-32 h-32 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center overflow-hidden shrink-0">
-                        <img src="{{ Storage::url($item->image) }}" alt="{{ $item->part_name }}" class="max-w-full max-h-full object-contain p-2">
-                    </div>
-                @endif
+                {{-- The column is image_path (there is no `image` attribute), so the picture never showed before. --}}
+                <x-product-image :item="$item" class="w-full sm:w-32 h-32 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shrink-0" img-class="p-2" />
                 
                 <div class="flex-1 min-w-0 w-full">
                     <div class="flex items-center gap-2 mb-2">
-                        <span class="px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest">{{ $item->category->name ?? 'Uncategorized' }}</span>
-                        <span class="px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{{ $item->brand->name ?? 'No Brand' }}</span>
+                        <span class="px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest">{{ $item->category ?: 'Uncategorized' }}</span>
+                        <span class="px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{{ $item->brand ?: 'No Brand' }}</span>
                     </div>
                     <h3 class="text-xl font-black text-gray-900 dark:text-white truncate mb-1">{{ $item->part_name }}</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-4">
@@ -79,7 +76,21 @@
 
         <!-- FORM -->
         <form method="POST" action="/preorder/store"
-              x-data="{ loading: false, agreed: false, showTerms: false, scrolledToBottom: false }"
+              x-data="{ loading: false, agreed: false, showTerms: false, scrolledToBottom: false,
+              openTerms() {
+                  this.showTerms = true;
+                  this.$nextTick(() => requestAnimationFrame(() => this.checkTermsRead()));
+              },
+              // The terms count as read once their end has been visible: immediately when they fit
+              // without scrolling (tall screens), otherwise after scrolling to the bottom.
+              checkTermsRead() {
+                  const el = this.$refs.termsContent;
+                  if (!this.showTerms || !el || el.clientHeight === 0) return;
+                  if (el.scrollHeight <= el.clientHeight + 2 || el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
+                      this.scrolledToBottom = true;
+                  }
+              } }"
+              @resize.window.debounce.150ms="checkTermsRead()"
               @submit="if (!agreed) { $event.preventDefault(); return; } loading = true">
             @csrf
             <input type="hidden" name="inventory_item_id" value="{{ $item->id }}">
@@ -114,7 +125,7 @@
                         class="mt-0.5 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-amber-600 focus:ring-amber-500 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity">
                     <label for="agree-terms-preorder" class="text-sm text-gray-600 dark:text-gray-400 leading-snug">
                         I have read and agree to the
-                        <button type="button" @click="showTerms = true" class="text-amber-600 dark:text-amber-400 font-bold hover:underline focus:outline-none">Terms and Conditions</button>.
+                        <button type="button" @click="openTerms()" class="text-amber-600 dark:text-amber-400 font-bold hover:underline focus:outline-none">Terms and Conditions</button>.
                         <span x-show="!scrolledToBottom" x-cloak class="block mt-1 text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider">
                             Please read the Terms and Conditions first
                         </span>
@@ -159,10 +170,7 @@
                         </div>
                         <div class="overflow-y-auto flex-1 px-6 sm:px-8 py-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-6"
                              x-ref="termsContent"
-                             @scroll="
-                                let el = $refs.termsContent;
-                                if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) { scrolledToBottom = true; }
-                             ">
+                             @scroll="checkTermsRead()">
                             <div>
                                 <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Pre-Order & Reservation Details</h4>
                                 <ul class="space-y-2 list-disc list-inside">

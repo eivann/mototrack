@@ -1,7 +1,7 @@
 <x-app-layout>
     <div x-data="{ 
         activeTab: (['overview','reservations','repairs','preorders','purchases'].includes(new URLSearchParams(window.location.search).get('tab')) ? new URLSearchParams(window.location.search).get('tab') : 'overview'),
-        recentActivities: {{ Js::from(auth()->user()->unreadNotifications->take(5)->map(fn($n) => ['id' => $n->id, 'title' => $n->data['title'] ?? 'Notification', 'message' => $n->data['message'] ?? '', 'time' => $n->created_at->diffForHumans(), 'is_repair' => str_contains(strtolower($n->data['title'] ?? ''), 'repair')])) }},
+        recentActivities: {{ Js::from(auth()->user()->latestUnreadNotifications(5)->map(fn($n) => ['id' => $n->id, 'title' => $n->data['title'] ?? 'Notification', 'message' => $n->data['message'] ?? '', 'time' => $n->created_at->diffForHumans(), 'is_repair' => str_contains(strtolower($n->data['title'] ?? ''), 'repair')])) }},
         initEcho() {
             if (window.Echo) {
                 window.Echo.private('App.Models.User.{{ auth()->id() }}')
@@ -27,9 +27,9 @@
                 this.recentActivities = this.recentActivities.filter(n => n.id !== id);
             });
         }
-    }" x-init="initEcho()" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
+    }" x-init="initEcho()" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-4">
         <!-- Section Header -->
-        <div class="sticky top-[64px] md:top-[80px] lg:top-[88px] z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+        <div data-mt-subheader class="sticky top-[64px] md:top-[80px] lg:top-[88px] z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
             <div class="w-full px-4 sm:px-8 lg:px-12">
                 <div class="flex justify-between items-center py-4">
                     <div class="flex items-center gap-4">
@@ -48,8 +48,8 @@
         <div class="w-full px-4 sm:px-8 lg:px-12 py-8">
             <div class="flex flex-col md:flex-row gap-8 items-start">
                 
-                <!-- Sidebar Navigation (Left) -->
-                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2 md:sticky md:top-[176px]">
+                <!-- Sidebar Navigation (Left): pinned on desktop by .mt-dash-sidebar (layouts/app) -->
+                <nav aria-label="Dashboard sections" class="mt-dash-sidebar w-full md:w-64 flex-shrink-0 order-1 space-y-2">
                     @php
                         $navIcons = [
                             'overview' => 'layout-dashboard',
@@ -72,7 +72,7 @@
                             <i data-lucide="chevron-right" class="w-4 h-4 opacity-50" :class="activeTab === '{{ $id }}' ? 'text-white opacity-100' : 'text-gray-400'"></i>
                         </button>
                     @endforeach
-                </div>
+                </nav>
 
                 <!-- Main Content (Center) -->
                 <div class="w-full md:flex-1 min-w-0 order-2">
@@ -144,8 +144,7 @@
                                         @foreach($reservation->lines as $line)
                                             <div class="flex items-center justify-between gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
                                                 <div class="flex items-center gap-3 min-w-0">
-                                                    <img src="{{ $line->item?->image_url ?? '' }}" alt="{{ $line->item?->part_name ?? 'Part' }}" class="w-12 h-12 rounded-xl object-cover bg-white dark:bg-gray-700 shrink-0" loading="lazy"
-                                                         onerror="this.style.display='none'">
+                                                    <x-product-image :item="$line->item" :alt="$line->item?->part_name ?? 'Part'" class="w-12 h-12 rounded-xl shrink-0 bg-white dark:bg-gray-700" img-class="p-1" />
                                                     <div class="min-w-0">
                                                         <div class="font-black text-gray-900 dark:text-white text-sm truncate">{{ $line->item?->part_name ?? 'Unknown Item' }}</div>
                                                         <div class="text-xs text-gray-500 font-bold">Qty: {{ $line->quantity }}</div>

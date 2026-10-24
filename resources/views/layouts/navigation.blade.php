@@ -94,37 +94,67 @@
 
 <div x-data="{
     open: false,
-    activeSection: (window.location.pathname === '/' || window.location.pathname === '')
-        ? (window.location.hash ? window.location.hash.substring(1) : (window.scrollY < 300 ? 'home' : ''))
-        : '',
+    activeSection: '',
+    sectionIds: [],
+    lockUntil: 0,
+    // Landing page only: which section the header highlights. Home is active only at the top of the
+    // page (or with #home); the other items take over as their section reaches the upper part of the
+    // viewport, and nothing is highlighted between tracked sections.
     init() {
-        if (window.location.pathname === '/' || window.location.pathname === '') {
-            const handleHash = () => {
-                if (window.location.hash) {
-                    this.activeSection = window.location.hash.substring(1);
-                } else if (window.scrollY < 300) {
-                    this.activeSection = 'home';
-                }
-            };
-            window.addEventListener('hashchange', handleHash);
+        if (!(window.location.pathname === '/' || window.location.pathname === '')) return;
+        this.sectionIds = ['home', 'services', 'about', 'preorder', 'contact'].filter(id => document.getElementById(id));
+        this.fromLocation();
 
-            if ('IntersectionObserver' in window) {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            this.activeSection = entry.target.id;
-                        }
-                    });
-                }, { rootMargin: '-25% 0px -50% 0px' });
-
-                ['home', 'services', 'about', 'contact'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) observer.observe(el);
-                });
-            }
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(() => {
+                ticking = false;
+                if (Date.now() >= this.lockUntil) this.recompute();
+            });
+        }, { passive: true });
+        // Browser back/forward between anchors, or a typed #hash.
+        window.addEventListener('hashchange', () => this.fromLocation(true));
+        window.addEventListener('popstate', () => this.fromLocation(true));
+    },
+    fromLocation(lock = false) {
+        const hash = window.location.hash.substring(1);
+        if (hash && this.sectionIds.includes(hash)) {
+            this.activeSection = hash;
+            if (lock) this.lock();
+        } else {
+            this.recompute();
         }
+    },
+    // A clicked item lights up at once and keeps the highlight while the smooth scroll runs;
+    // the position is re-checked afterwards in case the page could not scroll that far.
+    setSection(id) {
+        this.activeSection = id;
+        this.open = false;
+        this.lock();
+    },
+    lock() {
+        this.lockUntil = Date.now() + 1000;
+        setTimeout(() => { if (Date.now() >= this.lockUntil) this.recompute(); }, 1050);
+    },
+    recompute() {
+        if (!this.sectionIds.length) return;
+        if (window.scrollY < 80) { this.activeSection = 'home'; return; }
+        const doc = document.documentElement;
+        if (window.innerHeight + window.scrollY >= doc.scrollHeight - 2) {
+            this.activeSection = this.sectionIds[this.sectionIds.length - 1];
+            return;
+        }
+        const probe = window.innerHeight * 0.35;
+        let current = '';
+        this.sectionIds.forEach(id => {
+            const rect = document.getElementById(id).getBoundingClientRect();
+            if (rect.top <= probe && rect.bottom > probe) current = id;
+        });
+        this.activeSection = current;
     }
-}" class="sticky top-0 z-50 w-full">
+}" class="sticky top-0 z-50 w-full" data-mt-nav>
 <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-all duration-300 shadow-sm">
     <div class="w-full px-4 lg:px-6">
         <div class="flex justify-between items-center h-16 md:h-20 lg:h-[88px]">
@@ -149,6 +179,10 @@
                         $linkClasses = "inline-flex items-center text-[12px] lg:text-[13px] font-bold transition-all duration-300 relative whitespace-nowrap";
                         $activeClasses = "text-indigo-600 dark:text-indigo-400";
                         $inactiveClasses = "text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white";
+                        // Alpine's object syntax also REMOVES the server-rendered classes when a section is not
+                        // active (the string syntax only adds), so Home cannot stay highlighted on the landing page.
+                        $sectionBinding = fn (string $section, string $on, string $off) =>
+                            "{ '{$on}': activeSection === '{$section}', '{$off}': activeSection !== '{$section}' }";
                     @endphp
 
                     @foreach($navItems as $item)
@@ -156,10 +190,10 @@
                             @if(!empty($item['dropdown']))
                                 {{-- Dropdown nav item --}}
                                 <div class="relative" x-data="{ dropdownOpen: false }" @mouseenter="dropdownOpen = true" @mouseleave="dropdownOpen = false">
-                                    <button @click="dropdownOpen = !dropdownOpen"
+                                    <button @click="dropdownOpen = !dropdownOpen" :aria-expanded="dropdownOpen" aria-haspopup="true"
                                         class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }} gap-1"
                                         @if($isLanding && !empty($item['section']))
-                                            :class="activeSection === '{{ $item['section'] }}' ? '{{ $activeClasses }}' : '{{ $inactiveClasses }}'"
+                                            :class="{{ $sectionBinding($item['section'], $activeClasses, $inactiveClasses) }}"
                                         @endif>
                                         <span>{{ $item['label'] }}</span>
                                         <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" :class="dropdownOpen ? 'rotate-180' : ''"></i>
@@ -169,7 +203,7 @@
                                         @foreach($item['dropdown'] as $subItem)
                                             <a href="{{ $subItem['href'] }}"
                                                @if($isLanding && !empty($subItem['section']))
-                                                   @click="activeSection = '{{ $subItem['section'] }}'; dropdownOpen = false"
+                                                   @click="setSection('{{ $subItem['section'] }}'); dropdownOpen = false"
                                                @endif
                                                class="flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold text-gray-600 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                                                 <i data-lucide="{{ $subItem['icon'] }}" class="w-4 h-4"></i>
@@ -182,8 +216,11 @@
                                 <a href="{{ $item['href'] }}"
                                    class="{{ $linkClasses }} {{ $item['active'] ? $activeClasses : $inactiveClasses }}"
                                    @if($isLanding && !empty($item['section']))
-                                       :class="activeSection === '{{ $item['section'] }}' ? '{{ $activeClasses }}' : '{{ $inactiveClasses }}'"
-                                       @click="activeSection = '{{ $item['section'] }}'"
+                                       :class="{{ $sectionBinding($item['section'], $activeClasses, $inactiveClasses) }}"
+                                       :aria-current="activeSection === '{{ $item['section'] }}' ? 'page' : null"
+                                       @click="setSection('{{ $item['section'] }}')"
+                                   @elseif($item['active'])
+                                       aria-current="page"
                                    @endif>
                                     <span>{{ $item['label'] }}</span>
                                 </a>
@@ -232,8 +269,9 @@
                 @php
                     // SYS4-05: database-limited bell data (latest 10 + one unread COUNT) instead of
                     // loading every notification of the user into memory on each page.
-                    $bellNotifications = auth()->user()->notifications()->limit(10)->get();
-                    $bellUnreadCount = auth()->user()->unreadNotifications()->count();
+                    $bellSnapshot = auth()->user()->notificationSnapshot();
+                    $bellNotifications = $bellSnapshot['latest'];
+                    $bellUnreadCount = $bellSnapshot['unread_count'];
                 @endphp
                 <div class="relative group" x-data="{ open: false, hasNew: {{ $bellUnreadCount > 0 ? 'true' : 'false' }} }" @click.away="open = false">
                     <button @click="open = !open; hasNew = false"
@@ -416,13 +454,20 @@
          </div>
 
          <div class="flex-1 overflow-y-auto custom-scrollbar">
+             @php
+                 $mobileActive = 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300';
+                 $mobileInactive = 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors';
+             @endphp
              <div class="p-4 space-y-1">
                  @foreach($navItems as $item)
                      @if($item['show'])
                          @if(!empty($item['dropdown']))
                              {{-- Dropdown group in mobile --}}
                              <div x-data="{ subOpen: false }">
-                                 <button @click="subOpen = !subOpen" class="flex items-center justify-between w-full px-4 py-4 rounded-2xl text-base font-bold {{ $item['active'] ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors' }}">
+                                 <button @click="subOpen = !subOpen" :aria-expanded="subOpen" class="flex items-center justify-between w-full px-4 py-4 rounded-2xl text-base font-bold {{ $item['active'] ? $mobileActive : $mobileInactive }}"
+                                     @if($isLanding && !empty($item['section']))
+                                         :class="{{ $sectionBinding($item['section'], $mobileActive, $mobileInactive) }}"
+                                     @endif>
                                      <div class="flex items-center">
                                          <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 mr-4"></i>
                                          {{ $item['mobile_label'] }}
@@ -431,7 +476,9 @@
                                  </button>
                                  <div x-show="subOpen" x-collapse x-cloak class="pl-8 mt-1 space-y-1">
                                      @foreach($item['dropdown'] as $subItem)
-                                         <a href="{{ $subItem['href'] }}" class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                         <a href="{{ $subItem['href'] }}"
+                                            @if($isLanding && !empty($subItem['section'])) @click="setSection('{{ $subItem['section'] }}')" @endif
+                                            class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                                              <i data-lucide="{{ $subItem['icon'] }}" class="w-4 h-4 mr-3"></i>
                                              {{ $subItem['label'] }}
                                          </a>
@@ -439,7 +486,14 @@
                                  </div>
                              </div>
                          @else
-                             <a href="{{ $item['href'] }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ $item['active'] ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors' }}">
+                             <a href="{{ $item['href'] }}" class="flex items-center px-4 py-4 rounded-2xl text-base font-bold {{ $item['active'] ? $mobileActive : $mobileInactive }}"
+                                @if($isLanding && !empty($item['section']))
+                                    :class="{{ $sectionBinding($item['section'], $mobileActive, $mobileInactive) }}"
+                                    :aria-current="activeSection === '{{ $item['section'] }}' ? 'page' : null"
+                                    @click="setSection('{{ $item['section'] }}')"
+                                @elseif($item['active'])
+                                    aria-current="page"
+                                @endif>
                                  <i data-lucide="{{ $item['icon'] }}" class="w-5 h-5 mr-4"></i>
                                  {{ $item['mobile_label'] }}
                              </a>

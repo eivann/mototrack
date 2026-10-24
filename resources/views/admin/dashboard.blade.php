@@ -15,9 +15,9 @@
                     });
             }
         }
-    }" x-init="initEcho()" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
+    }" x-init="initEcho()" class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-4">
         <!-- Section Header -->
-        <div class="sticky top-[64px] md:top-[80px] lg:top-[88px] z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+        <div data-mt-subheader class="sticky top-[64px] md:top-[80px] lg:top-[88px] z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
             <div class="w-full px-4 sm:px-8 lg:px-12">
                 <div class="flex justify-between items-center py-4">
                     <div class="flex items-center gap-4">
@@ -37,8 +37,8 @@
         <div class="w-full px-4 sm:px-8 lg:px-12 py-8">
             <div class="flex flex-col md:flex-row gap-8 items-start">
                 
-                <!-- Sidebar Navigation (Left) -->
-                <div class="w-full md:w-64 flex-shrink-0 order-1 space-y-2 md:sticky md:top-[176px]">
+                <!-- Sidebar Navigation (Left): pinned on desktop by .mt-dash-sidebar (layouts/app) -->
+                <nav aria-label="Dashboard sections" class="mt-dash-sidebar w-full md:w-64 flex-shrink-0 order-1 space-y-2">
                     @foreach([
                         'overview' => 'Overview',
                         'inventory' => 'Inventory',
@@ -82,7 +82,7 @@
                             @endif
                         </button>
                     @endforeach
-                </div>
+                </nav>
 
                 <!-- Main Content (Right) -->
                 <div class="w-full md:flex-1 min-w-0 order-2">
@@ -578,7 +578,7 @@
                                                         <div>
                                                             <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Customer QR Code</h4>
                                                             <a href="{{ Storage::url($refund->qr_code_path) }}" target="_blank" class="inline-block mt-2">
-                                                                <img src="{{ Storage::url($refund->qr_code_path) }}" alt="Customer QR Code" class="h-40 rounded-xl object-cover border border-gray-200 dark:border-gray-700 shadow-sm hover:opacity-80 transition-opacity">
+                                                                <img src="{{ Storage::url($refund->qr_code_path) }}" alt="Customer QR Code" loading="lazy" decoding="async" class="h-40 w-auto max-w-full rounded-xl object-contain bg-white border border-gray-200 dark:border-gray-700 shadow-sm hover:opacity-80 transition-opacity">
                                                             </a>
                                                             <p class="text-[10px] text-gray-400 font-bold mt-2">Click to view full size. Use this QR to send the refund amount.</p>
                                                         </div>
@@ -589,7 +589,7 @@
                                                         <div>
                                                             <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Photo Evidence</h4>
                                                             <a href="{{ Storage::url($refund->photo_path) }}" target="_blank" class="inline-block mt-2">
-                                                                <img src="{{ Storage::url($refund->photo_path) }}" alt="Refund Evidence" class="h-32 rounded-xl object-cover border border-gray-200 dark:border-gray-700 shadow-sm hover:opacity-80 transition-opacity">
+                                                                <img src="{{ Storage::url($refund->photo_path) }}" alt="Refund Evidence" loading="lazy" decoding="async" class="h-32 w-auto max-w-full rounded-xl object-contain bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:opacity-80 transition-opacity">
                                                             </a>
                                                         </div>
                                                         @endif

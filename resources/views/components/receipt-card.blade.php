@@ -3,8 +3,8 @@
 <div class="bg-white dark:bg-gray-800 w-full max-w-md shadow-xl rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 transition-colors duration-300" id="printableArea">
     <!-- Receipt Header -->
     <div class="p-5 text-center border-b border-gray-200 dark:border-gray-700 border-dashed">
-        <div class="flex justify-center items-center mb-2 text-indigo-600 dark:text-indigo-400">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <div class="flex justify-center items-center mb-2">
+            <img src="{{ asset('brand/mototrack-em.png') }}" alt="MotoTrack" width="40" height="40" class="w-10 h-10 rounded-xl object-contain shadow-sm">
         </div>
         <h1 class="text-xl font-extrabold text-gray-900 dark:text-white tracking-wider">{{ $title }}</h1>
         <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Edmar Motorcycle Parts</p>

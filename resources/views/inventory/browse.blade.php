@@ -2,7 +2,7 @@
 <div x-data="browsePage()" class="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
 
     <!-- HEADER / SEARCH BAR (Sticky) -->
-    <div class="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sticky top-16 md:top-20 lg:top-[88px] z-40 bg-white dark:bg-gray-900 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-6 pb-4 -mt-6 border-b border-gray-100 dark:border-gray-800">
+    <div x-ref="browseHeader" class="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sticky top-16 md:top-20 lg:top-[88px] z-40 bg-white dark:bg-gray-900 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-6 pb-4 -mt-6 border-b border-gray-100 dark:border-gray-800">
         <form method="GET" action="/browse" x-data="browseFilters()" @submit="loading = true" class="w-full sm:flex-1 flex gap-2">
             <label for="browse-search" class="sr-only">Search parts</label>
             <input
@@ -66,17 +66,19 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <!-- FILTER SIDEBAR (Sticky on Desktop, Fixed bottom sheet on Mobile) -->
+        {{-- Desktop: pinned just below the sticky search bar (offset measured in browsePage()); it only
+             scrolls itself when taller than the space left. Mobile: bottom sheet opened by "Filters". --}}
         <div id="filter-panel"
              :class="showFilters ? '' : 'hidden lg:block'"
-             class="lg:col-span-3 lg:sticky lg:top-28 lg:self-start z-30"
-             x-show="showFilters || window.innerWidth >= 1024"
+             class="lg:col-span-3 lg:sticky lg:self-start z-30"
+             x-show="showFilters || isDesktop"
              x-cloak>
             {{-- On mobile the panel is pinned to the viewport so it opens where the
                  user is already looking instead of above their current scroll position. --}}
             <div class="fixed inset-0 z-40 bg-black/40 lg:hidden" x-show="showFilters" @click="showFilters = false" x-cloak aria-hidden="true"></div>
             <form method="GET" action="/browse" x-data="browseFilters()" @submit="loading = true"
                   :class="showFilters ? 'fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl' : ''"
-                  class="bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto lg:!static lg:!inset-auto">
+                  class="browse-filter-form bg-white dark:bg-gray-800 border dark:border-gray-700 p-5 rounded-2xl shadow-sm lg:overflow-y-auto lg:!static lg:!inset-auto">
                 <h2 class="font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-xs flex items-center justify-between">Filters
                     <button type="button" @click="showFilters = false" class="lg:hidden -mr-1 p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Close filters">✕</button>
                 </h2>
@@ -163,9 +165,7 @@
                         selectedPrice: {{ (float)($item->price ?? 0) }}, 
                         selectedStock: {{ $item->quantity }} 
                      }">
-                    <div class="aspect-square w-full rounded-lg overflow-hidden mb-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
-                        <img src="{{ $item->image_url }}" alt="{{ $item->part_name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,{{ base64_encode('<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'400\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#9CA3AF\' stroke-width=\'1\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\'></path><polyline points=\'3.27 6.96 12 12.01 20.73 6.96\'></polyline><line x1=\'12\' y1=\'22.08\' x2=\'12\' y2=\'12\'></line></svg>') }}';">
-                    </div>
+                    <x-product-image :item="$item" class="aspect-square w-full rounded-lg mb-4 border border-gray-100 dark:border-gray-800" img-class="p-2 group-hover:scale-105 transition-transform duration-500" />
                     <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-white">{{ $item->part_name }}</h3>
                     <p class="text-gray-500 dark:text-gray-400 text-sm">{{ $item->brand }} • {{ $item->model }}</p>
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Category: {{ $item->category }}</p>
@@ -253,7 +253,28 @@
 <script>
     function browsePage() {
         return {
-            showFilters: window.innerWidth >= 1024,
+            // showFilters = the mobile bottom sheet is open; isDesktop keeps the panel visible on lg+
+            // and follows viewport changes (the panel used to stay hidden after resizing to desktop).
+            showFilters: false,
+            isDesktop: window.matchMedia('(min-width: 1024px)').matches,
+            init() {
+                const media = window.matchMedia('(min-width: 1024px)');
+                const onChange = (event) => {
+                    this.isDesktop = event.matches;
+                    this.showFilters = false; // never carry an open bottom sheet across breakpoints
+                };
+                if (media.addEventListener) media.addEventListener('change', onChange); else media.addListener(onChange);
+
+                // Offset the desktop filter panel by the real height of the sticky search bar.
+                const header = this.$refs.browseHeader;
+                const root = document.documentElement;
+                const measure = () => {
+                    if (header) root.style.setProperty('--browse-header-h', Math.round(header.getBoundingClientRect().height) + 'px');
+                };
+                measure();
+                if (header && 'ResizeObserver' in window) new ResizeObserver(measure).observe(header);
+                window.addEventListener('resize', measure, { passive: true });
+            },
             browseSearch: [],
             suggestionTimers: {},
             loadSuggestions(field, value, target) {
@@ -301,4 +322,17 @@
         }
     }
 </script>
+<style>
+    /* Desktop filter panel: below the sticky header + search bar, never under them. The fallback
+       heights match the header (88px + border) and the search bar; browsePage() measures the real ones. */
+    @media (min-width: 1024px) {
+        #filter-panel {
+            top: calc(var(--mt-nav-h, 89px) + var(--browse-header-h, 90px) + 1rem);
+        }
+        #filter-panel .browse-filter-form {
+            max-height: calc(100vh - var(--mt-nav-h, 89px) - var(--browse-header-h, 90px) - 2rem);
+            max-height: calc(100dvh - var(--mt-nav-h, 89px) - var(--browse-header-h, 90px) - 2rem);
+        }
+    }
+</style>
 </x-app-layout>

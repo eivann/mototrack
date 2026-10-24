@@ -22,8 +22,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@0.460.0"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    {{-- Deferred: neither library is needed to paint the page, so they no longer block first render. --}}
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js" defer></script>
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('brand/mototrack-em.png') }}">
+    <style>
+        /* Anchor jumps (#services, #about, #contact) stop below the sticky header instead of under it. */
+        section[id] { scroll-margin-top: 96px; }
+    </style>
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -62,7 +69,7 @@
 
             <div class="flex-1 relative mt-12 lg:mt-0 w-full max-w-lg lg:max-w-none mx-auto" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
                 <picture>
-                    <source srcset="{{ asset('images/hero.webp') }}" type="image/webp">
+                    <source srcset="{{ asset('images/hero.webp') }}" type="image/webp" width="1200" height="1600">
                     <img src="{{ asset('images/hero.jpg') }}" alt="Motorcycle Parts Shop" class="w-full h-auto drop-shadow-2xl relative z-10 hover:scale-[1.02] transition-transform duration-500" fetchpriority="high" width="1200" height="1600">
                 </picture>
                 
@@ -137,8 +144,8 @@
                 <div class="flex-1 w-full relative">
                     <div class="absolute inset-0 bg-blue-600/20 rounded-[3rem] -rotate-6 transform scale-105 pointer-events-none"></div>
                     <picture>
-                        <source srcset="{{ asset('images/about.webp') }}" type="image/webp">
-                        <img src="{{ asset('images/about.jpg') }}" alt="Expert Mechanics" class="w-full h-auto rounded-[3rem] shadow-2xl relative z-10 border border-gray-700" loading="lazy" width="1200" height="1600">
+                        <source srcset="{{ asset('images/about.webp') }}" type="image/webp" width="1200" height="1600">
+                        <img src="{{ asset('images/about.jpg') }}" alt="Expert Mechanics" class="w-full h-auto rounded-[3rem] shadow-2xl relative z-10 border border-gray-700" loading="lazy" decoding="async" width="1200" height="1600">
                     </picture>
                 </div>
                 
@@ -337,7 +344,8 @@
     </footer>
 
     <script>
-        lucide.createIcons();
+        // lucide loads deferred: draw the icons once it has run (deferred scripts finish before DOMContentLoaded).
+        document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
 
         // Conditionally disable Vanilla Tilt on touch devices for performance
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
@@ -391,17 +399,67 @@
             modelInput.addEventListener('input', () => loadSuggestions('model', modelInput.value, 'landingModelSuggestions'));
             partInput.addEventListener('input', () => loadSuggestions('part_name', partInput.value, 'landingPartSuggestions'));
 
-            // Toast Notification System
+            // ── Safe rendering helpers ─────────────────────────────────────────
+            // Search results, toasts and highlights are built as DOM nodes: every value that comes
+            // from the server or the visitor is inserted with textContent or a validated attribute,
+            // never as HTML, and search terms are escaped before they become a regular expression.
+            function el(tag, className, text) {
+                const node = document.createElement(tag);
+                if (className) node.className = className;
+                if (text !== undefined && text !== null) node.textContent = String(text);
+                return node;
+            }
+
+            function escapeRegExp(value) {
+                return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
+            // Only http(s) URLs and inline image data are accepted for product pictures.
+            function safeImageUrl(url) {
+                if (typeof url !== 'string' || url === '') return null;
+                if (/^data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/i.test(url)) return url;
+                try {
+                    const parsed = new URL(url, window.location.origin);
+                    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') ? parsed.href : null;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            // Appends `text` to `parent`, wrapping each case-insensitive match of the query terms.
+            function appendHighlighted(parent, text, query) {
+                const value = String(text ?? '');
+                const terms = String(query || '').trim().split(/\s+/).filter(t => t.length > 0).map(escapeRegExp);
+                if (terms.length === 0) {
+                    parent.textContent = value;
+                    return;
+                }
+                const regex = new RegExp(`(${terms.join('|')})`, 'gi');
+                value.split(regex).forEach((part, index) => {
+                    if (part === '') return;
+                    parent.appendChild(index % 2 === 1 ? el('span', 'highlight', part) : document.createTextNode(part));
+                });
+            }
+
+            // Fixed icon markup (no dynamic data).
+            const ICONS = {
+                success: '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>',
+                error: '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>',
+                info: '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+                box: '<svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>',
+            };
+            const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNlY4YTIgMiAwIDAgMC0xLTEuNzNsLTctNGEyIDIgMCAwIDAtMiAwbC03IDRBMiAyIDAgMCAwIDMgOHY4YTIgMiAwIDAgMCAxIDEuNzNsNyA0YTIgMiAwIDAgMCAyIDBsNy00QTIgMiAwIDAgMCAyMSAxNnoiPjwvcGF0aD48cG9seWxpbmUgcG9pbnRzPSIzLjI3IDYuOTYgMTIgMTIuMDEgMjAuNzMgNi45NiI+PC9wb2x5bGluZT48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiPjwvbGluZT48L3N2Zz4=';
+            const LOGIN_URL = @js(route('login'));
+
+            // Toast Notification System (message rendered as text)
             function showToast(message, type = 'success') {
-                const toast = document.createElement('div');
                 const colors = type === 'success' ? 'bg-gray-900 dark:bg-gray-800 text-white' : 'bg-red-500 text-white';
-                const icon = type === 'success' 
-                    ? '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
-                    : '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-                
-                toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg transition-all duration-300 pointer-events-auto ${colors}`;
-                toast.innerHTML = `${icon} <span class="font-medium text-sm">${message}</span>`;
-                
+                const toast = el('div', `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg transition-all duration-300 pointer-events-auto ${colors}`);
+                toast.setAttribute('role', type === 'success' ? 'status' : 'alert');
+                const icon = el('span', 'shrink-0');
+                icon.innerHTML = type === 'success' ? ICONS.success : ICONS.error;
+                toast.append(icon, el('span', 'font-medium text-sm', message));
+
                 toastContainer.appendChild(toast);
 
                 setTimeout(() => {
@@ -413,7 +471,7 @@
             // Add to Cart Logic
             async function addToCart(id) {
                 if (!isAuthenticated) {
-                    window.location.href = "{{ route('login') }}";
+                    window.location.href = LOGIN_URL;
                     return;
                 }
 
@@ -421,7 +479,7 @@
                 const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
 
                 try {
-                    const response = await fetch(`/cart/add/${id}`, {
+                    const response = await fetch(`/cart/add/${encodeURIComponent(id)}`, {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': csrfToken,
@@ -453,13 +511,90 @@
                 }
             });
 
-            // Highlight matching text
-            function highlightText(text, query) {
-                if (!query || !text) return text;
-                const terms = query.trim().split(/\s+/).filter(t => t.length > 0);
-                if (terms.length === 0) return text;
-                const regex = new RegExp(`(${terms.join('|')})`, 'gi');
-                return String(text).replace(regex, '<span class="highlight">$1</span>');
+            function statusPanel(title, detail) {
+                const panel = el('div', 'bg-red-50/80 dark:bg-red-900/10 rounded-[2rem] border border-red-200/60 dark:border-red-900/30 p-8 text-center max-w-3xl mx-auto mt-4');
+                panel.append(
+                    el('p', 'font-bold text-[17px] text-[#dc2626] dark:text-red-400 mb-2', title),
+                    el('p', 'text-[13px] text-red-400 dark:text-red-500 font-bold tracking-wide', detail)
+                );
+                return panel;
+            }
+
+            function buildResultCard(item, query) {
+                const id = /^\d+$/.test(String(item.id)) ? Number(item.id) : NaN; // whole-number ids only
+                const quantity = Number(item.quantity) || 0;
+                const price = Number.parseFloat(item.price);
+                const partName = String(item.part_name ?? '');
+
+                const card = el('div', 'bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg border border-gray-100 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300 flex flex-col group');
+
+                // Picture (lazy) with a neutral placeholder if the file cannot be loaded.
+                const media = el('div', 'aspect-square bg-gray-50 dark:bg-gray-700 flex items-center justify-center p-0 relative overflow-hidden group-hover:bg-gray-100 dark:group-hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-700');
+                const imageUrl = safeImageUrl(item.image_url);
+                if (imageUrl) {
+                    const img = el('img', 'w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300');
+                    img.src = imageUrl;
+                    img.alt = partName;
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    img.addEventListener('error', () => { img.src = PLACEHOLDER_IMAGE; }, { once: true });
+                    media.appendChild(img);
+                } else {
+                    media.insertAdjacentHTML('beforeend', ICONS.box);
+                }
+                if (quantity <= 0) {
+                    media.appendChild(el('div', 'absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shadow-sm', 'Sold Out'));
+                }
+
+                const body = el('div', 'p-4 flex-1 flex flex-col text-left');
+                if (item.brand) {
+                    body.appendChild(el('p', 'text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1', item.brand));
+                }
+                const title = el('h3', 'text-sm font-medium text-gray-800 dark:text-white line-clamp-2 leading-snug flex-1');
+                title.title = partName;
+                appendHighlighted(title, partName, query);
+                body.appendChild(title);
+
+                if (item.model) {
+                    const model = el('div', 'mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block');
+                    model.insertAdjacentHTML('beforeend', ICONS.info);
+                    model.appendChild(el('span', 'truncate max-w-[120px]', item.model));
+                    body.appendChild(model);
+                }
+
+                const priceRow = el('div', 'flex items-end justify-between mt-3');
+                const priceBox = el('div', 'leading-none');
+                priceBox.append(
+                    el('span', 'text-xs font-semibold text-orange-500 align-top', '₱'),
+                    el('span', 'text-lg font-bold text-orange-500', Number.isFinite(price) ? price.toFixed(2) : '—')
+                );
+                priceRow.append(
+                    priceBox,
+                    quantity > 0
+                        ? el('span', 'text-[11px] font-medium text-gray-500', `${quantity} in stock`)
+                        : el('span', 'text-[11px] font-medium text-red-500', 'Out of Stock')
+                );
+                body.appendChild(priceRow);
+
+                if (!isAuthenticated) {
+                    const login = el('a', 'mt-3 block text-center w-full bg-gray-100 text-gray-600 text-sm font-semibold py-2 rounded-lg hover:bg-gray-200', 'Login to Order');
+                    login.href = LOGIN_URL;
+                    body.appendChild(login);
+                } else if (Number.isInteger(id) && id > 0) {
+                    if (quantity > 0) {
+                        const add = el('button', 'add-to-cart-btn mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer', 'Add to Cart');
+                        add.type = 'button';
+                        add.dataset.id = String(id);
+                        body.appendChild(add);
+                    } else {
+                        const pre = el('a', 'mt-3 block text-center w-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95', 'Pre-order');
+                        pre.href = `/preorder/${id}`;
+                        body.appendChild(pre);
+                    }
+                }
+
+                card.append(media, body);
+                return card;
             }
 
             function triggerSearch(e) {
@@ -492,75 +627,18 @@
                         return res.json();
                     })
                     .then(data => {
-                        resultsBox.innerHTML = '';
+                        resultsBox.replaceChildren();
 
                         if (!Array.isArray(data) || data.length === 0) {
-                            resultsBox.innerHTML = `
-                                <div class="bg-red-50/80 dark:bg-red-900/10 rounded-[2rem] border border-red-200/60 dark:border-red-900/30 p-8 text-center max-w-3xl mx-auto mt-4">
-                                    <p class="font-bold text-[17px] text-[#dc2626] dark:text-red-400 mb-2">No matching parts found</p>
-                                    <p class="text-[13px] text-red-400 dark:text-red-500 font-bold tracking-wide">Try adjusting your search terms or check a different motorcycle model.</p>
-                                </div>
-                            `;
+                            resultsBox.appendChild(statusPanel('No matching parts found', 'Try adjusting your search terms or check a different motorcycle model.'));
                         } else {
-                            const grid = document.createElement('div');
-                            grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
-                            
-                            data.forEach(item => {
-                                const card = document.createElement('div');
-                                card.className = 'bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg border border-gray-100 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300 flex flex-col group';
-                                
-                                const stockBadge = item.quantity > 0
-                                    ? `<span class="text-[11px] font-medium text-gray-500">${item.quantity} in stock</span>`
-                                    : `<span class="text-[11px] font-medium text-red-500">Out of Stock</span>`;
-
-                                let actionBtn = '';
-                                if (isAuthenticated) {
-                                    actionBtn = item.quantity > 0
-                                        ? `<button data-id="${item.id}" class="add-to-cart-btn mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer">Add to Cart</button>`
-                                        : `<a href="/preorder/${item.id}" class="mt-3 block text-center w-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95">Pre-order</a>`;
-                                } else {
-                                    actionBtn = `<a href="{{ route('login') }}" class="mt-3 block text-center w-full bg-gray-100 text-gray-600 text-sm font-semibold py-2 rounded-lg hover:bg-gray-200">Login to Order</a>`;
-                                }
-
-                                const brandText = item.brand ? `<p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">${item.brand}</p>` : '';
-                                const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${item.model}</span></div>` : '';
-                                
-                                const imageHtml = item.image_url 
-                                    ? `<img src="${item.image_url}" alt="${item.part_name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNlY4YTIgMiAwIDAgMC0xLTEuNzNsLTctNGEyIDIgMCAwIDAtMiAwbC03IDRBMiAyIDAgMCAwIDMgOHY4YTIgMiAwIDAgMCAxIDEuNzNsNyA0YTIgMiAwIDAgMCAyIDBsNy00QTIgMiAwIDAgMCAyMSAxNnoiPjwvcGF0aD48cG9seWxpbmUgcG9pbnRzPSIzLjI3IDYuOTYgMTIgMTIuMDEgMjAuNzMgNi45NiI+PC9wb2x5bGluZT48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiPjwvbGluZT48L3N2Zz4=';">`
-                                    : `<svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`;
-
-                                card.innerHTML = `
-                                    <div class="aspect-square bg-gray-50 dark:bg-gray-700 flex items-center justify-center p-0 relative overflow-hidden group-hover:bg-gray-100 dark:group-hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-700">
-                                        ${imageHtml}
-                                        ${item.quantity <= 0 ? '<div class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">Sold Out</div>' : ''}
-                                    </div>
-                                    <div class="p-4 flex-1 flex flex-col text-left">
-                                        ${brandText}
-                                        <h3 class="text-sm font-medium text-gray-800 dark:text-white line-clamp-2 leading-snug flex-1" title="${item.part_name}">
-                                            ${highlightText(item.part_name, query)}
-                                        </h3>
-                                        ${modelBadge}
-                                        <div class="flex items-end justify-between mt-3">
-                                            <div class="leading-none">
-                                                <span class="text-xs font-semibold text-orange-500 align-top">₱</span><span class="text-lg font-bold text-orange-500">${parseFloat(item.price).toFixed(2)}</span>
-                                            </div>
-                                            ${stockBadge}
-                                        </div>
-                                        ${actionBtn}
-                                    </div>
-                                `;
-                                grid.appendChild(card);
-                            });
+                            const grid = el('div', 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4');
+                            data.forEach(item => grid.appendChild(buildResultCard(item || {}, query)));
                             resultsBox.appendChild(grid);
                         }
                     }).catch((err) => {
                         console.error(err);
-                        resultsBox.innerHTML = `
-                            <div class="bg-red-50/80 dark:bg-red-900/10 rounded-[2rem] border border-red-200/60 dark:border-red-900/30 p-8 text-center max-w-3xl mx-auto mt-4">
-                                <p class="font-bold text-[17px] text-[#dc2626] dark:text-red-400 mb-2">Error connecting to server</p>
-                                <p class="text-[13px] text-red-400 dark:text-red-500 font-bold tracking-wide">Please try again in a moment or type slower to avoid rate limits.</p>
-                            </div>
-                        `;
+                        resultsBox.replaceChildren(statusPanel('Error connecting to server', 'Please try again in a moment or type slower to avoid rate limits.'));
                     });
             }
 

@@ -20,9 +20,10 @@
             <!-- Form Card -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 relative overflow-hidden"
                  x-data="{ 
-                    category: '{{ $item->category }}', 
-                    brand: '{{ $item->brand }}', 
-                    sku: '{{ $item->sku }}',
+                    {{-- @js emits a safely quoted JavaScript string, so values such as Rider's Accessories cannot break the expression. --}}
+                    category: @js((string) ($item->category ?? '')),
+                    brand: @js((string) ($item->brand ?? '')),
+                    sku: @js((string) ($item->sku ?? '')),
                     loading: false,
                     generateSKU() {
                         if(!this.category || !this.brand) {
@@ -102,7 +103,7 @@
                             @if($item->image_path)
                                 <div class="mb-3">
                                     <p class="text-xs text-gray-500 mb-1">Current Image:</p>
-                                    <img src="{{ $item->image_url }}" alt="Current image" class="h-20 w-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <x-product-image :item="$item" alt="Current image" class="h-20 w-20 rounded-lg border border-gray-200 dark:border-gray-700" img-class="p-1" />
                                 </div>
                             @endif
                             <input id="item-image" type="file" name="image" accept="image/jpeg, image/png, image/webp" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/50 dark:file:text-indigo-400 dark:hover:file:bg-indigo-900/70 transition-colors cursor-pointer">

@@ -10,15 +10,29 @@
 {{-- One labelled cash action: shows the lines and total due, takes cash tendered,
      shows live change, and posts once. The submit button disables itself on the
      first click so a double-click cannot send two requests; the server is also
-     idempotent and row-locked. Cash only: no other payment method is offered. --}}
+     idempotent and row-locked. Cash only: no other payment method is offered.
+     Change and "enough cash" use the same centavo calculation as the POS screen. --}}
+@once
+    <script src="{{ asset('js/pos-totals.js') }}"></script>
+@endonce
 <div x-data="{
         open: false,
         busy: false,
         total: {{ (float) $total }},
+        totalText: '{{ number_format((float) $total, 2, '.', '') }}',
         paid: {{ $alreadyPaid ? 'true' : 'false' }},
         tendered: '',
-        get change() { const t = parseFloat(this.tendered); return isNaN(t) ? 0 : Math.max(0, t - this.total); },
-        get enough() { return this.paid || (parseFloat(this.tendered) >= this.total && this.total > 0); },
+        get calc() { return window.MotoTrackPos ? MotoTrackPos.compute([{ price: this.totalText, quantity: 1 }], this.tendered) : null; },
+        get change() {
+            const c = this.calc;
+            if (c) return c.changeCents !== null ? Math.max(0, c.changeCents) / 100 : 0;
+            const t = parseFloat(this.tendered); return isNaN(t) ? 0 : Math.max(0, t - this.total);
+        },
+        get enough() {
+            if (this.paid) return true;
+            const c = this.calc;
+            return c ? c.canCheckout : (parseFloat(this.tendered) >= this.total && this.total > 0);
+        },
         money(n) { return '₱' + Number(n).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
     }" class="inline-block">
     <button type="button" @click="open = true; $nextTick(() => $refs.cash && $refs.cash.focus())"
@@ -28,10 +42,12 @@
 
     <div x-show="open" x-cloak x-transition.opacity @keydown.escape.window="open = false"
          class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-900/60" role="dialog" aria-modal="true">
-        <div @click.outside="open = false" class="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 text-left">
-            <form method="POST" action="{{ $action }}" @submit="if (!enough || busy) { $event.preventDefault(); return; } busy = true;">
+        {{-- Sized to the viewport: no scrollbar when it fits; a long order scrolls inside, footer stays visible. --}}
+        <div @click.outside="open = false" class="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 text-left flex flex-col"
+             style="max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem);">
+            <form method="POST" action="{{ $action }}" class="flex flex-col min-h-0" @submit="if (!enough || busy) { $event.preventDefault(); return; } busy = true;">
                 @csrf
-                <div class="p-6 space-y-4">
+                <div class="p-6 space-y-4 overflow-y-auto min-h-0">
                     <div>
                         <h3 class="text-lg font-black text-gray-900 dark:text-white">{{ $label }}</h3>
                         @if($reference)
@@ -67,11 +83,11 @@
                             <span class="font-bold text-gray-600 dark:text-gray-300">Change</span>
                             <span class="font-black" :class="enough ? 'text-emerald-600' : 'text-gray-400'" x-text="money(change)"></span>
                         </div>
-                        <p x-show="tendered !== '' && !enough" class="text-xs text-red-600">Cash tendered is less than the total due.</p>
+                        <p x-show="tendered !== '' && !enough" class="text-xs text-red-600" x-text="calc && calc.problem !== 'insufficient' ? 'Enter a valid cash amount (at most 2 decimals, up to ₱999,999.00).' : 'Cash tendered is less than the total due.'">Cash tendered is less than the total due.</p>
                     @endif
                 </div>
 
-                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl flex justify-end gap-2">
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl flex justify-end gap-2 shrink-0">
                     <button type="button" @click="open = false" class="px-4 py-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Back</button>
                     <button type="submit" :disabled="!enough || busy"
                             class="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg">

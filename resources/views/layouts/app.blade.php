@@ -6,7 +6,8 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="theme-color" content="#4f46e5">
         <link rel="manifest" href="/manifest.json">
-        <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+        <link rel="apple-touch-icon" href="{{ asset('brand/mototrack-em.png') }}">
 
         {{-- Apply theme before paint to avoid flash --}}
         <script>
@@ -29,7 +30,8 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <script src="https://unpkg.com/lucide@0.460.0" defer></script>
+        {{-- Pinned to the minified build file: the bare package URL answers with a redirect first. --}}
+        <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
         <style>
             [x-cloak] { display: none !important; }
             
@@ -43,6 +45,37 @@
             ::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
             
             .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+
+            /* App chrome sizes. The fallbacks match the sticky header (h-16 / md:h-20 / lg:h-[88px]
+               plus its 1px border); the script at the end of <body> replaces them with measured values. */
+            :root { --mt-nav-h: 65px; --mt-main-top: 65px; --mt-subheader-h: 0px; }
+            @media (min-width: 768px) { :root { --mt-nav-h: 81px; --mt-main-top: 81px; } }
+            @media (min-width: 1024px) { :root { --mt-nav-h: 89px; --mt-main-top: 89px; } }
+
+            /* A page wrapper that asks for full-screen height only fills the space BELOW the sticky
+               header, so a page whose content fits (e.g. a short receipt) shows no scrollbar.
+               Content taller than the viewport still scrolls normally. */
+            main.mt-main .min-h-screen {
+                min-height: calc(100vh - var(--mt-main-top));
+                min-height: calc(100dvh - var(--mt-main-top));
+            }
+
+            /* Dashboard sidebars (admin + customer): pinned on desktop below the sticky headers while
+               the content scrolls; they only scroll themselves when taller than the space available.
+               The padding/negative margin keeps focus rings and shadows from being clipped. */
+            @media (min-width: 768px) {
+                .mt-dash-sidebar {
+                    position: sticky;
+                    top: calc(var(--mt-nav-h) + var(--mt-subheader-h) + 1.5rem);
+                    max-height: calc(100vh - var(--mt-nav-h) - var(--mt-subheader-h) - 3rem);
+                    max-height: calc(100dvh - var(--mt-nav-h) - var(--mt-subheader-h) - 3rem);
+                    overflow-y: auto;
+                    overscroll-behavior: contain;
+                    scrollbar-width: thin;
+                    padding: 0.375rem;
+                    margin: -0.375rem;
+                }
+            }
         </style>
     </head>
     <body class="font-sans antialiased">
@@ -59,7 +92,7 @@
             @endisset
 
             <!-- Page Content -->
-            <main>
+            <main class="mt-main">
                 {{ $slot }}
             </main>
 
@@ -129,7 +162,7 @@
                                     }
                                 }, 1000);
                             });
-                            const rawNotifs = @json(auth()->user()->unreadNotifications()->limit(3)->get());
+                            const rawNotifs = @json(auth()->user()->latestUnreadNotifications(3));
 
                             // Toasts the user already dismissed must not pop again on the
                             // next page load. Dismissal is tracked per notification id in
@@ -234,6 +267,7 @@
                      x-transition:leave="transition ease-in duration-300"
                      x-transition:leave-start="opacity-100 translate-y-0"
                      x-transition:leave-end="opacity-0 translate-y-12"
+                     role="{{ $flash['type'] === 'error' ? 'alert' : 'status' }}"
                      class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-4 pointer-events-none">
                     
                     <div class="pointer-events-auto bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border-l-4 rounded-2xl shadow-2xl p-5 flex items-start gap-4 
@@ -274,6 +308,27 @@
             } else {
                 initLucide();
             }
+
+            // Measure the sticky chrome so full-height pages and pinned sidebars use exact sizes
+            // (the CSS fallbacks above cover the moment before this runs and no-JS visitors).
+            (function () {
+                var root = document.documentElement;
+                var nav = document.querySelector('[data-mt-nav]');
+                var sub = document.querySelector('[data-mt-subheader]');
+                var main = document.querySelector('main.mt-main');
+                function measure() {
+                    if (nav) root.style.setProperty('--mt-nav-h', Math.round(nav.getBoundingClientRect().height) + 'px');
+                    root.style.setProperty('--mt-subheader-h', sub ? Math.round(sub.getBoundingClientRect().height) + 'px' : '0px');
+                    if (main) root.style.setProperty('--mt-main-top', Math.max(0, Math.round(main.getBoundingClientRect().top + window.scrollY)) + 'px');
+                }
+                measure();
+                window.addEventListener('resize', measure, { passive: true });
+                window.addEventListener('load', measure);
+                if ('ResizeObserver' in window) {
+                    var observer = new ResizeObserver(measure);
+                    [nav, sub].forEach(function (el) { if (el) observer.observe(el); });
+                }
+            })();
 
             // Global Haptic Feedback Helper
             function hapticPulse() {

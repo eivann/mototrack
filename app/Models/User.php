@@ -50,6 +50,40 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    /**
+     * Per-request snapshot of the header bell data: the 10 latest notifications and the unread count.
+     * The bell, the page toasts and the dashboard activity widgets all read from it, so one page view
+     * runs these two queries once instead of once per widget.
+     *
+     * @var array{latest: \Illuminate\Support\Collection, unread_count: int}|null
+     */
+    private ?array $notificationSnapshot = null;
+
+    /** @return array{latest: \Illuminate\Support\Collection, unread_count: int} */
+    public function notificationSnapshot(): array
+    {
+        return $this->notificationSnapshot ??= [
+            'latest' => $this->notifications()->limit(10)->get(),
+            'unread_count' => $this->unreadNotifications()->count(),
+        ];
+    }
+
+    /**
+     * The newest $limit unread notifications, newest first. Served from the snapshot when it provably
+     * holds them (any unread row outside the 10 latest is older than every row inside), otherwise queried.
+     */
+    public function latestUnreadNotifications(int $limit): \Illuminate\Support\Collection
+    {
+        $snapshot = $this->notificationSnapshot();
+        $unread = $snapshot['latest']->whereNull('read_at')->values();
+
+        if ($unread->count() >= min($limit, $snapshot['unread_count'])) {
+            return $unread->take($limit)->values();
+        }
+
+        return $this->unreadNotifications()->limit($limit)->get();
+    }
+
     protected function casts(): array
     {
         return [

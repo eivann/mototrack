@@ -55,9 +55,11 @@ test('with 200 notifications the bell fetches at most 10 + 3 rows and never all 
 
     [$hydrated, $queries] = nbMeasure($user, '/browse');
 
+    // The toast preview is served from the bell's 10 latest rows when they hold the newest unread
+    // ones (as here), so the separate `limit 3` query only runs when it cannot be avoided.
     expect($hydrated)->toBeLessThanOrEqual(13)
         ->and($queries->filter(fn ($q) => str_contains($q, 'limit 10'))->count())->toBe(1)
-        ->and($queries->filter(fn ($q) => str_contains($q, 'limit 3'))->count())->toBe(1)
+        ->and($queries->filter(fn ($q) => str_contains($q, 'limit 3'))->count())->toBe(0)
         ->and($queries->filter(fn ($q) => str_contains($q, 'count(*)'))->count())->toBe(1);
     // No notification SELECT may be unbounded.
     $unbounded = $queries->filter(fn ($q) => str_starts_with($q, 'select *') && ! str_contains($q, 'limit'));
@@ -186,4 +188,37 @@ test('the notification centre still paginates 15 per page', function () {
     $r = nbGet($user, '/notifications')->assertOk();
     $p = $r->viewData('notifications');
     expect($p->perPage())->toBe(15)->and($p->total())->toBe(40)->and($p->count())->toBe(15);
+});
+
+test('the unread toast preview falls back to its own bounded query when the 10 latest are all read', function () {
+    $user = User::factory()->create(['role' => 'customer']);
+    nbSeed($user, 10, 1000, 'NEW');           // index 0 unread, 1..9 read (newest ten)
+    DB::table('notifications')->where('notifiable_id', $user->id)->update(['read_at' => now()]);
+    // Older unread notifications beyond the bell's 10 rows.
+    $rows = [];
+    for ($i = 0; $i < 5; $i++) {
+        $rows[] = ['id' => (string) Str::uuid(), 'type' => 'X', 'notifiable_type' => User::class, 'notifiable_id' => $user->id,
+            'data' => json_encode(['title' => 'OLD-title-'.$i, 'message' => 'm', 'link' => '#']), 'read_at' => null,
+            'created_at' => now()->subDays(2)->subMinutes($i), 'updated_at' => now()->subDays(2)];
+    }
+    DB::table('notifications')->insert($rows);
+
+    [, $queries, $response] = nbMeasure($user, '/browse');
+    preg_match('/const rawNotifs = (\[.*?\]);/s', $response->getContent(), $m);
+
+    expect(collect(json_decode($m[1], true))->pluck('data.title')->all())->toBe(['OLD-title-0', 'OLD-title-1', 'OLD-title-2'])
+        ->and($queries->filter(fn ($q) => str_contains($q, 'limit 3'))->count())->toBe(1)
+        ->and($response->getContent())->toContain('5 NEW');
+});
+
+test('dashboard widgets reuse the bell snapshot instead of querying notifications again', function () {
+    $owner = User::factory()->create(['role' => 'owner']);
+    nbSeed($owner, 30, 2);
+
+    [, $queries, $response] = nbMeasure($owner, '/dashboard');
+
+    // One `limit 10` list + one unread count for the whole page (bell, toasts and Live Activity).
+    expect($queries)->toHaveCount(2);
+    preg_match_all('/N-title-(\d{3})/', $response->getContent(), $m);
+    expect(array_values(array_unique($m[1]))[0])->toBe('000');
 });

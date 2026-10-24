@@ -41,7 +41,8 @@ class DashboardController extends Controller
                 ];
             });
 
-            $recentActivities = auth()->user()->notifications()->latest()->take(5)->get();
+            // Same 5 rows as before, taken from the header bell's per-request snapshot (no extra query).
+            $recentActivities = auth()->user()->notificationSnapshot()['latest']->take(5)->values();
 
             $inventorySummary = InventoryItem::latest('id')->take(10)->get();
             $recentSales = Sale::with('item', 'customer')->latest()->take(10)->get();

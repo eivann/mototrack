@@ -17,7 +17,7 @@
     </script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@0.460.0"></script>
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-950 flex flex-col min-h-screen">
@@ -52,7 +52,7 @@
     </main>
 
     <script>
-        lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
     </script>
 </body>
 </html>
