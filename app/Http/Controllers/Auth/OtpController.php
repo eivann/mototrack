@@ -4,9 +4,22 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class OtpController extends Controller
 {
+    /** SYS4-04: incorrect guesses allowed per issued login OTP. */
+    public const MAX_OTP_ATTEMPTS = 5;
+
+    /**
+     * Counter key is bound to the issued OTP hash, so any newly issued OTP
+     * (login, resend, register, Google) automatically starts at zero.
+     */
+    private function attemptsKey($user): string
+    {
+        return 'otp-attempts:'.$user->id.':'.sha1((string) $user->otp_code);
+    }
+
     public function show(Request $request)
     {
         if ($request->session()->get('otp_verified', false)) {
@@ -21,23 +34,40 @@ class OtpController extends Controller
 
         $user = auth()->user();
 
-        if (\Illuminate\Support\Facades\Hash::check($request->otp_code, $user->otp_code) && now()->lessThanOrEqualTo($user->otp_expires_at)) {
-            $request->session()->put('otp_verified', true);
-            $user->otp_code = null;
-            $user->otp_expires_at = null;
-            $user->save();
+        $active = $user->otp_code && $user->otp_expires_at && now()->lessThanOrEqualTo($user->otp_expires_at);
 
-            $intended = $request->session()->pull('url.intended');
-            
-            if ($user->requires_password_change) {
-                return redirect()->route('password.change.view');
+        if ($active) {
+            $key = $this->attemptsKey($user);
+
+            if ((int) Cache::get($key, 0) < self::MAX_OTP_ATTEMPTS
+                && \Illuminate\Support\Facades\Hash::check($request->otp_code, $user->otp_code)) {
+                Cache::forget($key);
+                $request->session()->put('otp_verified', true);
+                $user->otp_code = null;
+                $user->otp_expires_at = null;
+                $user->save();
+
+                $intended = $request->session()->pull('url.intended');
+
+                if ($user->requires_password_change) {
+                    return redirect()->route('password.change.view');
+                }
+
+                if ($intended) {
+                    return redirect()->to($intended);
+                }
+
+                return redirect($user->role === 'owner' ? route('dashboard') : route('customer.dashboard'));
             }
 
-            if ($intended) {
-                return redirect()->to($intended);
+            // Wrong guess (or cap already reached): count it, invalidate the OTP at the limit.
+            Cache::add($key, 0, now()->addMinutes(15));
+            if (Cache::increment($key) >= self::MAX_OTP_ATTEMPTS) {
+                $user->otp_code = null;
+                $user->otp_expires_at = null;
+                $user->save();
+                Cache::forget($key);
             }
-
-            return redirect($user->role === 'owner' ? route('dashboard') : route('customer.dashboard'));
         }
 
         return back()->withErrors(['otp_code' => 'The OTP code is invalid or has expired.']);

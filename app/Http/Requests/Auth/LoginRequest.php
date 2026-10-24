@@ -12,6 +12,9 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    /** How long each failed attempt counts toward the 5-failure lockout. */
+    public const LOCKOUT_DECAY_SECONDS = 120;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -69,7 +72,8 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey(), 30);
+            // SYS4-04: failures count for 2 minutes (was 30 s); lockout threshold stays at 5.
+            RateLimiter::hit($this->throttleKey(), self::LOCKOUT_DECAY_SECONDS);
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),

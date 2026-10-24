@@ -59,7 +59,8 @@ class GoogleController extends Controller
             ['name' => $user->name, 'email' => $user->email]
         );
 
-        Auth::login($user, true);
+        // SYS4-04: no unconditional remember-me; session idle timeout applies (OTP still required).
+        Auth::login($user, false);
 
         $otp = sprintf("%06d", random_int(100000, 999999));
         $user->otp_code = \Illuminate\Support\Facades\Hash::make($otp);
