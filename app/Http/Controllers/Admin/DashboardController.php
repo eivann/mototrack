@@ -50,7 +50,8 @@ class DashboardController extends Controller
             // Pending reservations are short-lived (24h), so load every pending line: a
             // multi-line reservation must show its complete total before pickup.
             $settledStatuses = [\App\Enums\OrderStatus::SALE_CANCELLED, \App\Enums\OrderStatus::SALE_EXPIRED];
-            $groupKey = fn ($r) => $r->transaction_reference ?? 'row-'.$r->id;
+            // SYS4-06 D4: a header-linked reservation groups by its header id, legacy ones by reference.
+            $groupKey = fn ($r) => $r->sale_header_id !== null ? 'H'.$r->sale_header_id : ($r->transaction_reference ?? 'row-'.$r->id);
 
             // SYS4-03 B2a: optional owner search over the two reservation lists only.
             $reservationQuery = trim((string) $request->query('q', ''));

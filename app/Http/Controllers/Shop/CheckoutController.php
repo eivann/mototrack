@@ -109,11 +109,10 @@ class CheckoutController extends Controller
             return redirect('/customer/dashboard')->with('error', 'No recent receipt found.');
         }
 
-        $query = Sale::with('item')->where('transaction_reference', $trx);
-
         // C-3 Security: Scope receipts to the authenticated user's customer
         // profile to prevent IDOR. Owners retain unrestricted access for
         // admin workflows.
+        $scope = null;
         if (auth()->user()->role !== 'owner') {
             $customerId = auth()->user()->customer?->id;
 
@@ -124,10 +123,11 @@ class CheckoutController extends Controller
                 return redirect('/customer/dashboard')->with('error', 'Receipt not found.');
             }
 
-            $query->where('customer_id', $customerId);
+            $scope = fn ($q) => $q->where('customer_id', $customerId);
         }
 
-        $orders = $query->orderBy('id')->get();
+        // SYS4-06 D4: header-aware, scope applied to every lookup.
+        $orders = Sale::transactionByKey($trx, $scope);
 
         if ($orders->isEmpty()) {
             return redirect('/customer/dashboard')->with('error', 'Receipt not found.');
@@ -138,8 +138,7 @@ class CheckoutController extends Controller
 
     public function downloadReceipt(Request $request, $trx)
     {
-        $query = Sale::with('item')->where('transaction_reference', $trx);
-
+        $scope = null;
         if (auth()->user()->role !== 'owner') {
             $customerId = auth()->user()->customer?->id;
 
@@ -147,10 +146,10 @@ class CheckoutController extends Controller
                 abort(404, 'Receipt not found.');
             }
 
-            $query->where('customer_id', $customerId);
+            $scope = fn ($q) => $q->where('customer_id', $customerId);
         }
 
-        $sales = $query->orderBy('id')->get();
+        $sales = Sale::transactionByKey($trx, $scope);
 
         if ($sales->isEmpty()) {
             abort(404, 'Receipt not found.');

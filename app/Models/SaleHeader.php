@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * SYS4-06 Stage D1: transaction header. One row per transaction; the `sales` rows are its
@@ -43,6 +44,12 @@ class SaleHeader extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(Sale::class, 'sale_header_id');
+    }
+
+    /** SYS4-06 D2D: the pre-order this header was created for (if any). */
+    public function preorder(): HasOne
+    {
+        return $this->hasOne(PreOrder::class, 'sale_header_id');
     }
 
     public function customer(): BelongsTo

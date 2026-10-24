@@ -3,7 +3,6 @@
 use App\Enums\OrderStatus;
 use App\Models\Customer;
 use App\Models\InventoryItem;
-use App\Models\PreOrder;
 use App\Models\RefundRequest;
 use App\Models\Sale;
 use App\Models\SaleHeader;
@@ -12,7 +11,6 @@ use App\Services\CheckoutService;
 use App\Services\ReservationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
@@ -347,27 +345,4 @@ test('a counter return never touches the header of a POS sale', function () {
         ->and((float) $header->fresh()->total_amount)->toBe(350.0)->and((float) $header->fresh()->amount_tendered)->toBe(400.0);
 });
 
-// ── Pre-order pay-then-pickup: documented blocker, behavior unchanged ────────
-
-test('a preorder paid earlier cannot be linked to its sale, so completing it leaves header and sale unchanged', function () {
-    $c = lcCustomer();
-    $item = lcItem('Pre', 500, 3);
-    $o = PreOrder::create([
-        'customer_id' => $c->id, 'inventory_item_id' => $item->id, 'customer_name' => $c->name, 'part_name' => 'Pre', 'quantity' => 2,
-        'price' => 500, 'total' => 1000, 'status' => 'pending', 'is_paid' => false, 'is_stocked' => true,
-        'sourced_at' => now()->subDay(), 'ready_notified_at' => now()->subHour(), 'pickup_expires_at' => now()->addHours(23),
-    ]);
-
-    $this->actingAs(lcOwner())->post(route('preorders.pay', $o), ['amount_tendered' => 1000]);
-    $header = SaleHeader::sole();
-    $before = lcHeaderSnapshot($header);
-    $saleBefore = Sale::sole()->only(['picked_up_at', 'amount_tendered', 'status']);
-
-    $this->actingAs(lcOwner())->post(route('preorders.complete', $o))->assertSessionHas('success');
-
-    expect($o->fresh()->status)->toBe('completed')->and($o->fresh()->picked_up_at)->not->toBeNull()
-        ->and(Schema::hasColumn('pre_orders', 'sale_header_id'))->toBeFalse() // the missing relationship
-        ->and(lcHeaderSnapshot($header))->toEqual($before)
-        ->and(Sale::sole()->only(['picked_up_at', 'amount_tendered', 'status']))->toEqual($saleBefore)
-        ->and(SaleHeader::count())->toBe(1)->and(Sale::count())->toBe(1);
-});
+// ── Pre-order pay-then-pickup: linkage is covered by tests/Feature/PreOrder/PreOrderHeaderLinkTest.php (D2D) ──

@@ -48,16 +48,20 @@ class AdminPreOrderController extends Controller
                 $error = 'This pre-order is already paid.';
                 return;
             }
+            // An unpaid pre-order must never carry a payment link: refuse before anything is written
+            // and never overwrite the existing link.
+            if ($lockedPreorder->sale_header_id !== null) {
+                $error = 'This pre-order\'s payment record needs review before payment can be taken.';
+                return;
+            }
             if ((float) $lockedPreorder->total <= 0 || $tendered < (float) $lockedPreorder->total) {
                 $error = 'Full cash payment is required.';
                 return;
             }
 
-            $lockedPreorder->is_paid = true;
-            $lockedPreorder->save();
-
-            // SYS4-06 D2B: header + sale in the same transaction as the is_paid change.
-            app(\App\Actions\RecordHeaderedSale::class)->execute(
+            // SYS4-06 D2B/D2D: header + sale are created first, then the pre-order is marked paid AND
+            // linked to that exact header in one save, all inside this transaction.
+            $sale = app(\App\Actions\RecordHeaderedSale::class)->execute(
                 \App\Models\SaleHeader::TYPE_PREORDER, 'PRE-',
                 [
                     'inventory_item_id' => $lockedPreorder->inventory_item_id,
@@ -68,6 +72,10 @@ class AdminPreOrderController extends Controller
                 ],
                 $tendered
             );
+
+            $lockedPreorder->is_paid = true;
+            $lockedPreorder->sale_header_id = $sale->sale_header_id;
+            $lockedPreorder->save();
         });
 
         if ($error) {
@@ -152,13 +160,20 @@ class AdminPreOrderController extends Controller
                 return;
             }
 
+            $pickedAt = now();
+
             if (!$order->is_paid) {
+                // Unpaid yet already linked is inconsistent: never create a replacement payment.
+                if ($order->sale_header_id !== null) {
+                    $error = 'This pre-order\'s payment record needs review before payment can be taken.';
+                    return;
+                }
                 if ((float) $order->total <= 0 || $tendered < (float) $order->total) {
                     $error = 'Full cash payment is required.';
                     return;
                 }
 
-                app(\App\Actions\RecordHeaderedSale::class)->execute(
+                $sale = app(\App\Actions\RecordHeaderedSale::class)->execute(
                     \App\Models\SaleHeader::TYPE_PREORDER, 'PRE-',
                     [
                         'inventory_item_id' => $order->inventory_item_id,
@@ -171,11 +186,19 @@ class AdminPreOrderController extends Controller
                     true
                 );
                 $order->is_paid = true;
+                $order->sale_header_id = $sale->sale_header_id;
+                $pickedAt = $sale->picked_up_at; // header, sale and pre-order share this exact instant
+            } else {
+                // Paid earlier: sync pickup onto the linked sale/header (no-op for unlinked legacy rows).
+                if ($problem = $this->syncLinkedPickup($order, $pickedAt)) {
+                    $error = $problem;
+                    return;
+                }
             }
             // Already-paid (legacy) pre-orders skip the sale: they were charged
             // earlier through the old "Collect payment" step.
 
-            $order->picked_up_at = now();
+            $order->picked_up_at = $pickedAt;
             $order->status = 'completed';
             $order->save();
         });
@@ -323,7 +346,12 @@ class AdminPreOrderController extends Controller
                 $error = 'Pre-order must be paid and stocked before completion.';
                 return;
             }
-            $order->picked_up_at = now();
+            $pickedAt = now();
+            if ($problem = $this->syncLinkedPickup($order, $pickedAt)) {
+                $error = $problem;
+                return;
+            }
+            $order->picked_up_at = $pickedAt;
             $order->status = 'completed';
             $order->save();
         });
@@ -331,6 +359,61 @@ class AdminPreOrderController extends Controller
         if ($error) return back()->with('error', $error);
 
         return back()->with('success', 'Pre-order completed and picked up!');
+    }
+
+    /**
+     * SYS4-06 D2D: stamp the pickup time on the pre-order's linked sale line and header, using the
+     * SAME instant as the pre-order. Only the verified sale_header_id link is used (never customer,
+     * item, reference or time), so unlinked legacy pre-orders are untouched (returns null, no-op).
+     *
+     * Fails closed: the linked records are locked and validated BEFORE any write, and a problem
+     * returns a non-sensitive message with nothing changed. Must run inside the caller's transaction
+     * with the pre-order already locked. Lock order: pre-order, sale line(s) by id, header (the same
+     * line-then-header order as SaleController::complete). Payment time, total, tender and change are
+     * never touched.
+     *
+     * @return string|null  null on success (or nothing to do), otherwise the refusal message
+     */
+    private function syncLinkedPickup(PreOrder $order, \Carbon\CarbonInterface $at): ?string
+    {
+        if (!$order->sale_header_id) {
+            return null;
+        }
+
+        $review = 'This pre-order\'s payment record needs review before it can be collected.';
+
+        $lines = \App\Models\Sale::where('sale_header_id', $order->sale_header_id)
+            ->orderBy('id')->lockForUpdate()->get();
+        $header = \App\Models\SaleHeader::lockForUpdate()->find($order->sale_header_id);
+
+        if (!$header || $lines->count() !== 1) {
+            return $review;
+        }
+        $line = $lines->first();
+
+        $consistent = $header->transaction_type === \App\Models\SaleHeader::TYPE_PREORDER
+            && $header->payment_confirmed_at !== null
+            && $line->transaction_reference === $header->transaction_reference
+            && $line->status === 'completed'
+            && $line->payment_confirmed_at !== null
+            && $line->customer_id === $header->customer_id
+            && $line->customer_id === $order->customer_id
+            && $line->inventory_item_id === $order->inventory_item_id
+            && (int) $line->quantity === (int) $order->quantity
+            && abs((float) $line->total_price - (float) $order->total) < 0.005
+            && abs((float) $header->total_amount - (float) $order->total) < 0.005
+            // A still-uncollected pre-order cannot already have a pickup recorded on its sale/header.
+            && $line->picked_up_at === null
+            && $header->picked_up_at === null;
+
+        if (!$consistent) {
+            return $review;
+        }
+
+        $line->update(['picked_up_at' => $at]);
+        $header->update(['picked_up_at' => $at]);
+
+        return null;
     }
 
     public function cancel(PreOrder $preorder)

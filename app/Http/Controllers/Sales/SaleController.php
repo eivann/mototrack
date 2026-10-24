@@ -291,16 +291,9 @@ class SaleController extends Controller
             return Sale::newModelInstance()->newCollection(); // empty Eloquent collection
         }
 
-        // Step 2a: if it has a transaction_reference, load all lines for that transaction.
-        if ($anchor->transaction_reference !== null) {
-            return Sale::with('item')
-                ->where('transaction_reference', $anchor->transaction_reference)
-                ->orderBy('id')
-                ->get();
-        }
-
-        // Step 2b: legacy sale with no reference â€” return just this sale.
-        return Sale::with('item')->whereKey($id)->get();
+        // SYS4-06 D4: header-linked transactions resolve through sale_header_id; legacy ones through
+        // their reference (unlinked rows only) or alone when they have none.
+        return Sale::transactionLines($anchor);
     }
 
     public function receiptById($id)
@@ -336,7 +329,7 @@ class SaleController extends Controller
      */
     public function receipt($id)
     {
-        $sales = Sale::with('item')->where('transaction_reference', $id)->orderBy('id')->get();
+        $sales = Sale::transactionByKey($id);
         if ($sales->isEmpty()) {
             abort(404, 'Receipt not found.');
         }
@@ -351,7 +344,7 @@ class SaleController extends Controller
      */
     public function downloadReceipt($id)
     {
-        $sales = Sale::with('item')->where('transaction_reference', $id)->orderBy('id')->get();
+        $sales = Sale::transactionByKey($id);
         if ($sales->isEmpty()) {
             abort(404, 'Receipt not found.');
         }

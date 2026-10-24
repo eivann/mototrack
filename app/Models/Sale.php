@@ -155,6 +155,151 @@ public static function paymentLine(iterable $sales): ?self
     return $holder ?? $first;
 }
 
+/**
+ * SYS4-06 D4: tender / change to print for a transaction. A fully header-linked transaction uses its
+ * SaleHeader (the transaction-level record) when it carries a positive tender; anything else
+ * (legacy rows, an unpaid or zero-tender header, lines spread over several headers) falls back to
+ * paymentLine(), so historical behaviour is unchanged. Returns an object exposing
+ * `amount_tendered` and `change`, or null for no lines. Eager-load `header` to avoid an extra query.
+ *
+ * @param  iterable<Sale>  $sales
+ */
+public static function paymentFigures(iterable $sales): ?object
+{
+    $headerIds = [];
+    $anchor = null;
+    foreach ($sales as $sale) {
+        $anchor ??= $sale;
+        $headerIds[$sale->sale_header_id ?? 'none'] = true;
+    }
+
+    if ($anchor !== null && count($headerIds) === 1 && $anchor->sale_header_id !== null) {
+        $header = $anchor->header;
+        if ($header && (float) $header->amount_tendered > 0) {
+            return (object) ['amount_tendered' => $header->amount_tendered, 'change' => $header->change_amount];
+        }
+    }
+
+    return self::paymentLine($sales);
+}
+
+// ── Transaction resolution (header-aware, legacy-safe) ──────────────────
+
+/** Same safeguard as sales:backfill-headers: lines of one checkout are created within seconds. */
+public const MAX_LEGACY_CREATED_SPREAD_SECONDS = 120;
+
+/**
+ * Whether header-less lines sharing one reference can safely be shown as ONE transaction: a single
+ * line always can; several need one consistent customer_id and shop_id and valid created_at values within the allowed spread
+ * (fail closed otherwise).
+ */
+private static function legacyGroupIsCoherent(iterable $rows): bool
+{
+    $times = [];
+    $customers = [];
+    $shops = [];
+    foreach ($rows as $r) {
+        // NULL and non-NULL are distinct values here, so mixing them is inconsistent too.
+        $customers[var_export($r->customer_id === null ? null : (int) $r->customer_id, true)] = true;
+        $shops[var_export($r->shop_id === null ? null : (int) $r->shop_id, true)] = true;
+        if (empty($r->created_at)) {
+            return false;
+        }
+        try {
+            $times[] = \Illuminate\Support\Carbon::parse($r->created_at)->getTimestamp();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    if (count($times) < 2) {
+        return true;
+    }
+
+    return count($customers) === 1 && count($shops) === 1
+        && (max($times) - min($times)) <= self::MAX_LEGACY_CREATED_SPREAD_SECONDS;
+}
+
+/**
+ * All lines of the transaction the given anchor line belongs to, in id order, `item` and `header`
+ * eager-loaded. A header-linked anchor resolves through sale_header_id (immune to reference reuse);
+ * a legacy anchor with a reference resolves through that reference but only among UNLINKED rows, and
+ * only if those rows are temporally coherent (otherwise an EMPTY collection: never merge unrelated
+ * purchases); a legacy anchor without a (non-blank) reference is its own transaction.
+ * $scope narrows every query (e.g. customer ownership).
+ */
+public static function transactionLines(self $anchor, ?callable $scope = null): \Illuminate\Database\Eloquent\Collection
+{
+    $query = static::with('item', 'header')->orderBy('id');
+    $legacyGroup = false;
+
+    if ($anchor->sale_header_id !== null) {
+        $query->where('sale_header_id', $anchor->sale_header_id);
+    } elseif (trim((string) $anchor->transaction_reference) !== '') {
+        $query->where('transaction_reference', $anchor->transaction_reference)->whereNull('sale_header_id');
+        $legacyGroup = true;
+    } else {
+        $query->whereKey($anchor->getKey());
+    }
+
+    if ($scope) {
+        $scope($query);
+    }
+
+    $lines = $query->get();
+
+    if ($legacyGroup && ! self::legacyGroupIsCoherent($lines)) {
+        return static::newModelInstance()->newCollection();
+    }
+
+    return $lines;
+}
+
+/**
+ * Resolve a transaction from the key shown to users: a sale transaction_reference, a header reference
+ * (e.g. LEGACY-<id> for backfilled reference-less sales), or SALE-<id> for a reference-less sale not yet
+ * backfilled. Unknown OR AMBIGUOUS keys return an empty collection: a key matching more than one linked
+ * header, or both linked and unlinked rows, is never resolved by picking the lowest id. Ambiguity is
+ * judged only among rows visible through $scope, so nothing about other customers is revealed.
+ */
+public static function transactionByKey(string $key, ?callable $scope = null): \Illuminate\Database\Eloquent\Collection
+{
+    $empty = fn () => static::newModelInstance()->newCollection();
+
+    $candidates = static::query()->select(['id', 'sale_header_id', 'transaction_reference'])->orderBy('id')
+        ->where(fn ($w) => $w->where('transaction_reference', $key)
+            ->orWhereIn('sale_header_id', SaleHeader::query()->select('id')->where('transaction_reference', $key)));
+    if ($scope) {
+        $scope($candidates);
+    }
+    $candidates = $candidates->get();
+
+    if ($candidates->isNotEmpty()) {
+        $headerIds = $candidates->pluck('sale_header_id')->filter()->unique();
+        $hasUnlinked = $candidates->contains(fn ($c) => $c->sale_header_id === null);
+
+        if ($headerIds->count() > 1 || ($headerIds->isNotEmpty() && $hasUnlinked)) {
+            return $empty();
+        }
+
+        return static::transactionLines($candidates->first(), $scope);
+    }
+
+    if (preg_match('/^SALE-(\d+)$/', $key, $m)) {
+        $q = static::query()->select(['id', 'sale_header_id', 'transaction_reference'])
+            ->whereKey((int) $m[1])->whereNull('sale_header_id')
+            ->where(fn ($w) => $w->whereNull('transaction_reference')->orWhere('transaction_reference', ''));
+        if ($scope) {
+            $scope($q);
+        }
+        $anchor = $q->first();
+
+        return $anchor ? static::transactionLines($anchor, $scope) : $empty();
+    }
+
+    return $empty();
+}
+
 // ── Pickup & Refund Eligibility ─────────────────────────
 
 /**

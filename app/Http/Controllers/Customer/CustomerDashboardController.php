@@ -29,11 +29,15 @@ class CustomerDashboardController extends Controller
             ->latest()
             ->get();
 
-        $purchases = \App\Models\Sale::with('item')
+        // SYS4-06 D4: one entry per transaction. Key = header reference when linked, else the sale's own
+        // reference, else SALE-<id> (a reference-less legacy sale is its own transaction instead of being
+        // lumped with every other reference-less sale).
+        $purchases = \App\Models\Sale::with('item', 'header:id,transaction_reference')
             ->where('customer_id', $customer->id)
             ->orderBy('created_at', 'desc')
             ->get()
-            ->groupBy('transaction_reference');
+            ->groupBy(fn ($s) => $s->header?->transaction_reference
+                ?? (trim((string) $s->transaction_reference) !== '' ? $s->transaction_reference : 'SALE-'.$s->id));
 
         // My Reservations: one card per checkout reference, split into the
         // still-actionable reservations and the settled history.

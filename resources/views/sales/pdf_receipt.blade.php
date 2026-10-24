@@ -277,7 +277,7 @@
                         <td>Subtotal:</td>
                         <td class="text-right">PHP {{ number_format($grandTotal, 2) }}</td>
                     </tr>
-                    @php $payLine = \App\Models\Sale::paymentLine($sales); @endphp
+                    @php $payLine = \App\Models\Sale::paymentFigures($sales); @endphp
                     @if($isPaid && $payLine && $payLine->amount_tendered > 0)
                         <tr>
                             <td>Amount Tendered:</td>

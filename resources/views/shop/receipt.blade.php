@@ -82,7 +82,7 @@
                     <span class="text-base font-extrabold text-gray-900 dark:text-white">₱{{ number_format($grandTotal, 2) }}</span>
                 </div>
 
-                @php $payLine = \App\Models\Sale::paymentLine($orders); @endphp
+                @php $payLine = \App\Models\Sale::paymentFigures($orders); @endphp
                 @if($isPaid && $payLine && $payLine->amount_tendered > 0)
                 <div class="flex justify-between items-center mt-1.5 text-xs text-gray-600 dark:text-gray-400">
                     <span>Amount Tendered:</span>

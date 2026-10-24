@@ -59,6 +59,12 @@ class PreOrder extends Model
 
     // Audit #10: the catalog item this pre-order was placed against (null for
     // custom/sourced parts). Used to restock accurately on completion.
+    /** SYS4-06 D2D: header created when this pre-order was paid; NULL for historical/unlinked ones. */
+    public function saleHeader()
+    {
+        return $this->belongsTo(SaleHeader::class, 'sale_header_id');
+    }
+
     public function inventoryItem()
     {
         return $this->belongsTo(InventoryItem::class);

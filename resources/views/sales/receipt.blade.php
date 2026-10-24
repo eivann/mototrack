@@ -49,8 +49,8 @@
                 </div>
 
                 @php $isPaid = $sales->first()->payment_confirmed_at !== null || $sales->first()->status === 'completed'; @endphp
-                @php $payLine = \App\Models\Sale::paymentLine($sales); @endphp
-                @if($isPaid && $payLine && $payLine->amount_tendered)
+                @php $payLine = \App\Models\Sale::paymentFigures($sales); @endphp
+                @if($isPaid && $payLine && (float) $payLine->amount_tendered > 0)
                 <div class="flex justify-between items-center mt-1.5 text-xs text-gray-600 dark:text-gray-400">
                     <span>Amount Tendered:</span>
                     <span class="font-medium">₱{{ number_format($payLine->amount_tendered, 2) }}</span>

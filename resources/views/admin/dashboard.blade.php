@@ -409,7 +409,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
-                                        @forelse($pendingReservations->groupBy(fn ($r) => $r->transaction_reference ?? 'row-'.$r->id) as $ref => $group)
+                                        @forelse($pendingReservations->groupBy(fn ($r) => $r->sale_header_id !== null ? 'H'.$r->sale_header_id : ($r->transaction_reference ?? 'row-'.$r->id)) as $ref => $group)
                                             @php $res = $group->first(); $groupTotal = (float) $group->sum('total_price'); $deadline = $res->expires_at ?? ($res->reserved_at ? $res->reserved_at->addHours(24) : $res->created_at->addHours(24)); @endphp
                                             <tr id="reservation-{{ $res->transaction_reference }}" class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
                                                 <td class="p-6">
