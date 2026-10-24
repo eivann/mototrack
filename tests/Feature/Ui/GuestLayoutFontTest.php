@@ -29,10 +29,31 @@ test('guest layout no longer references Bunny Fonts or Figtree', function () {
     expect($guest)->not->toContain('bunny')->and($guest)->not->toContain('figtree');
 });
 
-test('guest layout keeps its CRLF line endings', function () {
-    $raw = guestLayoutSource();
+/** True when every line ends the same way: all LF (Linux/CI) or all CRLF (Windows). Mixed endings and stray CRs fail. */
+function hasConsistentLineEndings(string $text): bool
+{
+    $lf = substr_count($text, "\n");
+    $crlf = substr_count($text, "\r\n");
+    $cr = substr_count($text, "\r");
 
-    expect(substr_count($raw, "\n"))->toBe(substr_count($raw, "\r\n"));
+    $allLf = $cr === 0;
+    $allCrlf = $cr === $crlf && $crlf === $lf;
+
+    return $allLf || $allCrlf;
+}
+
+test('guest layout has consistent line endings (all LF or all CRLF)', function () {
+    $raw = guestLayoutSource();
+    $lf = str_replace("\r\n", "\n", $raw);
+
+    expect(hasConsistentLineEndings($raw))->toBeTrue()
+        // The check works for both platform variants of the same file...
+        ->and(hasConsistentLineEndings($lf))->toBeTrue()
+        ->and(hasConsistentLineEndings(str_replace("\n", "\r\n", $lf)))->toBeTrue()
+        // ...and rejects mixed endings and stray carriage returns.
+        ->and(hasConsistentLineEndings("a\r\nb\nc\r\n"))->toBeFalse()
+        ->and(hasConsistentLineEndings("a\nb\rc\n"))->toBeFalse()
+        ->and(hasConsistentLineEndings("a\r\nb\r"))->toBeFalse();
 });
 
 test('every external font host in the guest layout is permitted by the existing CSP', function () {
