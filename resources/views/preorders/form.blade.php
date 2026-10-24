@@ -97,6 +97,8 @@
             <div class="mb-3 flex flex-col items-center">
                 <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
             </div>
+            {{-- SYS4-05 C1: reCAPTCHA is loaded only on pages that render the widget; placed after the widget so it exists when api.js auto-renders. --}}
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
             <!-- Honeypot -->
             <div class="hidden"><input type="text" name="my_extra_field" value=""></div>

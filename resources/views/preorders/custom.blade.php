@@ -85,6 +85,8 @@
                             <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl py-3 flex justify-center shadow-inner">
                                 <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
                             </div>
+                            {{-- SYS4-05 C1: reCAPTCHA is loaded only on pages that render the widget; placed after the widget so it exists when api.js auto-renders. --}}
+                            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
                             <!-- Honeypot -->
                             <div class="hidden">
