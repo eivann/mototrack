@@ -229,7 +229,13 @@
                 
                 {{-- Notification Bell --}}
                 @auth
-                <div class="relative group" x-data="{ open: false, hasNew: {{ auth()->user()->unreadNotifications->count() > 0 ? 'true' : 'false' }} }" @click.away="open = false">
+                @php
+                    // SYS4-05: database-limited bell data (latest 10 + one unread COUNT) instead of
+                    // loading every notification of the user into memory on each page.
+                    $bellNotifications = auth()->user()->notifications()->limit(10)->get();
+                    $bellUnreadCount = auth()->user()->unreadNotifications()->count();
+                @endphp
+                <div class="relative group" x-data="{ open: false, hasNew: {{ $bellUnreadCount > 0 ? 'true' : 'false' }} }" @click.away="open = false">
                     <button @click="open = !open; hasNew = false"
                         :aria-expanded="open"
                         aria-label="Toggle notifications"
@@ -256,12 +262,12 @@
                         <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50">
                             <h3 class="font-bold text-sm text-gray-900 dark:text-white uppercase tracking-tight">Recent Notifications</h3>
                             <template x-if="hasNew">
-                                <span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 text-[10px] font-black rounded-full">{{ auth()->user()->unreadNotifications->count() }} NEW</span>
+                                <span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 text-[10px] font-black rounded-full">{{ $bellUnreadCount }} NEW</span>
                             </template>
                         </div>
 
                         <div class="overflow-y-auto scrollbar-thin" style="max-height: 280px;">
-                            @forelse(auth()->user()->notifications->take(10) as $notification)
+                            @forelse($bellNotifications as $notification)
                                 <div class="relative flex items-center gap-4 p-4 {{ $notification->unread() ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : '' }} hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-50 dark:border-gray-700 last:border-0 group">
                                     <!-- Left: Icon/Avatar -->
                                     <div class="shrink-0">

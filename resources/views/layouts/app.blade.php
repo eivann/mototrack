@@ -130,7 +130,7 @@
                                     }
                                 }, 1000);
                             });
-                            const rawNotifs = @json(auth()->user()->unreadNotifications->take(3));
+                            const rawNotifs = @json(auth()->user()->unreadNotifications()->limit(3)->get());
 
                             // Toasts the user already dismissed must not pop again on the
                             // next page load. Dismissal is tracked per notification id in
