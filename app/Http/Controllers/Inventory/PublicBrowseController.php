@@ -7,7 +7,6 @@ use App\Models\InventoryItem;
 use App\Services\CompatibilityMatcher;
 use App\Services\InventorySearchService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PublicBrowseController extends Controller
@@ -71,20 +70,7 @@ class PublicBrowseController extends Controller
         // equal prices, unsorted listings and concurrent stock updates never shuffle pages.
         $query->orderBy('id', 'asc');
 
-        $total = null;
-        if ($search === '' && $model === '' && $category === '') {
-            $total = Cache::remember('inventory_in_stock_parent_items_count_v2', now()->addMinutes(10), function () {
-                return InventoryItem::whereNull('parent_id')
-                    ->where(function ($q) {
-                        $q->where('quantity', '>', 0)
-                          ->orWhereHas('variations', function ($vq) {
-                              $vq->where('quantity', '>', 0);
-                          });
-                    })->count();
-            });
-        }
-
-        $items = $query->paginate(12, ['*'], 'page', null, $total)->withQueryString();
+        $items = $query->paginate(12)->withQueryString();
 
         $categories = InventoryItem::distinctCategories();
 
