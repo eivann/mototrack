@@ -105,18 +105,18 @@ class RepairController extends Controller
                 $lockedRepair->is_paid = true;
                 $lockedRepair->save();
 
-                \App\Models\Sale::create([
-                    'inventory_item_id' => null,
-                    'quantity' => 1,
-                    'price' => $lockedRepair->cost,
-                    'total_price' => $lockedRepair->cost,
-                    'amount_tendered' => $tendered,
-                    'change' => round($tendered - (float)$lockedRepair->cost, 2),
-                    'status' => 'completed',
-                    'customer_id' => $lockedRepair->customer_id,
-                    'payment_confirmed_at' => now(),
-                    'transaction_reference' => 'REPAIR-' . strtoupper(Str::random(8)),
-                ]);
+                // SYS4-06 D2B: header + sale in the same transaction as the is_paid change.
+                app(\App\Actions\RecordHeaderedSale::class)->execute(
+                    \App\Models\SaleHeader::TYPE_REPAIR, 'REPAIR-',
+                    [
+                        'inventory_item_id' => null,
+                        'quantity' => 1,
+                        'price' => $lockedRepair->cost,
+                        'total_price' => $lockedRepair->cost,
+                        'customer_id' => $lockedRepair->customer_id,
+                    ],
+                    $tendered
+                );
             });
 
             if ($alreadyPaid) {

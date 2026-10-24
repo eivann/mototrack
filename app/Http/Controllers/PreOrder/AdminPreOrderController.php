@@ -56,18 +56,18 @@ class AdminPreOrderController extends Controller
             $lockedPreorder->is_paid = true;
             $lockedPreorder->save();
 
-            \App\Models\Sale::create([
-                'inventory_item_id' => $lockedPreorder->inventory_item_id,
-                'quantity' => $lockedPreorder->quantity,
-                'price' => $lockedPreorder->price,
-                'total_price' => $lockedPreorder->total,
-                'amount_tendered' => $tendered,
-                'change' => round($tendered - (float)$lockedPreorder->total, 2),
-                'status' => 'completed',
-                'customer_id' => $lockedPreorder->customer_id,
-                'payment_confirmed_at' => now(),
-                'transaction_reference' => 'PRE-' . strtoupper(\Illuminate\Support\Str::random(8)),
-            ]);
+            // SYS4-06 D2B: header + sale in the same transaction as the is_paid change.
+            app(\App\Actions\RecordHeaderedSale::class)->execute(
+                \App\Models\SaleHeader::TYPE_PREORDER, 'PRE-',
+                [
+                    'inventory_item_id' => $lockedPreorder->inventory_item_id,
+                    'quantity' => $lockedPreorder->quantity,
+                    'price' => $lockedPreorder->price,
+                    'total_price' => $lockedPreorder->total,
+                    'customer_id' => $lockedPreorder->customer_id,
+                ],
+                $tendered
+            );
         });
 
         if ($error) {
@@ -158,19 +158,18 @@ class AdminPreOrderController extends Controller
                     return;
                 }
 
-                \App\Models\Sale::create([
-                    'inventory_item_id' => $order->inventory_item_id,
-                    'quantity' => $order->quantity,
-                    'price' => $order->price,
-                    'total_price' => $order->total,
-                    'amount_tendered' => $tendered,
-                    'change' => round($tendered - (float) $order->total, 2),
-                    'status' => 'completed',
-                    'customer_id' => $order->customer_id,
-                    'payment_confirmed_at' => now(),
-                    'picked_up_at' => now(),
-                    'transaction_reference' => 'PRE-' . strtoupper(\Illuminate\Support\Str::random(8)),
-                ]);
+                app(\App\Actions\RecordHeaderedSale::class)->execute(
+                    \App\Models\SaleHeader::TYPE_PREORDER, 'PRE-',
+                    [
+                        'inventory_item_id' => $order->inventory_item_id,
+                        'quantity' => $order->quantity,
+                        'price' => $order->price,
+                        'total_price' => $order->total,
+                        'customer_id' => $order->customer_id,
+                    ],
+                    $tendered,
+                    true
+                );
                 $order->is_paid = true;
             }
             // Already-paid (legacy) pre-orders skip the sale: they were charged
