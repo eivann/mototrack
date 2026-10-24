@@ -185,11 +185,41 @@ class SaleController extends Controller
                 return; // already completed (idempotent) or blocked above
             }
 
+            // SYS4-06 D2C: resolve the header from the locked lines' sale_header_id BEFORE any write.
+            // All NULL = legacy (no header). One shared non-NULL id = that exact header, locked after
+            // the lines. Anything else (mixed NULL/non-NULL, several ids, missing header, or a header
+            // that is already paid while lines are still pending) is refused with nothing changed.
+            // The header is never guessed from transaction_reference.
+            $header = null;
+            $headerIds = $sales->pluck('sale_header_id');
+            if ($headerIds->contains(null)) {
+                if ($headerIds->filter()->isNotEmpty()) {
+                    $blocked = 'This reservation needs review before it can be completed.';
+
+                    return;
+                }
+            } else {
+                if ($headerIds->unique()->count() !== 1) {
+                    $blocked = 'This reservation needs review before it can be completed.';
+
+                    return;
+                }
+                $header = \App\Models\SaleHeader::lockForUpdate()->find($headerIds->first());
+                if (!$header || $header->payment_confirmed_at !== null) {
+                    $blocked = 'This reservation needs review before it can be completed.';
+
+                    return;
+                }
+            }
+
             if ($tendered < $grandTotal) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'amount_tendered' => 'Insufficient cash received for pickup completion.',
                 ]);
             }
+
+            $now = now();
+            $change = round($tendered - $grandTotal, 2);
 
             $isFirst = true;
             foreach ($sales as $sale) {
@@ -197,12 +227,23 @@ class SaleController extends Controller
                     $sale->update([
                         'status' => 'completed',
                         'amount_tendered' => $isFirst ? $tendered : 0,
-                        'change' => $isFirst ? round($tendered - $grandTotal, 2) : 0,
-                        'picked_up_at' => now(),
-                        'payment_confirmed_at' => now()
+                        'change' => $isFirst ? $change : 0,
+                        'picked_up_at' => $now,
+                        'payment_confirmed_at' => $now
                     ]);
                     $isFirst = false;
                 }
+            }
+
+            // Header payment is written in the same transaction, only after the checks above passed.
+            // total_amount, reserved_at and expires_at stay as the original facts.
+            if ($header) {
+                $header->update([
+                    'amount_tendered' => $tendered,
+                    'change_amount' => $change,
+                    'payment_confirmed_at' => $now,
+                    'picked_up_at' => $now,
+                ]);
             }
         });
 
