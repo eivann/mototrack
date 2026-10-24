@@ -120,6 +120,35 @@ public function scopeReservationSearch(Builder $query, array $terms, array $stat
     return $query;
 }
 
+// ── Receipt payment line ────────────────────────────────
+
+/**
+ * The line of a multi-line transaction that holds the cash tendered / change.
+ *
+ * Only one line carries the tender, but historically the pickup query was unordered, so
+ * it is not always the lowest id. Pick the lowest-id line with a positive tender; with no
+ * tender anywhere (pending, cancelled, single legacy line) fall back to the lowest-id line.
+ * Pure: reads the given collection only, ignores status, runs no queries.
+ *
+ * @param  iterable<Sale>  $sales
+ */
+public static function paymentLine(iterable $sales): ?self
+{
+    $first = null;
+    $holder = null;
+
+    foreach ($sales as $sale) {
+        if ($first === null || $sale->id < $first->id) {
+            $first = $sale;
+        }
+        if ((float) $sale->amount_tendered > 0 && ($holder === null || $sale->id < $holder->id)) {
+            $holder = $sale;
+        }
+    }
+
+    return $holder ?? $first;
+}
+
 // ── Pickup & Refund Eligibility ─────────────────────────
 
 /**

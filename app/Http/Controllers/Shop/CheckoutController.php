@@ -127,7 +127,7 @@ class CheckoutController extends Controller
             $query->where('customer_id', $customerId);
         }
 
-        $orders = $query->get();
+        $orders = $query->orderBy('id')->get();
 
         if ($orders->isEmpty()) {
             return redirect('/customer/dashboard')->with('error', 'Receipt not found.');
@@ -150,7 +150,7 @@ class CheckoutController extends Controller
             $query->where('customer_id', $customerId);
         }
 
-        $sales = $query->get();
+        $sales = $query->orderBy('id')->get();
 
         if ($sales->isEmpty()) {
             abort(404, 'Receipt not found.');

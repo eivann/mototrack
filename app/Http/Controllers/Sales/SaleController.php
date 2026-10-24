@@ -158,7 +158,7 @@ class SaleController extends Controller
         $blocked = null;
 
         DB::transaction(function () use ($id, $request, &$blocked) {
-            $sales = Sale::lockForUpdate()->where('transaction_reference', $id)->get();
+            $sales = Sale::lockForUpdate()->where('transaction_reference', $id)->orderBy('id')->get();
             if ($sales->isEmpty()) {
                 abort(404, 'Reservation not found.');
             }
@@ -254,6 +254,7 @@ class SaleController extends Controller
         if ($anchor->transaction_reference !== null) {
             return Sale::with('item')
                 ->where('transaction_reference', $anchor->transaction_reference)
+                ->orderBy('id')
                 ->get();
         }
 
@@ -294,7 +295,7 @@ class SaleController extends Controller
      */
     public function receipt($id)
     {
-        $sales = Sale::with('item')->where('transaction_reference', $id)->get();
+        $sales = Sale::with('item')->where('transaction_reference', $id)->orderBy('id')->get();
         if ($sales->isEmpty()) {
             abort(404, 'Receipt not found.');
         }
@@ -309,7 +310,7 @@ class SaleController extends Controller
      */
     public function downloadReceipt($id)
     {
-        $sales = Sale::with('item')->where('transaction_reference', $id)->get();
+        $sales = Sale::with('item')->where('transaction_reference', $id)->orderBy('id')->get();
         if ($sales->isEmpty()) {
             abort(404, 'Receipt not found.');
         }

@@ -277,14 +277,15 @@
                         <td>Subtotal:</td>
                         <td class="text-right">PHP {{ number_format($grandTotal, 2) }}</td>
                     </tr>
-                    @if($isPaid && $firstSale && $firstSale->amount_tendered > 0)
+                    @php $payLine = \App\Models\Sale::paymentLine($sales); @endphp
+                    @if($isPaid && $payLine && $payLine->amount_tendered > 0)
                         <tr>
                             <td>Amount Tendered:</td>
-                            <td class="text-right">PHP {{ number_format($firstSale->amount_tendered, 2) }}</td>
+                            <td class="text-right">PHP {{ number_format($payLine->amount_tendered, 2) }}</td>
                         </tr>
                         <tr>
                             <td>Change Given:</td>
-                            <td class="text-right">PHP {{ number_format($firstSale->change, 2) }}</td>
+                            <td class="text-right">PHP {{ number_format($payLine->change, 2) }}</td>
                         </tr>
                     @elseif(!$isPaid)
                         <tr>

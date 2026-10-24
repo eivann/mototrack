@@ -82,14 +82,15 @@
                     <span class="text-base font-extrabold text-gray-900 dark:text-white">₱{{ number_format($grandTotal, 2) }}</span>
                 </div>
 
-                @if($isPaid && $firstOrder && $firstOrder->amount_tendered > 0)
+                @php $payLine = \App\Models\Sale::paymentLine($orders); @endphp
+                @if($isPaid && $payLine && $payLine->amount_tendered > 0)
                 <div class="flex justify-between items-center mt-1.5 text-xs text-gray-600 dark:text-gray-400">
                     <span>Amount Tendered:</span>
-                    <span class="font-medium text-gray-900 dark:text-white">₱{{ number_format($firstOrder->amount_tendered, 2) }}</span>
+                    <span class="font-medium text-gray-900 dark:text-white">₱{{ number_format($payLine->amount_tendered, 2) }}</span>
                 </div>
                 <div class="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
                     <span>Change:</span>
-                    <span class="font-bold text-gray-900 dark:text-white">₱{{ number_format($firstOrder->change, 2) }}</span>
+                    <span class="font-bold text-gray-900 dark:text-white">₱{{ number_format($payLine->change, 2) }}</span>
                 </div>
                 @elseif(!$isPaid)
                 <div class="flex justify-between items-center mt-1.5 text-xs text-amber-700 dark:text-amber-400 font-semibold">
