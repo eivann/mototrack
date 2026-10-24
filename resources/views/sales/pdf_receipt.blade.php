@@ -297,7 +297,7 @@
                         </tr>
                     @endif
                     <tr class="grand-row">
-                        <td>TOTAL DUE:</td>
+                        <td>{{ $isPaid ? 'GRAND TOTAL:' : 'TOTAL DUE:' }}</td>
                         <td class="text-right">PHP {{ number_format($grandTotal, 2) }}</td>
                     </tr>
                 </table>
