@@ -132,3 +132,22 @@ test('cart service can completely clear the cart', function () {
     $this->cartService->clear();
     expect($this->cartService->getCart())->toBeEmpty();
 });
+
+// ReDemo-2: "Alisin yung add to cart button sa admin side. Dapat viewing lang yon."
+test('owner account cannot add to cart (server enforced)', function () {
+    $owner = \App\Models\User::factory()->create(['role' => 'owner']);
+    $this->actingAs($owner)->post('/cart/add/1')->assertForbidden();
+    $this->actingAs($owner)->postJson('/cart/add/1')->assertForbidden();
+    expect(session('cart', []))->toBe([]);
+});
+
+test('browse page is view-only for owner and keeps Add to Cart for customers', function () {
+    $item = InventoryItem::create(['part_name' => 'Chain Lube', 'price' => 250.00, 'quantity' => 5]);
+    $owner = \App\Models\User::factory()->create(['role' => 'owner']);
+    $customer = \App\Models\User::factory()->create(['role' => 'customer']);
+
+    $this->actingAs($owner)->get('/browse')->assertOk()
+        ->assertSee('View only')->assertDontSee('Add to Cart', false)->assertDontSee('/cart/add/', false);
+    $this->actingAs($customer)->get('/browse')->assertOk()
+        ->assertSee('Add to Cart', false)->assertDontSee('View only');
+});

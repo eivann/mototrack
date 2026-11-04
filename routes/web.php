@@ -20,6 +20,14 @@ Route::get('/faq', function () {
     return view('faq');
 })->name('faq');
 
+// RD2-R5: public Terms and Conditions (confirmed policies only; see resources/views/terms.blade.php).
+Route::get('/terms', function () {
+    return view('terms', [
+        'open' => \Carbon\Carbon::createFromFormat('H:i', config('repair_reservations.open'))->format('g:i A'),
+        'close' => \Carbon\Carbon::createFromFormat('H:i', config('repair_reservations.last_start'))->format('g:i A'),
+    ]);
+})->name('terms');
+
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 
@@ -36,6 +44,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Modular Routes
 require __DIR__.'/modules/inventory.php';
 require __DIR__.'/modules/shop.php';
+require __DIR__.'/modules/payments.php';
+require __DIR__.'/modules/repair_reservations.php';
 require __DIR__.'/modules/customer.php';
 require __DIR__.'/modules/preorders.php';
 require __DIR__.'/modules/repairs.php';

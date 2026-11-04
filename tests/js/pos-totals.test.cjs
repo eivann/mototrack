@@ -80,3 +80,20 @@ test('a line is capped at min(stock, 9,999), matching the server limit', () => {
     assert.equal(pos.compute([{ price: '1.00', quantity: 26, maxStock: 25 }], '100').problem, 'quantity');
     assert.equal(pos.compute([{ price: '1.00', quantity: 10000 }], '20000').problem, 'quantity');
 });
+
+test('RD2-R2.4: VAT is extracted from the VAT-inclusive total (12/112), matching the server', () => {
+    // 1,120.00 inclusive -> 1,000.00 net + 120.00 VAT.
+    let t = pos.compute([{ price: '1120.00', quantity: 1, maxStock: 10 }], '1120');
+    assert.equal(t.totalCents, 112000);
+    assert.equal(t.vatCents, 12000);
+    assert.equal(t.netCents, 100000);
+    assert.equal(t.vatRatePercent, 12);
+    assert.equal(t.netCents + t.vatCents, t.totalCents); // reconciles
+    // 100.00 inclusive -> 10.71 VAT, 89.29 net (half-up at the centavo).
+    t = pos.compute([{ price: '100.00', quantity: 1, maxStock: 10 }], '100');
+    assert.equal(t.vatCents, 1071);
+    assert.equal(t.netCents, 8929);
+    // Multi-line total reconciles too.
+    t = pos.compute([{ price: '350.00', quantity: 3, maxStock: 10 }, { price: '99.99', quantity: 7, maxStock: 10 }], '5000');
+    assert.equal(t.netCents + t.vatCents, t.totalCents);
+});

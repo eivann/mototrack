@@ -18,6 +18,21 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    /** RD2-R4: any change of password or email invalidates every remembered device. */
+    protected static function booted(): void
+    {
+        static::updated(function (User $user) {
+            if ($user->wasChanged(['password', 'email'])) {
+                \App\Models\TrustedDevice::where('user_id', $user->id)->whereNull('revoked_at')->update(['revoked_at' => now()]);
+            }
+        });
+    }
+
+    public function trustedDevices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TrustedDevice::class);
+    }
+
     /**
      * Get the customer profile associated with the user.
      */

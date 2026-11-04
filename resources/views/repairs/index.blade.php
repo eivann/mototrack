@@ -20,6 +20,12 @@
                 </form>
             </div>
 
+            @if ($overCapacity)
+                <div class="mb-6 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 p-4 text-sm text-red-800 dark:text-red-200">
+                    <strong>Over capacity.</strong> More repairs and bookings overlap right now than the shop limit allows (usually an overdue job). Finish or extend the overdue job, and check upcoming bookings.
+                </div>
+            @endif
+
             <!-- ADD REPAIR FORM -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
@@ -99,26 +105,76 @@
                                 </td>
                                 <td class="p-4 align-top text-gray-600 dark:text-gray-400">{{ $repair->issue }}</td>
                                 <td class="p-4 align-top text-center">
+                                    @php
+                                        $isDone = $repair->isFinished();   // 'done' and 'completed' are one state to the owner
+                                        $linked = (bool) $repair->reservation_id;
+                                    @endphp
                                     <form method="POST" action="/repairs/{{ $repair->id }}">
                                         @csrf @method('PUT')
                                             <div class="relative">
+                                            {{-- Chosen BEFORE switching to In Progress: the select below submits the form when changed. --}}
+                                            @if (! $repair->isOngoing() && ! ($isDone && $linked))
+                                                <label for="est-{{ $repair->id }}" class="sr-only">Estimated duration</label>
+                                                <select id="est-{{ $repair->id }}" name="estimated_minutes" class="mb-1 text-[11px] rounded-lg border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white py-0.5">
+                                                    @foreach ([30 => '30 min', 60 => '1 hr', 90 => '1.5 hr', 120 => '2 hr', 180 => '3 hr', 240 => '4 hr', 480 => '8 hr'] as $m => $l)
+                                                        <option value="{{ $m }}" {{ $m === $walkInMinutes ? 'selected' : '' }}>Est. {{ $l }}</option>
+                                                    @endforeach
+                                                </select>
+                                            @endif
                                             <select name="status" onchange="this.form.submit()"
                                                     class="text-xs font-bold pl-3 pr-8 py-1 rounded-full border-0 focus:ring-0 cursor-pointer text-center appearance-none
                                                     {{ $repair->status == 'pending' ? 'bg-amber-100 text-amber-800' : '' }}
                                                     {{ $repair->status == 'ongoing' ? 'bg-indigo-100 text-indigo-800' : '' }}
-                                                    {{ $repair->status == 'done' ? 'bg-emerald-100 text-emerald-800' : '' }}">
-                                                <option value="pending" {{ $repair->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                                <option value="ongoing" {{ $repair->status == 'ongoing' ? 'selected' : '' }}>In Progress</option>
-                                                <option value="done" {{ $repair->status == 'done' ? 'selected' : '' }}>Completed</option>
+                                                    {{ $isDone ? 'bg-emerald-100 text-emerald-800' : '' }}">
+                                                <option value="pending" {{ $repair->status == 'pending' ? 'selected' : '' }} {{ $linked ? 'disabled' : '' }}>Pending</option>
+                                                <option value="ongoing" {{ $repair->status == 'ongoing' ? 'selected' : '' }} {{ $linked ? 'disabled' : '' }}>In Progress</option>
+                                                <option value="done" {{ $isDone ? 'selected' : '' }}>Completed</option>
                                             </select>
                                         </div>
                                     </form>
+                                    @if ($linked)
+                                        <div class="mt-1 text-[11px] text-indigo-600 dark:text-indigo-300 font-semibold">Online reservation</div>
+                                    @endif
+                                    @if ($repair->isOngoing())
+                                        @if ($repair->isLegacyOngoing())
+                                            <div class="mt-1 text-[11px] font-bold text-amber-700 dark:text-amber-300">No start time recorded &mdash; treated as occupying a bay. Extend it if still running, or mark it Completed / Pending.</div>
+                                        @else
+                                            <div class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Est. {{ $repair->estimated_minutes ?: $walkInMinutes }} min &middot; ends {{ $repair->expectedEndAt()->timezone(config('repair_reservations.timezone'))->format('g:i A') }}</div>
+                                        @endif
+                                        @if ($repair->isOverdue())
+                                            <div class="mt-1 text-[11px] font-bold text-red-600 dark:text-red-400">Overdue &mdash; still occupying a bay until marked Completed</div>
+                                        @endif
+                                        <form method="POST" action="{{ route('repairs.extend', $repair) }}" class="mt-1 flex items-center justify-center gap-1">
+                                            @csrf
+                                            <label for="ext-{{ $repair->id }}" class="sr-only">Extend by</label>
+                                            <select id="ext-{{ $repair->id }}" name="extra_minutes" class="text-[11px] rounded-lg border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white py-0.5">
+                                                @foreach ([15 => '+15 min', 30 => '+30 min', 60 => '+1 hr', 120 => '+2 hr'] as $m => $l)
+                                                    <option value="{{ $m }}">{{ $l }}</option>
+                                                @endforeach
+                                            </select>
+                                            <button class="text-[11px] font-bold px-2 py-0.5 rounded-lg border border-indigo-300 text-indigo-700 dark:text-indigo-300">Extend</button>
+                                        </form>
+                                    @endif
                                 </td>
-                                <td class="p-4 align-top font-bold text-gray-900 dark:text-white">₱{{ number_format($repair->cost ?? 0, 2) }}</td>
+                                <td class="p-4 align-top font-bold text-gray-900 dark:text-white">
+                                    ₱{{ number_format($repair->cost ?? 0, 2) }}
+                                    @if ($repair->cost === null)<div class="text-[11px] font-bold text-amber-700 dark:text-amber-300">Cost not set</div>@endif
+                                    @unless ($repair->is_paid)
+                                        <form method="POST" action="{{ route('repairs.cost', $repair) }}" class="mt-1 flex items-center gap-1">
+                                            @csrf @method('PUT')
+                                            <label for="cost-{{ $repair->id }}" class="sr-only">Actual cost</label>
+                                            <input id="cost-{{ $repair->id }}" name="cost" type="number" step="0.01" min="0" required value="{{ $repair->cost }}" placeholder="Cost" class="w-24 text-[11px] rounded-lg border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white py-0.5">
+                                            <button class="text-[11px] font-bold px-2 py-0.5 rounded-lg border border-indigo-300 text-indigo-700 dark:text-indigo-300">Save</button>
+                                        </form>
+                                    @endunless
+                                </td>
                                 <td class="p-4 align-top text-center">
                                     @if(!$repair->is_paid)
                                         <form method="POST" action="/repairs/{{ $repair->id }}/pay" onsubmit="return confirm('Confirm payment received?');">
                                             @csrf @method('PUT')
+                                            {{-- The server requires the cash tendered (full payment); without this field every Collect click failed. --}}
+                                            <label for="tender-{{ $repair->id }}" class="sr-only">Cash received</label>
+                                            <input id="tender-{{ $repair->id }}" name="amount_tendered" type="number" step="0.01" min="{{ $repair->cost ?? 0 }}" required value="{{ $repair->cost }}" placeholder="Cash" class="mb-1 w-24 text-[11px] rounded-lg border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white py-0.5">
                                             <button class="inline-flex items-center gap-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-3 py-1 rounded-full text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 Collect

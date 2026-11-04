@@ -66,6 +66,9 @@ class ExpirePreOrders extends Command
                 if ($expired) {
                     $count++;
 
+                    // RD2-R2: flag any GCash claim on this pre-order for owner review (no refund, no reopen).
+                    app(\App\Services\PaymentClaimService::class)->payableClosed(\App\Models\PaymentClaim::TYPE_PREORDER, (string) $preorder->id, 'expired');
+
                     // Notify customer
                     if ($customerUser) {
                         $customerUser->notify(new StatusUpdated(

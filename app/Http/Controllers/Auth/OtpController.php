@@ -47,6 +47,12 @@ class OtpController extends Controller
                 $user->otp_expires_at = null;
                 $user->save();
 
+                // RD2-R4: optional "remember this device" — only when the user ticked it, never during a forced password change.
+                $trusted = app(\App\Services\TrustedDeviceService::class);
+                if ($request->boolean('remember_device') && $trusted->offeredTo($user)) {
+                    \Illuminate\Support\Facades\Cookie::queue($trusted->issue($user, $request));
+                }
+
                 $intended = $request->session()->pull('url.intended');
 
                 if ($user->requires_password_change) {

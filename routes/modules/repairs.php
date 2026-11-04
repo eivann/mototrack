@@ -7,6 +7,8 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::get('/repairs', [RepairController::class, 'index'])->name('repairs.index');
     Route::post('/repairs', [RepairController::class, 'store'])->name('repairs.store');
     Route::put('/repairs/{repair}', [RepairController::class, 'update'])->name('repairs.update');
+    Route::put('/repairs/{repair}/cost', [RepairController::class, 'setCost'])->name('repairs.cost');
+    Route::post('/repairs/{repair}/extend', [RepairController::class, 'extend'])->name('repairs.extend');
     Route::delete('/repairs/{repair}', [RepairController::class, 'destroy'])->name('repairs.destroy');
     Route::put('/repairs/{repair}/pay', [RepairController::class, 'markPaid'])->name('repairs.pay');
     Route::get('/repairs/{repair}/receipt', [RepairController::class, 'receipt'])->name('repairs.receipt');

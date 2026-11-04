@@ -53,7 +53,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-4 flex justify-end">
+                    <div class="mt-4 flex flex-col sm:flex-row justify-end gap-2">
+                        <button type="button" id="clearFiltersBtn" class="w-full sm:w-auto bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-bold rounded-2xl px-6 py-3.5 flex items-center justify-center gap-2 transition-all text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            Clear Filters
+                        </button>
                         <button type="submit" class="w-full sm:w-auto bg-[#5244e1] hover:bg-[#4336bf] text-white font-bold rounded-2xl px-8 py-3.5 flex items-center justify-center gap-2 transition-all shadow-md ring-2 ring-indigo-500 dark:ring-indigo-400 ring-offset-2 dark:ring-offset-gray-800">
                             <i data-lucide="search" class="w-5 h-5"></i>
                             Check Compatibility
@@ -95,8 +99,10 @@
         const toastContainer = document.getElementById('toast-container');
         const inventorySourced = {{ config('compatibility.inventory_sourced') ? 'true' : 'false' }}; // false = Release B behaviour and wording
         const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
+        const isOwnerView = {{ auth()->check() && auth()->user()->role === 'owner' ? 'true' : 'false' }}; // ReDemo-2: owner side is view-only
         let timeout = null;
         const suggestionTimers = {};
+        let searchId = 0; // RD2-A03: stale-search guard for clearAllFilters
 
         async function loadSelectOptions(type, params = {}, selectElement, defaultText) {
             if (!selectElement) return [];
@@ -283,6 +289,24 @@
                 </div>`;
         }
 
+        // RD2-A03: Clear all filters, results, pending searches, and reset dependent dropdowns.
+        function clearAllFilters() {
+            clearTimeout(timeout);
+            searchId++; // invalidate any in-flight fetch response
+            if (makeSelect) makeSelect.value = '';
+            if (modelSelect) { modelSelect.value = ''; modelSelect.innerHTML = '<option value="">Select a brand first</option>'; modelSelect.disabled = true; }
+            if (yearSelect) yearSelect.value = '';
+            if (partInput) partInput.value = '';
+            if (resultsBox) resultsBox.innerHTML = '';
+            if (spinner) spinner.classList.add('hidden');
+            // Clear any suggestion datalists
+            const partSuggestions = document.getElementById('part-suggestions');
+            if (partSuggestions) partSuggestions.innerHTML = '';
+        }
+
+        const clearBtn = document.getElementById('clearFiltersBtn');
+        if (clearBtn) clearBtn.addEventListener('click', clearAllFilters);
+
         function triggerSearch(e) {
             if (e && e.type === 'submit') e.preventDefault();
             
@@ -307,6 +331,7 @@
             spinner.classList.remove('hidden');
 
             timeout = setTimeout(() => {
+                const currentSearchId = ++searchId;
                 const searchParams = new URLSearchParams({
                     make: makeVal,
                     model: modelVal,
@@ -327,6 +352,8 @@
                         return res.json();
                     })
                     .then(data => {
+                        // RD2-A03: discard if a newer search or clear happened
+                        if (currentSearchId !== searchId) return;
                         spinner.classList.add('hidden');
                         resultsBox.innerHTML = '';
 
@@ -367,7 +394,7 @@
                             const grid = document.createElement('div');
                             grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
                             
-                            data.forEach(item => {
+                            data.forEach((item, cardIndex) => {
                                 const card = document.createElement('div');
                                 card.className = 'bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg border border-gray-100 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300 flex flex-col group';
                                 
@@ -376,7 +403,9 @@
                                     : `<span class="text-[11px] font-medium text-red-500">Out of Stock</span>`;
 
                                 let actionBtn = '';
-                                if (isAuthenticated) {
+                                if (isOwnerView) {
+                                    actionBtn = '';
+                                } else if (isAuthenticated) {
                                     actionBtn = item.quantity > 0
                                         ? `<button data-id="${esc(item.id)}" class="add-to-cart-btn mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer">Add to Cart</button>`
                                         : `<a href="/preorder/${esc(item.id)}" class="mt-3 block text-center w-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95">Pre-order</a>`;
@@ -394,7 +423,7 @@
                                 const modelBadge = item.model ? `<div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded px-1.5 py-0.5 inline-block"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="truncate max-w-[120px]">${esc(item.model)}</span></div>` : '';
                                 
                                 const imageHtml = item.image_url 
-                                    ? `<img src="${esc(item.image_url)}" alt="${esc(item.part_name)}" class="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNlY4YTIgMiAwIDAgMC0xLTEuNzNsLTctNGEyIDIgMCAwIDAtMiAwbC03IDRBMiAyIDAgMCAwIDMgOHY4YTIgMiAwIDAgMCAxIDEuNzNsNyA0YTIgMiAwIDAgMCAyIDBsNy00QTIgMiAwIDAgMCAyMSAxNnoiPjwvcGF0aD48cG9seWxpbmUgcG9pbnRzPSIzLjI3IDYuOTYgMTIgMTIuMDEgMjAuNzMgNi45NiI+PC9wb2x5bGluZT48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiPjwvbGluZT48L3N2Zz4=';">`
+                                    ? `<img src="${esc(item.image_url)}"${item.image_srcset ? ` srcset="${esc(item.image_srcset)}" sizes="(min-width: 1280px) 250px, (min-width: 1024px) 28vw, (min-width: 640px) 45vw, 92vw"` : ''} alt="${esc(item.part_name)}" class="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300" loading="${cardIndex < 4 ? 'eager' : 'lazy'}" decoding="async" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNlY4YTIgMiAwIDAgMC0xLTEuNzNsLTctNGEyIDIgMCAwIDAtMiAwbC03IDRBMiAyIDAgMCAwIDMgOHY4YTIgMiAwIDAgMCAxIDEuNzNsNyA0YTIgMiAwIDAgMCAyIDBsNy00QTIgMiAwIDAgMCAyMSAxNnoiPjwvcGF0aD48cG9seWxpbmUgcG9pbnRzPSIzLjI3IDYuOTYgMTIgMTIuMDEgMjAuNzMgNi45NiI+PC9wb2x5bGluZT48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiPjwvbGluZT48L3N2Zz4=';">`
                                     : `<svg class="w-16 h-16 text-gray-300 dark:text-gray-500 group-hover:scale-110 group-hover:text-indigo-200 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>`;
 
                                 card.innerHTML = `
@@ -424,6 +453,7 @@
                             resultsBox.appendChild(grid);
                         }
                     }).catch(() => {
+                        if (currentSearchId !== searchId) return;
                         spinner.classList.add('hidden');
                         resultsBox.innerHTML = `
                             <div class="bg-red-50/80 dark:bg-red-900/10 rounded-[2rem] border border-red-200/60 dark:border-red-900/30 p-8 text-center max-w-3xl mx-auto mt-4">

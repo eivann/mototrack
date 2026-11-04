@@ -9,6 +9,7 @@
                 <h1 class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tighter mb-3">Frequently Asked Questions</h1>
                 <p class="text-gray-500 dark:text-gray-400 font-medium max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
                     Everything you need to know about ordering, payments, pre-orders, and more at Edmar Motorcycle Parts and Accessories.
+                    Read the full <a href="{{ route('terms') }}" class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Terms and Conditions</a>.
                 </p>
             </div>
         </div>
@@ -63,7 +64,11 @@
                     <div x-show="open === 3" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
                             <p>Pre-order is used when an item is currently out of stock or when you need a custom-sourced motorcycle part. Submitting a pre-order reserves the item without any upfront payment.</p>
-                            <p>You pay in cash at the shop counter only when you collect the arrived part.</p>
+                            <p>@if (config('payments.gcash_qr.enabled'))
+You pay in cash at the shop counter when you collect the arrived part, or by GCash QR for catalogue pre-orders (verified by the owner). Custom-parts requests are paid at the shop.
+@else
+You pay in cash at the shop counter only when you collect the arrived part.
+@endif</p>
                         </div>
                     </div>
                 </div>
@@ -96,7 +101,12 @@
                     </button>
                     <div x-show="open === 5" x-collapse x-cloak class="px-6 sm:px-8 pb-6 sm:pb-8">
                         <div class="pl-12 text-sm text-gray-600 dark:text-gray-400 leading-relaxed space-y-2">
+                            @if(config('payments.gcash_qr.enabled'))
+                            <p>You can pay in cash at the shop when you pick up your reserved item, or choose GCash QR when you reserve a product or place a catalogue pre-order. Custom-parts requests are paid at the shop.</p>
+                            <p>After paying by GCash you submit the reference number and/or a screenshot. The shop owner checks it against the shop's GCash account; your order is marked paid only after that check. There is no automatic online gateway.</p>
+                            @else
                             <p>All payments are made in-store in cash when you pick up your reserved item. There is no online payment collection or online gateway.</p>
+                            @endif
                         </div>
                     </div>
                 </div>

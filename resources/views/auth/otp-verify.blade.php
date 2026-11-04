@@ -21,6 +21,14 @@
             <x-input-error :messages="$errors->get('otp_code')" class="mt-2" />
         </div>
 
+        @if (app(\App\Services\TrustedDeviceService::class)->offeredTo(auth()->user()))
+            <label class="mt-4 flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
+                <input type="checkbox" name="remember_device" value="1" class="mt-1 rounded border-gray-300">
+                <span>{{ __('Remember this device for :days days so I can skip this code next time I sign in with my password.', ['days' => config('trusted_devices.days')]) }}
+                    <span class="block text-xs text-gray-500">{{ __('Only on a personal device. You can remove remembered devices anytime in your profile.') }}</span></span>
+            </label>
+        @endif
+
         <div class="flex items-center justify-end mt-4">
             <x-primary-button class="w-full sm:w-auto justify-center">
                 {{ __('Verify Account') }}

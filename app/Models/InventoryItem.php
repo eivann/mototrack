@@ -37,7 +37,7 @@ class InventoryItem extends Model
         'variation_name'
     ];
 
-    protected $appends = ['image_url'];
+    protected $appends = ['image_url', 'image_srcset'];
 
     public function parent()
     {
@@ -164,6 +164,26 @@ class InventoryItem extends Model
         }
 
         return \Illuminate\Support\Facades\Storage::disk('public')->url($rawPath);
+    }
+
+    /**
+     * srcset for pictures uploaded through ProductImageService (320 / 640 / largest width). Legacy and
+     * external pictures return null: they keep a plain src exactly as before and cost no file lookups.
+     */
+    public function getImageSrcsetAttribute(): ?string
+    {
+        if (empty($this->image_path) || !preg_match(\App\Services\ProductImageService::PATH_PATTERN, $this->image_path)) {
+            return null;
+        }
+
+        $variants = app(\App\Services\ProductImageService::class)->variants($this->image_path);
+        if (count($variants) < 2) {
+            return null;
+        }
+
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+        return collect($variants)->map(fn ($path, $w) => $disk->url($path).' '.$w.'w')->implode(', ');
     }
 
     /**

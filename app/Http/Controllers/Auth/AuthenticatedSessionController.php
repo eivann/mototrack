@@ -34,6 +34,29 @@ class AuthenticatedSessionController extends Controller
         }
 
         $user = $request->user();
+
+        // RD2-R4: the password was just verified above. A valid remembered device for THIS user skips the
+        // emailed OTP; anything else (no/unknown/expired/revoked/malformed token) falls through to the OTP.
+        $trusted = app(\App\Services\TrustedDeviceService::class);
+        $token = $request->cookie($trusted->cookieName());
+        if ($trusted->consume($user, is_string($token) ? $token : null)) {
+            $request->session()->put('otp_verified', true);
+            $user->otp_code = null;
+            $user->otp_expires_at = null;
+            $user->save();
+
+            $intended = $request->session()->pull('url.intended');
+            if ($user->requires_password_change) {
+                return redirect()->route('password.change.view');
+            }
+
+            return $intended ? redirect()->to($intended)
+                : redirect($user->role === 'owner' ? route('dashboard') : route('customer.dashboard'));
+        }
+        if ($token !== null && $token !== '') {
+            \Illuminate\Support\Facades\Cookie::queue($trusted->forgetCookie($request));
+        }
+
         $otp = sprintf("%06d", random_int(100000, 999999));
         $user->otp_code = \Illuminate\Support\Facades\Hash::make($otp);
         $user->otp_expires_at = now()->addMinutes(10);

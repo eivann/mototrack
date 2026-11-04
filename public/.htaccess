@@ -23,3 +23,12 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# RD2-05: pictures uploaded through ProductImageService have random, never-reused names
+# (p_<32 hex>-<width>.webp|jpg|png), so they can be cached for a year. Older product
+# pictures are NOT matched and keep their current caching behaviour.
+<IfModule mod_headers.c>
+    <FilesMatch "^p_[a-f0-9]{32}-[0-9]{2,4}\.(webp|jpg|png)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>

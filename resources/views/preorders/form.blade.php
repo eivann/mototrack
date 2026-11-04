@@ -16,7 +16,7 @@
         <div class="overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm lg:sticky lg:top-24">
             <div class="p-5 sm:p-6 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-5 items-start">
                 {{-- The column is image_path (there is no `image` attribute), so the picture never showed before. --}}
-                <x-product-image :item="$item" class="w-full sm:w-32 h-32 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shrink-0" img-class="p-2" />
+                <x-product-image :item="$item" :eager="true" sizes="128px" class="w-full sm:w-32 h-32 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shrink-0" img-class="p-2" />
                 
                 <div class="flex-1 min-w-0 w-full">
                     <div class="flex items-center gap-2 mb-2">
@@ -57,7 +57,7 @@
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
                             <span class="text-sm font-bold text-gray-900 dark:text-white">Total Amount</span>
-                            <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-gray-100 text-gray-600 dark:bg-gray-700 text-gray-400 uppercase tracking-wider">Pay on Pickup</span>
+                            <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 uppercase tracking-wider">Pay on Pickup</span>
                         </div>
                         <span class="text-lg font-black text-gray-900 dark:text-white" x-text="`₱${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`"></span>
                     </div>
@@ -76,7 +76,7 @@
 
         <!-- FORM -->
         <form method="POST" action="/preorder/store"
-              x-data="{ loading: false, agreed: false, showTerms: false, scrolledToBottom: false,
+              x-data="{ payMethod: 'cash', loading: false, agreed: false, showTerms: false, scrolledToBottom: false,
               openTerms() {
                   this.showTerms = true;
                   this.$nextTick(() => requestAnimationFrame(() => this.checkTermsRead()));
@@ -103,6 +103,9 @@
                     class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 outline-none transition-all">
             </div>
 
+
+            {{-- Payment method (RD2-R2): catalogue pre-orders only; hidden/legacy while the QR gate is closed --}}
+            <div class="mb-4">@include('payments.partials.method-select')</div>
 
             <!-- Google reCAPTCHA -->
             <div class="mb-3 flex flex-col items-center">
@@ -174,8 +177,8 @@
                             <div>
                                 <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Pre-Order & Reservation Details</h4>
                                 <ul class="space-y-2 list-disc list-inside">
-                                    <li>Pre-orders submit a reservation for out-of-stock items. No online payment is collected.</li>
-                                    <li>Full payment is made in cash at the store counter upon physical pickup.</li>
+                                    <li>Pre-orders submit a reservation for out-of-stock items. @if (config('payments.gcash_qr.enabled'))Nothing is charged when you submit.@else No online payment is collected.@endif</li>
+                                    <li>@if (config('payments.gcash_qr.enabled'))Pay in cash at the store counter upon physical pickup, or choose GCash QR for catalogue pre-orders (see "Payment by GCash QR" below).@else Full payment is made in cash at the store counter upon physical pickup.@endif</li>
                                 </ul>
                             </div>
                             <div>
@@ -184,6 +187,7 @@
                                     <li>Customers may submit multiple pre-orders or reservations. Each is tracked separately on your customer dashboard.</li>
                                 </ul>
                             </div>
+                            @include('payments.partials.qr-terms')
                             <div>
                                 <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. 24-Hour Pickup Rule for Pre-Orders</h4>
                                 <ul class="space-y-2 list-disc list-inside">

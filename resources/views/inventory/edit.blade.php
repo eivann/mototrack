@@ -103,11 +103,14 @@
                             @if($item->image_path)
                                 <div class="mb-3">
                                     <p class="text-xs text-gray-500 mb-1">Current Image:</p>
-                                    <x-product-image :item="$item" alt="Current image" class="h-20 w-20 rounded-lg border border-gray-200 dark:border-gray-700" img-class="p-1" />
+                                    <x-product-image :item="$item" sizes="80px" alt="Current image" class="h-20 w-20 rounded-lg border border-gray-200 dark:border-gray-700" img-class="p-1" />
                                 </div>
                             @endif
                             <input id="item-image" type="file" name="image" accept="image/jpeg, image/png, image/webp" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/50 dark:file:text-indigo-400 dark:hover:file:bg-indigo-900/70 transition-colors cursor-pointer">
                             <p class="text-[10px] text-gray-500 mt-1">Supported formats: JPG, PNG, WEBP. Max size: 2MB.</p>
+                            @error('image')
+                                <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1" role="alert">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 

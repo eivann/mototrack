@@ -43,8 +43,19 @@
                     <span>₱{{ number_format($grandTotal, 2) }}</span>
                 </div>
                 
+                {{-- RD2-R2.4: prices are VAT-inclusive (12%); VAT is extracted, not added. --}}
+                @php $vat = \App\Support\Vat::fromInclusive($grandTotal); @endphp
+                <div class="flex justify-between items-center mb-1 text-xs text-gray-500 dark:text-gray-500">
+                    <span>VATable Sales:</span>
+                    <span>₱{{ number_format($vat->net, 2) }}</span>
+                </div>
+                <div class="flex justify-between items-center mb-1 text-xs text-gray-500 dark:text-gray-500">
+                    <span>VAT ({{ $vat->rate_percent }}%, included):</span>
+                    <span>₱{{ number_format($vat->vat, 2) }}</span>
+                </div>
+
                 <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-300 dark:border-gray-700 border-dashed">
-                    <span class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-tight">Grand Total:</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-tight">Grand Total (VAT Inclusive):</span>
                     <span class="text-lg font-black text-indigo-600 dark:text-indigo-400">₱{{ number_format($grandTotal, 2) }}</span>
                 </div>
 

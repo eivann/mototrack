@@ -277,6 +277,15 @@
                         <td>Subtotal:</td>
                         <td class="text-right">PHP {{ number_format($grandTotal, 2) }}</td>
                     </tr>
+                    @php $vat = \App\Support\Vat::fromInclusive($grandTotal); @endphp
+                    <tr>
+                        <td>VATable Sales:</td>
+                        <td class="text-right">PHP {{ number_format($vat->net, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>VAT ({{ $vat->rate_percent }}%, included):</td>
+                        <td class="text-right">PHP {{ number_format($vat->vat, 2) }}</td>
+                    </tr>
                     @php $payLine = \App\Models\Sale::paymentFigures($sales); @endphp
                     @if($isPaid && $payLine && $payLine->amount_tendered > 0)
                         <tr>

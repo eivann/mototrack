@@ -38,10 +38,17 @@ public function store(StoreInventoryRequest $request)
     $data = $request->validated();
     
     if ($request->hasFile('image')) {
-        $data['image_path'] = $request->file('image')->store('products', 'public');
+        $data['image_path'] = app(\App\Services\ProductImageService::class)->store($request->file('image'));
     }
 
-    $this->inventoryService->store($data);
+    try {
+        $this->inventoryService->store($data);
+    } catch (\Throwable $e) {
+        if (!empty($data['image_path'])) {
+            app(\App\Services\ProductImageService::class)->delete($data['image_path']); // no orphan files
+        }
+        throw $e;
+    }
 
     return redirect()->route('inventory.index')->with('success', 'Item added successfully!');
 }
@@ -50,15 +57,29 @@ public function update(UpdateInventoryRequest $request, InventoryItem $item)
 {
     $data = $request->validated();
 
+    $images = app(\App\Services\ProductImageService::class);
+    $oldImage = null;
     if ($request->hasFile('image')) {
-        // Delete old image if it exists
-        if ($item->image_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($item->image_path);
-        }
-        $data['image_path'] = $request->file('image')->store('products', 'public');
+        // Store the new picture first; the old one is removed only after the update succeeds, so a failure
+        // can never leave the product pointing at a deleted file.
+        $oldImage = $item->image_path;
+        $data['image_path'] = $images->store($request->file('image'));
     }
 
-    $this->inventoryService->update($item, $data);
+    try {
+        $this->inventoryService->update($item, $data);
+    } catch (\Throwable $e) {
+        if ($oldImage !== null && !empty($data['image_path'])) {
+            $images->delete($data['image_path']);
+        }
+        throw $e;
+    }
+
+    // Never delete a picture another product still points at.
+    if ($oldImage && $oldImage !== ($data['image_path'] ?? null)
+        && !InventoryItem::where('image_path', $oldImage)->where('id', '!=', $item->id)->exists()) {
+        $images->delete($oldImage);
+    }
 
     return redirect()->route('inventory.index')->with('success', 'Item updated successfully!');
 }

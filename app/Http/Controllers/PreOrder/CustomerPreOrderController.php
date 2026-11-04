@@ -87,6 +87,18 @@ class CustomerPreOrderController extends Controller
             $preorder->ownerLink()
         ));
 
+        // RD2-R2: record the GCash QR choice and send the customer to the QR / amount screen.
+        if ($request->wantsGcashQr()) {
+            try {
+                app(\App\Services\PaymentClaimService::class)->open(\App\Models\PaymentClaim::TYPE_PREORDER, (string) $preorder->id, $customer);
+
+                return redirect()->route('payments.show', ['preorder', $preorder->id])
+                    ->with('success', 'Pre-order request submitted! Scan the QR below to pay, then submit your payment details.');
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
         return redirect('/customer/dashboard')->with('success', 'Pre-order request submitted! Please coordinate for pickup/payment.');
     }
 

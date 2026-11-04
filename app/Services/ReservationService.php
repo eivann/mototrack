@@ -118,6 +118,8 @@ class ReservationService
         });
 
         if ($released) {
+            // RD2-R2: a GCash claim on this reservation is closed or flagged for owner review (no refund, no reopen).
+            app(PaymentClaimService::class)->payableClosed(\App\Models\PaymentClaim::TYPE_RESERVATION, (string) $reference, $status);
             $this->notifyRelease($customer, $reference, $reason, $status);
         }
 

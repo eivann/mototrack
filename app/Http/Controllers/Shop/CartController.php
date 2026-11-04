@@ -23,6 +23,14 @@ class CartController extends Controller
 
     public function add(Request $request, $id)
     {
+        // ReDemo-2: the owner/admin side is view-only; cart actions are customer-only.
+        if ($request->user()?->role === 'owner') {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'The owner account is view-only and cannot use the cart.'], 403);
+            }
+            abort(403, 'The owner account is view-only and cannot use the cart.');
+        }
+
         try {
             $cart = $this->cartService->addItem($id);
             

@@ -165,7 +165,7 @@
                         selectedPrice: {{ (float)($item->price ?? 0) }}, 
                         selectedStock: {{ $item->quantity }} 
                      }">
-                    <x-product-image :item="$item" class="aspect-square w-full rounded-lg mb-4 border border-gray-100 dark:border-gray-800" img-class="p-2 group-hover:scale-105 transition-transform duration-500" />
+                    <x-product-image :item="$item" :eager="$loop->index < 3" sizes="(min-width: 1280px) 290px, (min-width: 640px) 45vw, 92vw" class="aspect-square w-full rounded-lg mb-4 border border-gray-100 dark:border-gray-800" img-class="p-2 group-hover:scale-105 transition-transform duration-500" />
                     <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-white">{{ $item->part_name }}</h3>
                     <p class="text-gray-500 dark:text-gray-400 text-sm">{{ $item->brand }} • {{ $item->model }}</p>
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Category: {{ $item->category }}</p>
@@ -193,7 +193,10 @@
                     @endif
 
                     <div class="mt-auto pt-4">
-                        @auth
+                        @if (auth()->check() && auth()->user()->role === 'owner')
+                            {{-- ReDemo-2: owner/admin side is view-only; no cart or order actions. --}}
+                            <p class="text-center text-xs font-semibold text-gray-400 dark:text-gray-500 py-3">View only</p>
+                        @elseif (auth()->check())
                             <!-- Pre-order Button -->
                             <div x-show="selectedStock == 0" style="display: none;">
                                 <a :href="'/preorder/' + selectedId"
@@ -223,7 +226,7 @@
                                class="block text-center w-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-semibold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors">
                                 Login to Order
                             </a>
-                        @endauth
+                        @endif
                     </div>
                 </div>
             @empty

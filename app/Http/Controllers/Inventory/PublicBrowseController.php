@@ -257,15 +257,23 @@ class PublicBrowseController extends Controller
             }
 
             $makeKey = CompatibilityMatcher::normalize($make);
-            $modelKey = CompatibilityMatcher::normalize($model);
+            $modelKey = CompatibilityMatcher::normalizeModel($model);
             $scoped = $motorcycles->filter(fn ($m) => $makeKey === '' || CompatibilityMatcher::normalize($m->brand) === $makeKey);
 
             if ($type === 'models') {
-                return response()->json($unique($scoped->pluck('model')));
+                // Equivalent spellings (config compatibility.model_aliases) are offered once, using the canonical
+                // spelling (e.g. "Click 125") when an owner record has it, otherwise the first spelling found.
+                return response()->json($scoped->pluck('model')
+                    ->map(fn ($v) => trim((string) preg_replace('/\s+/u', ' ', (string) $v)))
+                    ->filter()
+                    ->groupBy(fn ($v) => CompatibilityMatcher::normalizeModel($v))
+                    ->map(fn ($group) => $group->first(fn ($v) => CompatibilityMatcher::normalize($v) === CompatibilityMatcher::normalizeModel($v)) ?? $group->first())
+                    ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+                    ->values());
             }
 
             if ($type === 'years') {
-                $scoped = $scoped->filter(fn ($m) => $modelKey === '' || CompatibilityMatcher::normalize($m->model) === $modelKey);
+                $scoped = $scoped->filter(fn ($m) => $modelKey === '' || CompatibilityMatcher::normalizeModel($m->model) === $modelKey);
 
                 return response()->json(CompatibilityMatcher::expandYears($scoped->pluck('year')));
             }

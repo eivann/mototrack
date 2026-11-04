@@ -119,8 +119,16 @@
                                     <dt class="text-gray-500 dark:text-gray-400 font-medium">Subtotal</dt>
                                     <dd class="text-gray-900 dark:text-white font-bold">₱<span x-text="money(totals.subtotalCents)"></span></dd>
                                 </div>
+                                <div class="flex justify-between items-center text-xs text-gray-400 dark:text-gray-500">
+                                    <dt>VATable sales</dt>
+                                    <dd>₱<span x-text="money(totals.netCents)"></span></dd>
+                                </div>
+                                <div class="flex justify-between items-center text-xs text-gray-400 dark:text-gray-500">
+                                    <dt>VAT (<span x-text="totals.vatRatePercent"></span>%, included)</dt>
+                                    <dd>₱<span x-text="money(totals.vatCents)"></span></dd>
+                                </div>
                                 <div class="flex justify-between items-center pt-1.5 border-t border-dashed border-gray-200 dark:border-gray-700">
-                                    <dt class="text-gray-900 dark:text-white font-extrabold text-xl">Total</dt>
+                                    <dt class="text-gray-900 dark:text-white font-extrabold text-xl">Total <span class="text-[10px] font-bold text-gray-400 align-middle">VAT incl.</span></dt>
                                     <dd class="text-indigo-600 dark:text-indigo-400 font-extrabold text-2xl" data-pos-total>₱<span x-text="money(totals.totalCents)"></span></dd>
                                 </div>
                             </dl>

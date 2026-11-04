@@ -98,6 +98,23 @@ class CheckoutController extends Controller
             ));
         }
 
+        // RD2-R2: GCash QR choice is recorded as a payment claim (awaiting payment) and the customer goes
+        // straight to the QR / amount screen. The reservation itself is unchanged and is never marked paid.
+        if ($request->wantsGcashQr() && $customerId !== null) {
+            try {
+                app(\App\Services\PaymentClaimService::class)->open(
+                    \App\Models\PaymentClaim::TYPE_RESERVATION, $transactionReference, Customer::findOrFail($customerId)
+                );
+
+                return redirect()->route('payments.show', ['reservation', $transactionReference])
+                    ->with('success', 'Reservation placed! Scan the QR below to pay, then submit your payment details.');
+            } catch (\Throwable $e) {
+                report($e);
+
+                return redirect('/checkout/receipt')->with('warning', 'Reservation placed, but GCash payment could not be set up. You can still pay in cash at the counter.');
+            }
+        }
+
         return redirect('/checkout/receipt')->with('success', 'Reservation placed successfully! Please present this to the staff within 24 hours to pay and pick up.');
     }
 

@@ -9,6 +9,11 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // RD2-R4: remembered (trusted) devices. Revoking requires the current password.
+    Route::get('/profile/devices', [\App\Http\Controllers\Customer\TrustedDeviceController::class, 'index'])->name('profile.devices');
+    Route::delete('/profile/devices', [\App\Http\Controllers\Customer\TrustedDeviceController::class, 'destroyAll'])->middleware('throttle:6,1')->name('profile.devices.destroy-all');
+    Route::delete('/profile/devices/{device}', [\App\Http\Controllers\Customer\TrustedDeviceController::class, 'destroy'])->whereNumber('device')->middleware('throttle:6,1')->name('profile.devices.destroy');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Both cancellation entry points resolve to the same transaction_reference and

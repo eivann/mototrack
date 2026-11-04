@@ -47,6 +47,8 @@
                 ['label' => 'Dashboard', 'href' => route('dashboard'), 'icon' => 'layout-dashboard'],
                 ['label' => 'Low Stock Alerts', 'href' => route('low-stock.index'), 'icon' => 'alert-triangle'],
                 ['label' => 'Compatibility Records', 'href' => route('compatibility.manage'), 'icon' => 'check-circle-2'],
+                ['label' => 'GCash Payments', 'href' => route('owner.payments.index'), 'icon' => 'credit-card'],
+                ['label' => 'Service Requests', 'href' => route('owner.repair-reservations.index'), 'icon' => 'wrench'],
             ],
         ],
         [

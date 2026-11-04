@@ -48,9 +48,21 @@
                     </div>
                 </div>
 
-                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-between items-end">
-                    <span class="text-xl font-bold text-gray-900 dark:text-white">Total Cost:</span>
-                    <span class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">₱{{ number_format($repair->cost ?? 0, 2) }}</span>
+                {{-- RD2-R2.4: the service price is VAT-inclusive (12%); VAT is shown extracted, not added. --}}
+                @php $vat = \App\Support\Vat::fromInclusive($repair->cost ?? 0); @endphp
+                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 space-y-1.5">
+                    <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                        <span>VATable Amount:</span>
+                        <span>₱{{ number_format($vat->net, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                        <span>VAT ({{ $vat->rate_percent }}%, included):</span>
+                        <span>₱{{ number_format($vat->vat, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between items-end pt-2">
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">Total Cost (VAT Inclusive):</span>
+                        <span class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">₱{{ number_format($repair->cost ?? 0, 2) }}</span>
+                    </div>
                 </div>
 
                 <div class="text-center mt-12 pt-8 border-t border-gray-100 dark:border-gray-700">

@@ -123,6 +123,7 @@ class PreOrderCancellationService
         });
 
         if ($cancelled) {
+            app(PaymentClaimService::class)->payableClosed(\App\Models\PaymentClaim::TYPE_PREORDER, (string) $preorder->id, 'cancelled');
             $this->notify($customerUser, $order ?? $preorder, $partName, $reason);
         }
 

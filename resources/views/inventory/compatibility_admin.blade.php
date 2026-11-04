@@ -57,8 +57,17 @@
                 <label for="compat-search" class="sr-only">Search parts</label>
                 <input id="compat-search" type="search" name="search" value="{{ $search }}" placeholder="Search part name, brand or SKU..." class="flex-1 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-colors">Search</button>
+                {{-- RD2-A03: Always-visible clear. Uses server-side redirect when a search was active (to reload unfiltered data), or client-side reset when the input was just typed but not submitted. --}}
                 @if($search !== '')
-                    <a href="{{ route('compatibility.manage') }}" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Clear</a>
+                    <a href="{{ route('compatibility.manage') }}" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        Clear Search
+                    </a>
+                @else
+                    <button type="button" onclick="document.getElementById('compat-search').value=''; this.closest('form').querySelector('[name=search]').focus();" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        Clear Search
+                    </button>
                 @endif
             </form>
 

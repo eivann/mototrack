@@ -212,7 +212,11 @@
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-xl shrink-0">4</div>
                         <div>
                             <h4 class="text-lg font-black text-gray-900 dark:text-white mb-1">Pick Up & Pay</h4>
-                            <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">Pay the full amount when you pick up at our shop.</p>
+                            <p class="text-gray-500 dark:text-gray-400 font-medium text-sm">@if (config('payments.gcash_qr.enabled'))
+Pay in cash at our shop, or choose GCash QR when you reserve. QR payments count only after the shop verifies them.
+@else
+Pay the full amount when you pick up at our shop.
+@endif</p>
                         </div>
                     </div>
                 </div>
@@ -236,7 +240,11 @@
                         </li>
                         <li class="flex items-start gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>
-                            <span class="text-gray-300 text-sm"><strong class="text-white">Payment:</strong> On-site payments only</span>
+                            <span class="text-gray-300 text-sm"><strong class="text-white">Payment:</strong> @if (config('payments.gcash_qr.enabled'))
+Cash at the counter, or GCash QR for product reservations and catalogue pre-orders (not custom-parts requests). Verified by the shop owner.
+@else
+On-site payments only
+@endif</span>
                         </li>
                         <li class="flex items-start gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>
@@ -363,6 +371,7 @@
             const partInput = document.getElementById('compatPart');
             const resultsBox = document.getElementById('compatResultsBox');
             const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
+            const isOwnerView = {{ auth()->check() && auth()->user()->role === 'owner' ? 'true' : 'false' }}; // ReDemo-2: owner side is view-only
             const toastContainer = document.getElementById('toast-container');
             const suggestionTimers = {};
 
@@ -580,6 +589,8 @@
                     const login = el('a', 'mt-3 block text-center w-full bg-gray-100 text-gray-600 text-sm font-semibold py-2 rounded-lg hover:bg-gray-200', 'Login to Order');
                     login.href = LOGIN_URL;
                     body.appendChild(login);
+                } else if (isOwnerView) {
+                    // view only: no cart or order actions for the owner
                 } else if (Number.isInteger(id) && id > 0) {
                     if (quantity > 0) {
                         const add = el('button', 'add-to-cart-btn mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-lg shadow-sm transition-colors active:scale-95 cursor-pointer', 'Add to Cart');

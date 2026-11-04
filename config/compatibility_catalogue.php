@@ -76,7 +76,7 @@ return [
             ['name' => 'CG125', 'type' => 'specific', 'source' => 'inventory', 'aliases' => ['CG125']],
             ['name' => 'CG150', 'type' => 'specific', 'source' => 'inventory', 'aliases' => ['CG150']],
             ['name' => 'Click', 'type' => 'family', 'source' => 'inventory', 'aliases' => ['Click']],
-            ['name' => 'Click 125', 'type' => 'specific', 'source' => 'inventory', 'aliases' => ['Click 125']],
+            ['name' => 'Click 125', 'type' => 'specific', 'source' => 'inventory', 'aliases' => ['Click 125', 'Click125']],
             ['name' => 'Click 125 I', 'type' => 'specific', 'source' => 'inventory', 'aliases' => ['Click 125 I']],
             ['name' => 'Click 150', 'type' => 'family', 'source' => 'inventory', 'aliases' => ['Click 150']],
             ['name' => 'Click 150 FI', 'type' => 'specific', 'source' => 'inventory', 'aliases' => ['Click 150 FI']],

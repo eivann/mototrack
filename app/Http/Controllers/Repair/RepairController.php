@@ -8,6 +8,9 @@ use App\Http\Requests\Repair\StoreRepairRequest;
 use App\Http\Requests\Repair\UpdateRepairRequest;
 use Illuminate\Http\Request;
 use App\Models\Repair;
+use App\Services\RepairCapacityException;
+use App\Services\RepairCapacityService;
+use App\Services\RepairReservationService;
 use Illuminate\Support\Str;
 use App\Models\User;
 use Illuminate\Support\Facades\Notification;
@@ -33,7 +36,10 @@ class RepairController extends Controller
         $repairs = $query->with('customer')->latest()->paginate(10)->withQueryString();
         $customers = \App\Models\Customer::select('id', 'name')->orderBy('name')->get();
 
-        return view('repairs.index', compact('repairs', 'customers'));
+        $overCapacity = app(RepairCapacityService::class)->overCapacity();
+        $walkInMinutes = app(RepairCapacityService::class)->walkInMinutes();
+
+        return view('repairs.index', compact('repairs', 'customers', 'overCapacity', 'walkInMinutes'));
     }
 
     public function store(StoreRepairRequest $request)
@@ -58,10 +64,27 @@ class RepairController extends Controller
 
     public function update(UpdateRepairRequest $request, Repair $repair)
     {
-        $repair->status = $request->status;
-        $repair->save();
+        // RD2-R3 Phase 2/3: every status change goes through the capacity service (per-day lock, interval
+        // overlap, linked-reservation rules): Start checks capacity, Done frees the bay and completes a linked
+        // reservation in the same transaction, Pending releases the bay (refused for a reservation's repair).
+        $capacity = app(RepairCapacityService::class);
+        try {
+            $repair = match ($request->status) {
+                'ongoing' => $capacity->startWalkIn($repair, $request->integer('estimated_minutes') ?: null),
+                'done', 'completed' => $capacity->finishWalkIn($repair, $request->status),
+                default => $capacity->releaseWalkIn($repair),
+            };
+        } catch (RepairCapacityException $e) {
+            return redirect('/repairs')->with('error', $e->getMessage());
+        }
 
-        if ($repair->customer && $repair->customer->user) {
+        if ($repair->relationLoaded('justCompletedReservation')) {
+            app(RepairReservationService::class)->notifyCompleted($repair->getRelation('justCompletedReservation'));
+        }
+
+        // A repair started from an online reservation notifies through the reservation ("Repair started" /
+        // "Service completed"), so the generic repair notice is skipped to avoid a duplicate, misleading message.
+        if (! $repair->reservation_id && $repair->customer && $repair->customer->user) {
             $repair->customer->user->notify(new \App\Notifications\StatusUpdated(
                 'Repair Status Updated',
                 "Your repair job for {$repair->bike_model} is now: " . strtoupper($request->status),
@@ -70,6 +93,39 @@ class RepairController extends Controller
         }
 
         return redirect('/repairs')->with('success', 'Status updated!');
+    }
+
+    /** Owner: add time to a repair in progress (also resolves an overdue or legacy ongoing record without deleting it). */
+    public function extend(Request $request, Repair $repair)
+    {
+        Gate::authorize('update', $repair);
+        $data = $request->validate(['extra_minutes' => 'required|integer|min:5|max:480']);
+
+        try {
+            $result = app(RepairCapacityService::class)->extend($repair, (int) $data['extra_minutes']);
+        } catch (RepairCapacityException $e) {
+            return redirect('/repairs')->with('error', $e->getMessage());
+        }
+
+        return redirect('/repairs')->with($result['warning'] ? 'error' : 'success', $result['warning'] ?? 'Estimate extended.');
+    }
+
+    /** Owner: enter or correct the actual cost of an UNPAID repair (never auto-priced, never marks it paid). */
+    public function setCost(Request $request, Repair $repair)
+    {
+        Gate::authorize('update', $repair);
+        $data = $request->validate(['cost' => 'required|numeric|min:0|max:9999999.99']);
+
+        return DB::transaction(function () use ($repair, $data) {
+            $locked = Repair::lockForUpdate()->findOrFail($repair->id);
+            if ($locked->is_paid) {
+                return back()->with('error', 'This repair is already paid, so its cost can no longer be changed.');
+            }
+            $locked->cost = $data['cost'];
+            $locked->save();
+
+            return back()->with('success', 'Repair cost saved. You can now collect payment.');
+        });
     }
 
     public function destroy(Repair $repair)
@@ -85,6 +141,10 @@ class RepairController extends Controller
         Gate::authorize('markPaid', $repair);
 
         return $this->attempt(function () use ($repair, $request) {
+            if ($repair->cost === null) {
+                return back()->with('error', 'Enter the repair cost before collecting payment.');
+            }
+
             $alreadyPaid = false;
             $tendered = (float) $request->input('amount_tendered');
 
@@ -94,6 +154,12 @@ class RepairController extends Controller
                 if ($lockedRepair->is_paid) {
                     $alreadyPaid = true;
                     return;
+                }
+
+                if ($lockedRepair->cost === null) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'amount_tendered' => 'Enter the repair cost before collecting payment.',
+                    ]);
                 }
 
                 if ($tendered < (float) $lockedRepair->cost) {

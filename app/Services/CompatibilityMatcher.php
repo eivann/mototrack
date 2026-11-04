@@ -25,6 +25,19 @@ class CompatibilityMatcher
     }
 
     /**
+     * Normalised MODEL key: normalize() plus the owner-approved spelling aliases in
+     * config('compatibility.model_aliases') (e.g. "Click125" = "Click 125"). Used only to compare models; the stored
+     * and displayed spelling is never changed.
+     */
+    public static function normalizeModel(?string $value): string
+    {
+        $key = self::normalize($value);
+        $aliases = (array) config('compatibility.model_aliases', []);
+
+        return (string) ($aliases[$key] ?? $key);
+    }
+
+    /**
      * @return array{0:int,1:int}|null  Inclusive [start, end], or null when unparsable.
      */
     public static function yearRange(?string $value): ?array
@@ -70,7 +83,7 @@ class CompatibilityMatcher
     public function motorcycleIds(string $make = '', string $model = '', string $year = ''): Collection
     {
         $make = self::normalize($make);
-        $model = self::normalize($model);
+        $model = self::normalizeModel($model);
         $year = trim($year);
 
         return Motorcycle::query()
@@ -79,7 +92,7 @@ class CompatibilityMatcher
                 if ($make !== '' && self::normalize($m->brand) !== $make) {
                     return false;
                 }
-                if ($model !== '' && self::normalize($m->model) !== $model) {
+                if ($model !== '' && self::normalizeModel($m->model) !== $model) {
                     return false;
                 }
                 if ($year !== '' && ! self::yearCovers($m->year, $year)) {

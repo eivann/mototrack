@@ -144,7 +144,7 @@
                                         @foreach($reservation->lines as $line)
                                             <div class="flex items-center justify-between gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
                                                 <div class="flex items-center gap-3 min-w-0">
-                                                    <x-product-image :item="$line->item" :alt="$line->item?->part_name ?? 'Part'" class="w-12 h-12 rounded-xl shrink-0 bg-white dark:bg-gray-700" img-class="p-1" />
+                                                    <x-product-image :item="$line->item" sizes="48px" :alt="$line->item?->part_name ?? 'Part'" class="w-12 h-12 rounded-xl shrink-0 bg-white dark:bg-gray-700" img-class="p-1" />
                                                     <div class="min-w-0">
                                                         <div class="font-black text-gray-900 dark:text-white text-sm truncate">{{ $line->item?->part_name ?? 'Unknown Item' }}</div>
                                                         <div class="text-xs text-gray-500 font-bold">Qty: {{ $line->quantity }}</div>
@@ -219,6 +219,30 @@
 
                     <!-- Repairs Tab -->
                     <div x-show="activeTab === 'repairs'" x-cloak class="space-y-8">
+                    <!-- RD2-R3: service / repair appointment requests -->
+                    <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                        <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Service Appointments</h3>
+                                <p class="text-xs text-gray-400 font-medium mt-1">Same-day requests; appointments start {{ \Carbon\Carbon::createFromFormat('H:i', config('repair_reservations.open'))->format('g:i A') }}–{{ \Carbon\Carbon::createFromFormat('H:i', config('repair_reservations.last_start'))->format('g:i A') }}. A request is confirmed only after the shop owner accepts it.</p>
+                            </div>
+                            <a href="{{ route('repair-reservations.create') }}" class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-black">Book a service today</a>
+                        </div>
+                        @if(isset($serviceRequests) && $serviceRequests->count() > 0)
+                            <div class="divide-y divide-gray-50 dark:divide-gray-800">
+                                @foreach($serviceRequests as $sr)
+                                    <a href="{{ route('repair-reservations.show', $sr->reference) }}" id="service-request-{{ $sr->id }}" class="flex flex-wrap items-center justify-between gap-2 p-6 hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                                        <div>
+                                            <div class="font-bold text-gray-900 dark:text-white">{{ $sr->serviceLabel() }} &middot; {{ $sr->bike_model }}</div>
+                                            <div class="text-xs text-gray-500">{{ $sr->reference }} &middot; {{ $sr->dateLabel() }}, {{ $sr->timeLabel() }}</div>
+                                        </div>
+                                        <span class="px-3 py-1 rounded-lg {{ $sr->status === 'accepted' ? 'bg-emerald-50 text-emerald-600' : ($sr->status === 'pending' ? 'bg-yellow-50 text-yellow-600' : 'bg-gray-100 text-gray-500') }} font-black text-[10px] uppercase tracking-widest">{{ $sr->label() }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+
                     <!-- Repairs Table -->
                     <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                         <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">

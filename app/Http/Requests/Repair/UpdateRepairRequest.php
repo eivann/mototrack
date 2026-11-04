@@ -15,6 +15,7 @@ class UpdateRepairRequest extends FormRequest
     {
         return [
             'status' => 'required|string|in:pending,ongoing,done,completed',
+            'estimated_minutes' => 'nullable|integer|min:5|max:1440',
         ];
     }
 }

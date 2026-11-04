@@ -37,7 +37,7 @@ class DashboardController extends Controller
                         return max(0, (float)$gross - (float)$refunds);
                     })(),
                     'totalSalesCount' => Sale::count(),
-                    'completedRepairs' => Repair::where('status', 'completed')->count(),
+                    'completedRepairs' => Repair::whereIn('status', ['done', 'completed'])->count(),
                 ];
             });
 

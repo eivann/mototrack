@@ -82,7 +82,7 @@
             <div>
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
                     <form method="POST" action="/checkout" class="space-y-6"
-                          x-data="{ loading: false, agreed: false, showTerms: false, scrolledToBottom: false,
+                          x-data="{ payMethod: 'cash', loading: false, agreed: false, showTerms: false, scrolledToBottom: false,
                           openTerms() {
                               this.showTerms = true;
                               this.$nextTick(() => requestAnimationFrame(() => this.checkTermsRead()));
@@ -101,8 +101,8 @@
                         @csrf
 
                         <!-- IN-STORE CASH PAYMENT NOTICE (No Online Payment Collected) -->
-                        <input type="hidden" name="payment_method" value="on_pickup">
-                        <div class="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-xl p-5 text-left">
+                        @include('payments.partials.method-select')
+                        <div x-show="payMethod === 'cash'" class="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-xl p-5 text-left">
                             <div class="flex items-start gap-3.5">
                                 <div class="w-9 h-9 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,51 +178,8 @@
                                          x-ref="termsContent"
                                          @scroll="checkTermsRead()">
 
-                                        <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">1. Reservation & Order Details</h4>
-                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>Online checkout creates an unpaid stock reservation acknowledgement, holding available items exclusively for you.</li>
-                                                <li>No online payment is collected during checkout. Full payment is made in cash at the physical shop counter upon pickup.</li>
-                                            </ul>
-                                        </div>
-
-                                        <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">2. Multiple Orders</h4>
-                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>Customers may reserve multiple parts concurrently. Each reservation is tracked with its own status under your customer dashboard.</li>
-                                            </ul>
-                                        </div>
-
-                                        <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">3. 24-Hour Pickup Policies</h4>
-                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li><strong class="text-indigo-600 dark:text-indigo-400">In-Stock Reservations:</strong> In-stock items are allocated immediately. The 24-hour pickup countdown begins upon reservation creation. Unclaimed reservations automatically expire, releasing stock back to the catalog.</li>
-                                                <li><strong class="text-amber-500">Pre-Orders:</strong> Pre-ordered items are ordered from suppliers. The 24-hour pickup countdown begins <em>only after</em> the item physically arrives at our shop and a readiness notification is sent to your account.</li>
-                                            </ul>
-                                        </div>
-
-                                        <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">4. Compatibility Checker</h4>
-                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>The compatibility checker evaluates parts against database records of verified motorcycles in our inventory system.</li>
-                                                <li>Please ensure your make, model, and year match your vehicle before reserving.</li>
-                                            </ul>
-                                        </div>
-
-                                        <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">5. Cancellation Policy</h4>
-                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>You may cancel a reservation at any time prior to pickup directly through your customer dashboard with immediate stock restoration.</li>
-                                            </ul>
-                                        </div>
-
-                                        <div>
-                                            <h4 class="font-black text-gray-900 dark:text-white text-base mb-3">6. Returns & Physical Refunds</h4>
-                                            <ul class="space-y-2 list-disc list-inside text-gray-600 dark:text-gray-400">
-                                                <li>Purchases are completed in cash at the store POS. All returns, exchanges, or defect claims must be presented in person at the physical shop counter with the official receipt.</li>
-                                                <li>Defective items are inspected by shop technicians in accordance with the Consumer Act of the Philippines (RA 7394) and processed as either a resellable return or damaged write-off.</li>
-                                            </ul>
-                                        </div>
+                                        @include('shop.partials.terms-reservation')
+                                @include('payments.partials.qr-terms')
 
                                         <!-- Scroll anchor marker -->
                                         <div class="text-center pt-4 pb-2">

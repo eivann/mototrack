@@ -205,13 +205,43 @@
                         showPassword: false,
                         showConfirmPassword: false,
                         isSubmitting: false,
+
+                        // RD2-B01: Instant name sanitizer — strips digits and disallowed
+                        // special characters on every keystroke, paste, and drop. Matches
+                        // the server-side regex: /^[\p{L}\p{M}][\p{L}\p{M} .\''-]*$/u
+                        // Allowed: Unicode letters/marks, spaces, periods, apostrophes,
+                        // straight quotes, and hyphens. Everything else is removed.
+                        onNameInput(e) {
+                            const el = e.target;
+                            const pos = el.selectionStart;
+                            const before = el.value;
+                            // Allowlist mirrors the server regex exactly: Unicode letters/marks,
+                            // space, period, straight apostrophe, curly apostrophe (’), hyphen.
+                            const clean = before.replace(/[^\p{L}\p{M} .'’\-]/gu, '');
+                            if (clean !== before) {
+                                el.value = clean;
+                                // Restore cursor position, adjusted for removed chars
+                                const diff = before.length - clean.length;
+                                el.setSelectionRange(Math.max(0, pos - diff), Math.max(0, pos - diff));
+                            }
+                        },
+
+                        // RD2-B02 / RD2-B03: Phone sanitizer — strips letters and
+                        // non-digit characters instantly. Normalizes +63/09 prefixes.
                         onPhoneInput(e) {
                             let val = e.target.value;
-                            let clean = val.replace(/[^0-9+]/g, '');
-                            if (clean.startsWith('+63')) clean = clean.substring(3);
-                            else if (clean.startsWith('63') && clean.length > 10) clean = clean.substring(2);
+                            let clean = val.replace(/[^0-9]/g, '');
+                            if (clean.startsWith('63') && clean.length > 10) clean = clean.substring(2);
                             if (clean.startsWith('0')) clean = clean.substring(1);
+                            // Enforce max 10 digits (9XXXXXXXXX) for display
+                            if (clean.length > 10) clean = clean.substring(0, 10);
                             this.phoneDisplay = clean;
+                            // RD2-R5: write the cleaned value straight to the field. Alpine only re-renders
+                            // :value when phoneDisplay CHANGES, so a rejected keystroke (clean === previous
+                            // value) would otherwise leave the typed letter visible.
+                            if (e.target.value !== clean) {
+                                e.target.value = clean;
+                            }
                         },
                         get rawPhone() {
                             let digits = (this.phoneDisplay || '').replace(/[^0-9]/g, '');
@@ -268,6 +298,7 @@
                         </label>
                         <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"
                             placeholder="e.g. Juan Dela Cruz"
+                            @input="onNameInput($event)" @paste="$nextTick(() => onNameInput({ target: $el }))"
                             class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-600 transition-all {{ $errors->has('name') ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : '' }}">
                         @if ($errors->has('name'))
                             <p class="mt-1.5 text-xs text-red-500 font-semibold">{{ $errors->first('name') }}</p>
@@ -299,10 +330,10 @@
                             </span>
                             <input id="phone" type="tel" name="phone" x-ref="phoneInput"
                                 :value="phoneDisplay"
-                                @input="onPhoneInput($event)"
+                                @input="onPhoneInput($event)" @paste="$nextTick(() => onPhoneInput({ target: $el }))"
                                 value="{{ old('phone') ?: $initialPhoneDisplay }}"
-                                required
-                                autocomplete="tel" maxlength="13"
+                                required inputmode="numeric"
+                                autocomplete="tel" maxlength="20"
                                 placeholder="912 345 6789"
                                 class="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 border-0 focus:ring-0 focus:outline-none">
                         </div>

@@ -63,7 +63,11 @@ class CustomerDashboardController extends Controller
         $activeReservations = $reservations->where('can_cancel', true)->values();
         $reservationHistory = $reservations->where('is_settled', true)->values();
 
+        // RD2-R3: the customer's own service/repair appointment requests (ownership by customer_id only).
+        $serviceRequests = \App\Models\RepairReservation::where('customer_id', $customer->id)->latest('id')->limit(10)->get();
+
         return view('customer.dashboard', compact(
+            'serviceRequests',
             'repairs',
             'preorders',
             'purchases',

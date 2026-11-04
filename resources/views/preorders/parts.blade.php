@@ -33,7 +33,7 @@
                                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Catalog Part</span>
                             </div>
                             @if(!empty($item->image_path))
-                                <img src="{{ $item->image_url }}" alt="{{ $item->part_name }}" loading="lazy"
+                                <img src="{{ $item->image_url }}" @if($item->image_srcset) srcset="{{ $item->image_srcset }}" sizes="(min-width: 1280px) 250px, (min-width: 640px) 30vw, 85vw" @endif alt="{{ $item->part_name }}" loading="{{ $loop->index < 4 ? 'eager' : 'lazy' }}" decoding="async"
                                      onerror="this.onerror=null; this.classList.add('hidden'); this.parentNode.querySelector('.preorder-image-fallback').classList.remove('hidden');"
                                      class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300">
                             @endif

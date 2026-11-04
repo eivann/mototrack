@@ -73,6 +73,15 @@
                             @include('profile.partials.update-password-form')
                         </div>
                     </div>
+
+                    {{-- Remembered devices (RD2-R4) --}}
+                    <div class="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm p-8 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h3 class="font-black text-gray-900 dark:text-white uppercase tracking-tight">Remembered devices</h3>
+                            <p class="text-xs text-gray-400 font-medium mt-0.5">Review or remove browsers that can skip the emailed code</p>
+                        </div>
+                        <a href="{{ route('profile.devices') }}" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold">Manage devices</a>
+                    </div>
                 </div>
 
                 {{-- Right Column --}}

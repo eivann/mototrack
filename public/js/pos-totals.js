@@ -19,6 +19,8 @@
     var MAX_TENDER_CENTS = 99999900;
     // Same ceiling as CommitOrder (at most 9,999 units of one item per transaction).
     var MAX_LINE_QUANTITY = 9999;
+    // RD2-R2.4: standard Philippine VAT rate; prices are VAT-inclusive, so VAT is extracted.
+    var VAT_RATE_PERCENT = 12;
 
     /** Highest quantity one cart line may hold: the stock on hand, never above the server limit. */
     function maxQuantity(stock) {
@@ -94,6 +96,11 @@
         var discountCents = 0;
         var totalCents = subtotalCents - discountCents;
 
+        // RD2-R2.4: prices are VAT-inclusive (12%). VAT is EXTRACTED from the total, never added,
+        // using the same integer-centavo formula as App\Support\Vat so POS and server agree exactly.
+        var vatCents = Math.round(totalCents * VAT_RATE_PERCENT / (100 + VAT_RATE_PERCENT));
+        var netCents = totalCents - vatCents;
+
         var tenderEntered = !(tendered === null || tendered === undefined || String(tendered).trim() === '');
         var tenderedCents = tenderEntered ? toCents(tendered) : null;
         var tenderValid = tenderEntered && tenderedCents !== null && tenderedCents >= 0
@@ -115,6 +122,9 @@
             subtotalCents: subtotalCents,
             discountCents: discountCents,
             totalCents: totalCents,
+            vatCents: vatCents,
+            netCents: netCents,
+            vatRatePercent: VAT_RATE_PERCENT,
             tenderEntered: tenderEntered,
             tenderValid: tenderValid,
             tenderedCents: tenderValid ? tenderedCents : null,

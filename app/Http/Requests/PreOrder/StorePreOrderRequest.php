@@ -36,6 +36,7 @@ class StorePreOrderRequest extends FormRequest
             'model'                => 'required_without:inventory_item_id|nullable|string|min:2|max:255|regex:/[a-zA-Z0-9]/',
             'quantity'             => 'required|integer|min:1|max:100',
             'down_payment'         => 'nullable|numeric|min:0',
+            'payment_method'       => ['nullable', 'string', \Illuminate\Validation\Rule::in(['cash', 'on_pickup', 'gcash_qr'])],
             'g-recaptcha-response' => $recaptchaRules,
         ];
     }
@@ -55,9 +56,23 @@ class StorePreOrderRequest extends FormRequest
         ];
     }
 
+    public function wantsGcashQr(): bool
+    {
+        return $this->input('payment_method') === 'gcash_qr';
+    }
+
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
+            // RD2-R2: GCash QR is for catalogue pre-orders only (never custom-parts requests) and only while the gate is open.
+            if ($this->wantsGcashQr()) {
+                if (! app(\App\Services\PaymentClaimService::class)->enabled()) {
+                    $validator->errors()->add('payment_method', 'GCash QR payment is not available yet. Please choose cash at the counter.');
+                } elseif (! $this->filled('inventory_item_id')) {
+                    $validator->errors()->add('payment_method', 'GCash QR payment is not available for custom-parts requests.');
+                }
+            }
+
             if ($this->filled('inventory_item_id')) {
                 $item = \App\Models\InventoryItem::find($this->inventory_item_id);
                 if ($item && $item->quantity > 0) {

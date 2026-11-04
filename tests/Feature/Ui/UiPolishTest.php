@@ -104,7 +104,7 @@ test('product pictures use the real image_path, keep proportions and fall back c
     // The pre-order card used a non-existent `image` attribute, so the picture never showed.
     $html = upGet($user, route('preorder.form', $pictured->id))->assertOk()->getContent();
     expect($html)->toContain('images/products/some-part.jpg')
-        ->and($html)->toContain('loading="lazy" decoding="async"')
+        ->and($html)->toContain('loading="eager" decoding="async"') // RD2-05: the pre-order picture is above the fold, so it is no longer lazy
         ->and($html)->toContain('object-contain')
         ->and($html)->toContain('data-image-fallback');
 
