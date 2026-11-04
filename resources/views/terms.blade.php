@@ -1,6 +1,7 @@
 {{-- RD2-R5: Terms and Conditions page.
-     Built only from policies the shop has confirmed. Deliberately NOT stated (pending owner approval): automatic
-     cancellation of service requests, a service capacity, what happens to a service request nobody answers,
+     Built only from policies the shop has confirmed. The automatic no-check-in cancellation of service requests is
+     stated (inside the service-appointment partial) ONLY while RR_AUTO_CANCEL_ENABLED is true. Deliberately NOT stated
+     (pending owner approval): a service capacity, what happens to a service request nobody answers,
      any refund or fee commitment, and the format of any BIR-registered invoice. --}}
 <x-app-layout>
     <div class="min-h-screen bg-gray-50 dark:bg-gray-950 pb-16">

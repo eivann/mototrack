@@ -68,9 +68,11 @@
 
             @include('repair_reservations.partials.terms')
 
+            @include('repair_reservations.partials.auto-cancel-notice')
+
             <label class="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
                 <input type="checkbox" name="accept_terms" value="1" required class="mt-1 rounded border-gray-300" {{ old('accept_terms') ? 'checked' : '' }}>
-                <span>I understand this is a <strong>request</strong>, not a confirmed appointment. It is only confirmed once the shop owner accepts it, and the owner may decline it when the shop is full. I will be notified of the decision.</span>
+                <span>I understand this is a <strong>request</strong>, not a confirmed appointment. It is only confirmed once the shop owner accepts it, and the owner may decline it when the shop is full. I will be notified of the decision.@if (config('repair_reservations.auto_cancel.enabled')) I also understand the automatic cancellation rule above.@endif</span>
             </label>
 
             <button type="submit" :disabled="busy" class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-60">Send request</button>
