@@ -260,12 +260,12 @@ public/build/assets/app-DwqCQt73.js   160.43 kB │ gzip: 52.25 kB
 Log into the VPS or run a database snapshot before git push:
 ```bash
 # 1. SSH into the VPS
-ssh root@147.93.172.239
+ssh deploy@<SERVER_HOST>   # non-root deploy user, key-only; never root
 
 # 2. Create a timestamped database backup
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 # If using PostgreSQL / Supabase:
-pg_dump -h aws-1-ap-south-1.pooler.supabase.com -p 6543 -U postgres.ljhopaggolgmownbhkyh -d postgres -F c -b -v -f /var/backups/mototrack_backup_${TIMESTAMP}.dump
+pg_dump -h aws-1-ap-south-1.pooler.supabase.com -p 6543 -U <DB_USER> -d postgres -F c -b -v -f /var/backups/mototrack_backup_${TIMESTAMP}.dump
 
 # If using local MySQL:
 mysqldump -u root -p --single-transaction --quick --routines mototrack > /var/backups/mototrack_backup_${TIMESTAMP}.sql
