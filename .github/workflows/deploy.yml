@@ -4,6 +4,11 @@ name: Deploy to New MotoTrack VPS
 # Only add a push-to-main trigger after a successful and reviewed run.
 on:
   workflow_dispatch:
+    inputs:
+      maintenance:
+        description: 'Enable Laravel maintenance mode just before production files change and leave it ON (health check is then DEFERRED; run migrations, php artisan up, then the mandatory HTTP 200 smoke test)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -77,15 +82,72 @@ jobs:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
           DEPLOY_COMMIT: ${{ github.sha }}
+          MAINTENANCE: ${{ inputs.maintenance }}
         run: |
           ssh -i ~/.ssh/id_ed25519 \
             -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            "$SERVER_USER@$SERVER_HOST" "DEPLOY_COMMIT=$DEPLOY_COMMIT bash -se" <<'REMOTE'
+            "$SERVER_USER@$SERVER_HOST" "DEPLOY_COMMIT=$DEPLOY_COMMIT MAINTENANCE=${MAINTENANCE:-false} bash -se" <<'REMOTE'
           set -euo pipefail
           umask 0027
 
           SRC=/home/deploy/mototrack-source
           APP=/var/www/mototrack
+          MAINT_REQUESTED="${MAINTENANCE:-false}"
+          SECRET_FILE=/home/deploy/.maintenance-secret
+          SECRET_CREATED=false
+          HC_HDR=""
+
+          remove_secret_file() {
+            if [ -f "$SECRET_FILE" ]; then shred -u "$SECRET_FILE" 2>/dev/null || rm -f "$SECRET_FILE"; fi
+          }
+
+          # Always tell the operator the final state, including whether the site is still in maintenance mode.
+          report_exit() {
+            rc=$?
+            rm -f "${HC_HDR:-}"
+            if [ "$rc" -ne 0 ]; then
+              echo "::error::DEPLOYMENT FAILED (exit code $rc). Read the failing step above."
+              if [ -f "$APP/storage/framework/down" ]; then
+                echo '::error::THE SITE IS STILL IN MAINTENANCE MODE (storage/framework/down exists). Visitors see HTTP 503.'
+                echo 'RECOVERY, run on the VPS as deploy (nothing below is automatic):'
+                echo '  1. Check whether the code is complete: git -C /home/deploy/mototrack-source rev-parse HEAD must equal the dispatched commit and /var/www/mototrack/public/build/manifest.json must exist.'
+                echo '  2. If the deployment cannot be completed, restore the pre-release snapshot: rsync -a --exclude=/storage/ --exclude=/.env /home/deploy/rollback-app-4f58f3e/ /var/www/mototrack/ then php artisan optimize:clear.'
+                echo '  3. Only when the code is known-good: cd /var/www/mototrack && php artisan up, delete the bypass file, then run the mandatory HTTP 200 smoke test: bash /var/www/mototrack/scripts/release/post-maintenance-smoke.sh --origin'
+                echo "  4. The maintenance bypass secret, if this run created it, is in $SECRET_FILE (mode 600, never printed)."
+              else
+                echo 'Maintenance mode is NOT active; this run did not leave the site in maintenance.'
+                echo 'The code on the server may be partly updated if the failure happened after the file copy: compare with the dispatched commit and see the rollback steps in the release runbook.'
+                if [ "$SECRET_CREATED" = "true" ]; then remove_secret_file; fi
+              fi
+            fi
+          }
+          trap report_exit EXIT
+
+          # Evidence that the FILES were deployed, independent of any HTTP answer.
+          deployment_sanity() {
+            test "$(git -C "$SRC" rev-parse HEAD)" = "$DEPLOY_COMMIT"
+            test -f "$APP/public/build/manifest.json"
+            test -f "$APP/vendor/autoload.php"
+            echo "FILES DEPLOYED: source checkout is at $DEPLOY_COMMIT; build manifest and vendor are present."
+          }
+
+          # Verifies the EXPECTED maintenance state. This is NOT an application health check.
+          # $1 = strict: require Laravel's own Retry-After: 60 header (we started maintenance ourselves).
+          maintenance_state_check() {
+            test -f "$APP/storage/framework/down" || { echo '::error::Maintenance file missing although maintenance mode was expected.'; return 1; }
+            HC_HDR="$(mktemp)"
+            code="$(curl --noproxy '*' -kSs --max-time 20 --resolve mototrack.online:443:127.0.0.1 \
+              -o /dev/null -D "$HC_HDR" -w '%{http_code}' https://mototrack.online/ || true)"
+            if [ "$code" != 503 ]; then
+              echo "::error::Unexpected HTTP ${code:-none} while maintenance mode should be ON. Investigate nginx/PHP-FPM; this does NOT confirm a successful deployment."
+              return 1
+            fi
+            if [ "$1" = strict ] && ! grep -qi '^retry-after: *60' "$HC_HDR"; then
+              echo '::error::HTTP 503 without Laravel Retry-After: 60: the 503 may come from the web server, not from maintenance mode. Investigate.'
+              return 1
+            fi
+            echo 'MAINTENANCE STATE: VERIFIED (HTTP 503 as expected). This is NOT a health check.'
+          }
           export GIT_SSH_COMMAND='ssh -i /home/deploy/.ssh/id_ed25519_mototrack -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes'
 
           test "$(id -un)" = deploy
@@ -97,6 +159,22 @@ jobs:
           git -C "$SRC" fetch origin main
           test "$(git -C "$SRC" rev-parse origin/main)" = "$DEPLOY_COMMIT"
           git -C "$SRC" merge --ff-only "$DEPLOY_COMMIT"
+
+          # Optional maintenance mode: starts only now, after CI and every server-side check succeeded and
+          # immediately before production files change. The bypass secret is never printed.
+          if [ "$MAINT_REQUESTED" = "true" ]; then
+            set +x
+            (umask 077; openssl rand -hex 16 > "$SECRET_FILE")
+            chmod 600 "$SECRET_FILE"
+            SECRET_CREATED=true
+            if ! (cd "$APP" && php artisan down --retry=60 --secret="$(cat "$SECRET_FILE")" > /dev/null); then
+              remove_secret_file
+              echo '::error::php artisan down failed. No production file was changed and the site is not in maintenance mode.'
+              exit 1
+            fi
+            test -f "$APP/storage/framework/down"
+            echo '::warning::MAINTENANCE MODE ENABLED just before production files are changed. It stays ON until migrations are finished and php artisan up is run.'
+          fi
 
           # Never delete production data; keep uploaded images and storage.
           rsync -rlpt --chmod=Dug+rx,Fug+r \
@@ -157,11 +235,24 @@ jobs:
           php artisan package:discover --no-ansi
           php artisan optimize:clear
 
-          # Health-check origin locally without relying on Cloudflare DNS.
-          curl --noproxy '*' -fkSs --max-time 20 \
-            --resolve mototrack.online:443:127.0.0.1 \
-            -o /dev/null https://mototrack.online/
-          echo "DEPLOYED COMMIT: $DEPLOY_COMMIT"
+          if [ -f "$APP/storage/framework/down" ]; then
+            # Maintenance mode is ON (started by this run, or already on). A 503 is never a successful health check.
+            deployment_sanity
+            echo '=== POST-DEPLOY APPLICATION HEALTH CHECK: DEFERRED (maintenance mode is ON) ==='
+            if [ "$MAINT_REQUESTED" = "true" ]; then maintenance_state_check strict; else
+              echo '::warning::The site was ALREADY in maintenance mode before this run; its state is checked loosely.'
+              maintenance_state_check loose
+            fi
+            echo '::warning::Health check DEFERRED. HTTP 503 is NOT a successful health check. Next: run migrations, smoke-test through the bypass secret, php artisan up, delete the bypass file, then the mandatory HTTP 200 smoke test (VPS origin: bash /var/www/mototrack/scripts/release/post-maintenance-smoke.sh --origin; external: same script with --public).'
+            echo "FILES DEPLOYED, NOT YET VERIFIED HEALTHY: $DEPLOY_COMMIT"
+          else
+            # Health-check origin locally without relying on Cloudflare DNS.
+            curl --noproxy '*' -fkSs --max-time 20 \
+              --resolve mototrack.online:443:127.0.0.1 \
+              -o /dev/null https://mototrack.online/
+            echo "DEPLOYED COMMIT: $DEPLOY_COMMIT"
+          fi
           echo 'No migrations, APP_KEY generation, or deletion of uploaded files performed.'
           echo 'Queue worker and Reverb restarts remain manual.'
+          if [ -f "$APP/storage/framework/down" ]; then echo 'SITE STATUS: STILL IN MAINTENANCE MODE. This workflow never runs migrations and never runs php artisan up.'; fi
           REMOTE
