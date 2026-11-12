@@ -203,7 +203,7 @@
                                 <input type="hidden" name="expected_total" :value="MotoTrackPos.centsToDecimalString(totals.totalCents)">
                                 <button type="submit"
                                         class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                        :disabled="!totals.canCheckout || checkoutLoading">
+                                        :disabled="checkoutLoading">
                                     <svg x-show="checkoutLoading" x-cloak class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                                     <svg x-show="!checkoutLoading" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     <span x-text="totals.canCheckout ? 'Complete Checkout · ₱' + money(totals.totalCents) : 'Complete Checkout'">Complete Checkout</span>

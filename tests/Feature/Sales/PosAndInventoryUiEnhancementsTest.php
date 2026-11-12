@@ -70,7 +70,7 @@ test('F15: owner POS page renders category filter tabs including All', function 
     expect($html)->toContain('categories');
 });
 
-test('F16: owner POS page renders accessible toast container and removes native alert calls', function () {
+test('F16: owner POS page renders accessible toast container, removes native alert calls, and allows validation feedback on checkout submit', function () {
     $owner = User::factory()->create(['role' => 'owner']);
 
     $response = $this->actingAs($owner)->get('/sales');
@@ -82,6 +82,11 @@ test('F16: owner POS page renders accessible toast container and removes native 
     expect($html)->toContain('role="alert"');
     expect($html)->toContain('aria-live="assertive"');
     expect($html)->toContain('showToast');
+    expect($html)->toContain('fixed bottom-6 right-6');
+
+    // Checkout button enables client validation feedback and guards double submits
+    expect($html)->toContain(':disabled="checkoutLoading"');
+    expect($html)->toContain('@submit.prevent="submitCheckout()"');
 
     // No alert(...) calls in the blade script
     expect($html)->not->toContain('alert(');
