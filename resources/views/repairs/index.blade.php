@@ -152,19 +152,55 @@
                                                     <option value="{{ $m }}">{{ $l }}</option>
                                                 @endforeach
                                             </select>
-                                            <button class="text-[11px] font-bold px-2 py-0.5 rounded-lg border border-indigo-300 text-indigo-700 dark:text-indigo-300">Extend</button>
+                                            <button class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-300 dark:border-indigo-600 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50">Extend</button>
                                         </form>
                                     @endif
                                 </td>
-                                <td class="p-4 align-top font-bold text-gray-900 dark:text-white">
-                                    ₱{{ number_format($repair->cost ?? 0, 2) }}
-                                    @if ($repair->cost === null)<div class="text-[11px] font-bold text-amber-700 dark:text-amber-300">Cost not set</div>@endif
+                                <td class="p-4 align-top font-bold text-gray-900 dark:text-white" x-data="{ editingCost: {{ $repair->cost === null ? 'true' : 'false' }}, saving: false }">
+                                    <div class="flex items-center gap-2">
+                                        <span>₱{{ number_format($repair->cost ?? 0, 2) }}</span>
+                                        @if ($repair->cost === null)
+                                            <span class="text-[11px] font-bold text-amber-700 dark:text-amber-400">Cost not set</span>
+                                        @elseif (! $repair->is_paid)
+                                            <button type="button"
+                                                    x-show="!editingCost"
+                                                    @click="editingCost = true"
+                                                    class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline inline-flex items-center gap-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                                Edit
+                                            </button>
+                                        @endif
+                                    </div>
                                     @unless ($repair->is_paid)
-                                        <form method="POST" action="{{ route('repairs.cost', $repair) }}" class="mt-1 flex items-center gap-1">
+                                        <form method="POST"
+                                              action="{{ route('repairs.cost', $repair) }}"
+                                              x-show="editingCost"
+                                              x-cloak
+                                              @submit="if (!confirm('Confirm saving repair cost as ₱' + document.getElementById('cost-{{ $repair->id }}').value + '?')) { $event.preventDefault(); return false; } saving = true;"
+                                              class="mt-1 flex items-center gap-1.5">
                                             @csrf @method('PUT')
                                             <label for="cost-{{ $repair->id }}" class="sr-only">Actual cost</label>
-                                            <input id="cost-{{ $repair->id }}" name="cost" type="number" step="0.01" min="0" required value="{{ $repair->cost }}" placeholder="Cost" class="w-24 text-[11px] rounded-lg border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white py-0.5">
-                                            <button class="text-[11px] font-bold px-2 py-0.5 rounded-lg border border-indigo-300 text-indigo-700 dark:text-indigo-300">Save</button>
+                                            <input id="cost-{{ $repair->id }}"
+                                                   name="cost"
+                                                   type="number"
+                                                   step="0.01"
+                                                   min="0"
+                                                   required
+                                                   value="{{ $repair->cost }}"
+                                                   placeholder="Cost"
+                                                   class="w-24 text-[11px] rounded-lg border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white py-1 px-2 focus:ring-2 focus:ring-indigo-500">
+                                            <button type="submit"
+                                                    :disabled="saving"
+                                                    class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
+                                                Save
+                                            </button>
+                                            @if ($repair->cost !== null)
+                                                <button type="button"
+                                                        @click="editingCost = false"
+                                                        class="text-[11px] font-semibold px-2 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400">
+                                                    Cancel
+                                                </button>
+                                            @endif
                                         </form>
                                     @endunless
                                 </td>
@@ -175,7 +211,7 @@
                                             {{-- The server requires the cash tendered (full payment); without this field every Collect click failed. --}}
                                             <label for="tender-{{ $repair->id }}" class="sr-only">Cash received</label>
                                             <input id="tender-{{ $repair->id }}" name="amount_tendered" type="number" step="0.01" min="{{ $repair->cost ?? 0 }}" required value="{{ $repair->cost }}" placeholder="Cash" class="mb-1 w-24 text-[11px] rounded-lg border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white py-0.5">
-                                            <button class="inline-flex items-center gap-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-3 py-1 rounded-full text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
+                                            <button class="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold px-3 py-1 rounded-full text-xs shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 Collect
                                             </button>
@@ -186,12 +222,12 @@
                                 </td>
                                 <td class="p-4 align-top text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <a href="/repairs/{{ $repair->id }}/receipt" aria-label="Print receipt for {{ $repair->customer_name }}" title="Print Receipt" class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                        <a href="/repairs/{{ $repair->id }}/receipt" aria-label="Print receipt for {{ $repair->customer_name }}" title="Print Receipt" class="p-1.5 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                         </a>
                                         <form method="POST" action="/repairs/{{ $repair->id }}" class="inline" onsubmit="return confirm('Delete this repair record?');">
                                             @csrf @method('DELETE')
-                                            <button title="Delete Record" aria-label="Delete repair record" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">
+                                            <button title="Delete Record" aria-label="Delete repair record" class="p-1.5 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </form>

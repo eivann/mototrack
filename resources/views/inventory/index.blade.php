@@ -92,6 +92,24 @@
                 </form>
             </div>
 
+            <!-- Category Navigation Chips (F18) -->
+            <div class="mb-4 flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar" role="tablist" aria-label="Filter by category">
+                <a href="{{ route('inventory.index', array_filter(['search' => $search ?? null])) }}"
+                   class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 shrink-0 {{ empty($category) ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200 dark:shadow-none' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                   role="tab"
+                   aria-selected="{{ empty($category) ? 'true' : 'false' }}">
+                    All Categories
+                </a>
+                @foreach($categories as $cat)
+                    <a href="{{ route('inventory.index', array_filter(['category' => $cat, 'search' => $search ?? null])) }}"
+                       class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 shrink-0 {{ (isset($category) && $category == $cat) ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200 dark:shadow-none' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}"
+                       role="tab"
+                       aria-selected="{{ (isset($category) && $category == $cat) ? 'true' : 'false' }}">
+                        {{ $cat }}
+                    </a>
+                @endforeach
+            </div>
+
             <!-- Filters & Search (Audit #20) -->
             <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
                 <form method="GET" action="/inventory" class="flex flex-col md:flex-row items-center justify-between gap-4">

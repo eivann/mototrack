@@ -165,8 +165,22 @@ class SaleController extends Controller
     {
         $baseQuery = Sale::query();
 
+        // F13: Date-range boundary fix.
+        // Timestamps are stored as TIMESTAMP WITHOUT TIME ZONE in the app timezone (Asia/Manila).
+        // Using raw date strings like '2026-11-12' resolves to midnight 00:00:00, which silently
+        // excludes all transactions on the to-date after midnight. We use canonical half-open boundaries:
+        // [startOfDay(from), startOfDay(to + 1 day)), i.e. >= start AND < nextDay.
+        // This is mathematically clean and immune to microsecond precision truncation.
         if ($request->from && $request->to) {
-            $baseQuery->whereBetween('created_at', [$request->from, $request->to]);
+            $tz           = config('app.timezone', 'Asia/Manila');
+            $start        = \Carbon\Carbon::parse($request->from, $tz)->startOfDay();
+            $endExclusive = \Carbon\Carbon::parse($request->to,   $tz)->addDay()->startOfDay();
+            // Guard against reversed ranges (from > to) — produce zero results cleanly.
+            if ($start->lt($endExclusive) && \Carbon\Carbon::parse($request->from, $tz)->startOfDay()->lte(\Carbon\Carbon::parse($request->to, $tz)->startOfDay())) {
+                $baseQuery->where('created_at', '>=', $start)->where('created_at', '<', $endExclusive);
+            } else {
+                $baseQuery->whereRaw('1 = 0');
+            }
         }
 
         if ($request->filter == 'today') {
@@ -192,8 +206,16 @@ class SaleController extends Controller
         $refundsQuery = \App\Models\ProductReturn::query()->whereNotNull('refund_amount');
 
         if ($request->from && $request->to) {
-            $grossSalesQuery->whereBetween('payment_confirmed_at', [$request->from, $request->to]);
-            $refundsQuery->whereBetween('created_at', [$request->from, $request->to]);
+            $tz           = config('app.timezone', 'Asia/Manila');
+            $start        = \Carbon\Carbon::parse($request->from, $tz)->startOfDay();
+            $endExclusive = \Carbon\Carbon::parse($request->to,   $tz)->addDay()->startOfDay();
+            if ($start->lt($endExclusive) && \Carbon\Carbon::parse($request->from, $tz)->startOfDay()->lte(\Carbon\Carbon::parse($request->to, $tz)->startOfDay())) {
+                $grossSalesQuery->where('payment_confirmed_at', '>=', $start)->where('payment_confirmed_at', '<', $endExclusive);
+                $refundsQuery->where('created_at', '>=', $start)->where('created_at', '<', $endExclusive);
+            } else {
+                $grossSalesQuery->whereRaw('1 = 0');
+                $refundsQuery->whereRaw('1 = 0');
+            }
         }
         if ($request->filter == 'today') {
             $grossSalesQuery->whereDate('payment_confirmed_at', today());

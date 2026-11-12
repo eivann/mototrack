@@ -18,7 +18,7 @@
                 <!-- Left Side: Product Search -->
                 <div class="lg:col-span-2 flex flex-col gap-6">
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 sm:p-6">
-                        <label for="pos-search" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Search & Add to Cart</label>
+                        <label for="pos-search" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Search & Add Item</label>
                         <div class="relative">
                             <input
                                 id="pos-search"
@@ -31,6 +31,22 @@
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <svg class="h-6 w-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </div>
+                        </div>
+
+                        <!-- Category Filter Chips (F15) -->
+                        <div class="mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar" role="tablist" aria-label="Filter by category">
+                            <template x-for="cat in categories" :key="cat">
+                                <button type="button"
+                                        @click="selectedCategory = cat"
+                                        :class="selectedCategory === cat
+                                            ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200 dark:shadow-none'
+                                            : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
+                                        class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 active:scale-95 shrink-0"
+                                        :aria-selected="selectedCategory === cat"
+                                        role="tab">
+                                    <span x-text="cat"></span>
+                                </button>
+                            </template>
                         </div>
 
                         <p class="mt-3 text-xs font-semibold text-gray-500 dark:text-gray-400" aria-live="polite">
@@ -73,7 +89,7 @@
                 <div class="pos-cart flex flex-col">
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 sm:p-6 flex flex-col min-h-0 flex-1">
                         <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">
-                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Current Order</h2>
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Current Transaction</h2>
                             <span class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 text-xs font-bold px-3 py-1 rounded-full">
                                 <span x-text="cart.length"></span> <span x-text="cart.length === 1 ? 'item' : 'items'"></span>
                             </span>
@@ -104,7 +120,7 @@
                             </template>
                             <div x-show="cart.length === 0" class="flex flex-col items-center justify-center h-full py-6 text-gray-400 dark:text-gray-600">
                                 <svg class="w-14 h-14 mb-3 text-gray-200 dark:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                                Cart is empty — click a part to add it.
+                                Transaction is empty — click an item to add it.
                             </div>
                         </div>
 
@@ -200,6 +216,38 @@
 
             </div>
         </div>
+
+        <!-- Accessible Toast Container (F16) -->
+        <div x-cloak
+             x-show="toast.show"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="opacity-0 translate-y-3 sm:translate-y-0 sm:translate-x-3"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:translate-x-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:translate-x-0"
+             x-transition:leave-end="opacity-0 translate-y-2 sm:translate-y-0 sm:translate-x-2"
+             class="fixed bottom-6 right-6 z-50 max-w-md w-[calc(100vw-3rem)] sm:w-auto shadow-2xl rounded-2xl border px-4 py-3.5 flex items-center justify-between gap-3 text-sm font-bold tracking-tight"
+             :class="{
+                 'bg-red-50 dark:bg-red-900/90 border-red-200 dark:border-red-700 text-red-800 dark:text-red-100': toast.type === 'error',
+                 'bg-amber-50 dark:bg-amber-900/90 border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-100': toast.type === 'warning',
+                 'bg-blue-50 dark:bg-blue-900/90 border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-100': toast.type === 'info',
+                 'bg-emerald-50 dark:bg-emerald-900/90 border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-100': toast.type === 'success'
+             }"
+             role="alert"
+             aria-live="assertive">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <template x-if="toast.type === 'error' || toast.type === 'warning'">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </template>
+                <template x-if="toast.type === 'info' || toast.type === 'success'">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </template>
+                <span class="truncate" x-text="toast.message"></span>
+            </div>
+            <button type="button" @click="toast.show = false" aria-label="Close notification" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
     </div>
 
     <script src="{{ asset('js/pos-totals.js') }}"></script>
@@ -213,12 +261,33 @@
                     .filter(Boolean).join(' ').toLowerCase(),
             }));
 
+            const rawCategories = [...new Set(inventory.map(i => i.category).filter(Boolean))].sort();
+            const categories = ['All', ...rawCategories];
+
             return {
                 searchQuery: '',
+                selectedCategory: 'All',
+                categories,
                 inventory,
                 cart: [],
                 tendered: '',
                 checkoutLoading: false,
+                toast: {
+                    show: false,
+                    message: '',
+                    type: 'error',
+                    timeout: null,
+                },
+
+                showToast(message, type = 'error') {
+                    if (this.toast.timeout) clearTimeout(this.toast.timeout);
+                    this.toast.message = message;
+                    this.toast.type = type;
+                    this.toast.show = true;
+                    this.toast.timeout = setTimeout(() => {
+                        this.toast.show = false;
+                    }, 4000);
+                },
 
                 init() {
                     this.restoreDraft(@json($restoreDraft));
@@ -226,10 +295,14 @@
                 },
 
                 get filteredItems() {
+                    let items = this.inventory;
+                    if (this.selectedCategory && this.selectedCategory !== 'All') {
+                        items = items.filter(item => item.category === this.selectedCategory);
+                    }
                     const q = this.searchQuery.trim().toLowerCase();
-                    if (q === '') return this.inventory;
+                    if (q === '') return items;
                     const terms = q.split(/\s+/);
-                    return this.inventory.filter(item => terms.every(t => item.haystack.includes(t)));
+                    return items.filter(item => terms.every(t => item.haystack.includes(t)));
                 },
 
                 // Rendering every catalogue row made the POS slow to open; the search still covers all rows.
@@ -285,7 +358,7 @@
                         if (existing.quantity < existing.maxStock) {
                             existing.quantity++;
                         } else {
-                            alert(existing.stock > MotoTrackPos.MAX_LINE_QUANTITY ? this.limitMessage(existing) : "Cannot add more. Not enough stock available.");
+                            this.showToast(existing.stock > MotoTrackPos.MAX_LINE_QUANTITY ? this.limitMessage(existing) : "Cannot add more. Not enough stock available.", 'warning');
                         }
                     } else {
                         this.cart.push(this.cartLine(item, 1));
@@ -301,7 +374,7 @@
                     } else if (newQty <= item.maxStock) {
                         item.quantity = newQty;
                     } else {
-                        alert(this.limitMessage(item));
+                        this.showToast(this.limitMessage(item), 'warning');
                     }
                 },
 
@@ -311,7 +384,7 @@
                         item.quantity = 1;
                     } else if (qty > item.maxStock) {
                         item.quantity = item.maxStock;
-                        alert(this.limitMessage(item));
+                        this.showToast(this.limitMessage(item), 'warning');
                     } else {
                         item.quantity = qty;
                     }
@@ -322,10 +395,11 @@
                 },
 
                 newSale() {
-                    if (this.cart.length && !confirm('Start a new sale? The current cart will be cleared.')) return;
+                    if (this.cart.length && !confirm('Start a new transaction? Current items will be cleared.')) return;
                     this.cart = [];
                     this.tendered = '';
                     this.searchQuery = '';
+                    this.selectedCategory = 'All';
                     this.clearDraft();
                     this.$nextTick(() => document.getElementById('pos-search')?.focus());
                 },
@@ -360,11 +434,11 @@
                 submitCheckout() {
                     const t = this.totals;
                     if (this.checkoutLoading) return;
-                    if (t.problem === 'empty') { alert("Cart is empty."); return; }
-                    if (t.problem === 'quantity') { alert("Check the quantities in the cart."); return; }
-                    if (t.problem === 'insufficient') { alert("Amount tendered is less than the total."); return; }
-                    if (t.problem === 'tender_too_large') { alert("Amount tendered cannot exceed ₱999,999.00."); return; }
-                    if (!t.canCheckout) { alert("Enter a valid cash amount."); return; }
+                    if (t.problem === 'empty') { this.showToast("Transaction is empty. Add items to checkout.", 'warning'); return; }
+                    if (t.problem === 'quantity') { this.showToast("Check the quantities in the transaction.", 'warning'); return; }
+                    if (t.problem === 'insufficient') { this.showToast("Amount tendered is less than the total.", 'error'); return; }
+                    if (t.problem === 'tender_too_large') { this.showToast("Amount tendered cannot exceed ₱999,999.00.", 'error'); return; }
+                    if (!t.canCheckout) { this.showToast("Enter a valid cash amount.", 'error'); return; }
                     this.checkoutLoading = true;
                     this.saveDraft();
                     document.getElementById('checkoutForm').submit();

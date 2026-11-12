@@ -344,6 +344,11 @@ On-site payments only
             </div>
             <div class="border-t border-gray-100 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p class="text-gray-400 text-sm font-medium">&copy; 2026 Edmar Motorcycle Parts. All rights reserved.</p>
+
+                <nav class="flex flex-wrap items-center gap-4 text-sm font-semibold" aria-label="Legal links">
+                    <a href="{{ route('privacy-policy') }}" class="text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">Privacy Policy</a>
+                    <a href="{{ route('terms') }}" class="text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">Terms and Conditions</a>
+                </nav>
                 <div class="flex items-center gap-2 text-sm font-bold text-gray-300 dark:text-gray-700">
                     <i data-lucide="shield-check" class="w-4 h-4"></i> Secured by MotoTrack System
                 </div>

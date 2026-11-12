@@ -34,10 +34,10 @@ class TrustedDeviceService
         return (string) config('trusted_devices.cookie', 'mt_trusted_device');
     }
 
-    /** Google-created accounts have an unusable password, so a password-login shortcut is pointless for them. */
+    /** Trust is available after OTP for both password and Google-authenticated accounts. */
     public function offeredTo(User $user): bool
     {
-        return $this->enabled() && ! $user->google_id && ! $user->requires_password_change;
+        return $this->enabled() && ! $user->requires_password_change;
     }
 
     public static function hash(string $token): string
@@ -116,10 +116,10 @@ class TrustedDeviceService
 
     private function cookie(string $value, Request $request, int $minutes): Cookie
     {
-        // Encrypted by Laravel's EncryptCookies middleware (not excepted); HttpOnly; Strict because the only
-        // consumer is the same-site login POST; Secure in production or on any HTTPS request.
+        // Laravel EncryptCookies protects this cookie; HttpOnly and Secure in production.
+        // Lax permits the top-level Google OAuth GET callback to carry the cookie.
         return cookie($this->cookieName(), $value, $minutes, '/', null,
-            app()->isProduction() || $request->isSecure() || (bool) config('session.secure'), true, false, 'strict');
+            app()->isProduction() || $request->isSecure() || (bool) config('session.secure'), true, false, 'lax');
     }
 
     /** Display-only description. Never used for trust decisions. */

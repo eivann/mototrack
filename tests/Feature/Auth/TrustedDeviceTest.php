@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
+use Laravel\Socialite\Facades\Socialite;
 
 uses(RefreshDatabase::class);
 
@@ -63,6 +64,7 @@ function tdFreshBrowser(): void
 {
     test()->flushSession();
     auth()->logout();
+    \Illuminate\Support\Facades\Cookie::unqueue('mt_trusted_device');
 }
 
 test('ticking "remember this device" after a correct OTP sets a protected cookie and stores only a hash', function () {
@@ -74,7 +76,7 @@ test('ticking "remember this device" after a correct OTP sets a protected cookie
     $raw = $response->getCookie('mt_trusted_device', false);          // as sent on the wire (encrypted)
     $token = $response->getCookie('mt_trusted_device')->getValue();   // what the browser can present
     expect($raw->isHttpOnly())->toBeTrue()
-        ->and(strtolower((string) $raw->getSameSite()))->toBe('strict')
+        ->and(strtolower((string) $raw->getSameSite()))->toBe('lax')
         ->and($raw->getPath())->toBe('/')
         ->and($raw->getExpiresTime())->toBeGreaterThan(now()->addDays(29)->timestamp)->toBeLessThan(now()->addDays(31)->timestamp)
         ->and($raw->getValue())->not->toBe($token)                    // encrypted/signed by Laravel
@@ -340,7 +342,7 @@ test('the feature can be switched off: no checkbox, no cookie, no skipping', fun
     expect(TrustedDevice::count())->toBe(1);
 });
 
-test('the checkbox is offered on the OTP page and not to Google-linked accounts or forced password changes', function () {
+test('the checkbox is offered to password and Google accounts but not forced password changes', function () {
     $user = tdUser();
     tdLogin($user)->assertRedirect('/otp/verify');
     $this->get('/otp/verify')->assertOk()->assertSee('Remember this device for 30 days');
@@ -348,15 +350,56 @@ test('the checkbox is offered on the OTP page and not to Google-linked accounts 
     $google = tdUser(['google_id' => 'g-123']);
     tdFreshBrowser();
     tdLogin($google)->assertRedirect('/otp/verify');
-    $this->get('/otp/verify')->assertDontSee('Remember this device');
-    expect(tdVerify($google, true)->getCookie('mt_trusted_device'))->toBeNull();
+    $this->get('/otp/verify')->assertOk()->assertSee('Remember this device for 30 days');
+
+    $response = tdVerify($google, true);
+    expect($response->getCookie('mt_trusted_device'))->not->toBeNull()
+        ->and(TrustedDevice::where('user_id', $google->id)->count())->toBe(1);
 
     $forced = tdUser(['requires_password_change' => true]);
     tdFreshBrowser();
     tdLogin($forced)->assertRedirect('/otp/verify');
     $response = tdVerify($forced, true);
     $response->assertRedirect(route('password.change.view'));
-    expect($response->getCookie('mt_trusted_device'))->toBeNull()->and(TrustedDevice::where('user_id', $forced->id)->count())->toBe(0);
+    expect($response->getCookie('mt_trusted_device'))->toBeNull()
+        ->and(TrustedDevice::where('user_id', $forced->id)->count())->toBe(0);
+});
+
+test('Google login on a trusted device skips OTP but still authenticates with Google', function () {
+    $user = tdUser(['google_id' => 'g-123']);
+
+    $cookie = app(TrustedDeviceService::class)->issue(
+        $user,
+        \Illuminate\Http\Request::create('/')
+    );
+
+    $token = $cookie->getValue();
+
+    $googleUser = Mockery::mock('Laravel\Socialite\Two\User');
+    $googleUser->shouldReceive('getEmail')->andReturn($user->email);
+    $googleUser->shouldReceive('getName')->andReturn($user->name);
+    $googleUser->shouldReceive('getId')->andReturn('g-123');
+
+    $driver = Mockery::mock('Laravel\Socialite\Contracts\Provider');
+    $driver->shouldReceive('user')->once()->andReturn($googleUser);
+
+    Socialite::shouldReceive('driver')
+        ->with('google')
+        ->andReturn($driver);
+
+    Mail::fake();
+
+    $response = $this->withCookie('mt_trusted_device', $token)
+        ->get(route('auth.google.callback'));
+
+    $response->assertRedirect(route('customer.dashboard'));
+    $this->assertAuthenticatedAs($user);
+
+    expect(session('otp_verified'))->toBeTrue()
+        ->and($user->fresh()->otp_code)->toBeNull()
+        ->and($user->fresh()->otp_expires_at)->toBeNull();
+
+    Mail::assertNothingSent();
 });
 
 test('a wrong OTP does not create trust, even when the box is ticked', function () {

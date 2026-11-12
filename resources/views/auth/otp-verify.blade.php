@@ -24,8 +24,8 @@
         @if (app(\App\Services\TrustedDeviceService::class)->offeredTo(auth()->user()))
             <label class="mt-4 flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
                 <input type="checkbox" name="remember_device" value="1" class="mt-1 rounded border-gray-300">
-                <span>{{ __('Remember this device for :days days so I can skip this code next time I sign in with my password.', ['days' => config('trusted_devices.days')]) }}
-                    <span class="block text-xs text-gray-500">{{ __('Only on a personal device. You can remove remembered devices anytime in your profile.') }}</span></span>
+                <span>{{ __('Remember this device for :days days so I can skip this email code next time I sign in.', ['days' => config('trusted_devices.days')]) }}
+                    <span class="block text-xs text-gray-500">{{ __('Your Google account or password will still be required. Only remember personal devices. You can remove remembered devices anytime in your profile.') }}</span></span>
             </label>
         @endif
 

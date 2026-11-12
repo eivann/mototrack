@@ -20,6 +20,11 @@ Route::get('/faq', function () {
     return view('faq');
 })->name('faq');
 
+// Public Privacy Policy
+Route::get('/privacy-policy', function () {
+    return view('privacy-policy');
+})->name('privacy-policy');
+
 // RD2-R5: public Terms and Conditions (confirmed policies only; see resources/views/terms.blade.php).
 Route::get('/terms', function () {
     return view('terms', [

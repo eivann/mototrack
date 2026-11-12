@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
@@ -21,7 +22,7 @@ class GoogleController extends Controller
     /**
      * Obtain the user information from Google and log them in.
      */
-    public function callback()
+    public function callback(Request $request)
     {
         try {
             $googleUser = Socialite::driver('google')->user();
@@ -59,8 +60,42 @@ class GoogleController extends Controller
             ['name' => $user->name, 'email' => $user->email]
         );
 
-        // SYS4-04: no unconditional remember-me; session idle timeout applies (OTP still required).
+        // Google authentication remains mandatory on every Google login.
         Auth::login($user, false);
+        $request->session()->regenerate();
+
+        // A valid trusted device skips only MotoTrack's additional email OTP.
+        $trusted = app(\App\Services\TrustedDeviceService::class);
+        $token = $request->cookie($trusted->cookieName());
+
+        if ($trusted->offeredTo($user)
+            && $trusted->consume($user, is_string($token) ? $token : null)) {
+
+            $request->session()->put('otp_verified', true);
+
+            $user->otp_code = null;
+            $user->otp_expires_at = null;
+            $user->save();
+
+            $intended = $request->session()->pull('url.intended');
+
+            if ($intended) {
+                return redirect()->to($intended);
+            }
+
+            return redirect(
+                $user->role === 'owner'
+                    ? route('dashboard')
+                    : route('customer.dashboard')
+            );
+        }
+
+        // Unknown, expired, revoked, or ineligible device: remove its cookie.
+        if ($token !== null && $token !== '') {
+            \Illuminate\Support\Facades\Cookie::queue(
+                $trusted->forgetCookie($request)
+            );
+        }
 
         $otp = sprintf("%06d", random_int(100000, 999999));
         $user->otp_code = \Illuminate\Support\Facades\Hash::make($otp);
@@ -73,7 +108,7 @@ class GoogleController extends Controller
             \Illuminate\Support\Facades\Log::error('OTP Email failed: ' . $e->getMessage());
         }
 
-        session()->put('otp_verified', false);
+        $request->session()->put('otp_verified', false);
 
         return redirect()->route('otp.verify');
     }
