@@ -2,6 +2,9 @@
     <div x-data="{ 
         activeTab: (['overview','reservations','repairs','preorders','purchases'].includes(new URLSearchParams(window.location.search).get('tab')) ? new URLSearchParams(window.location.search).get('tab') : 'overview'),
         recentActivities: {{ Js::from(auth()->user()->latestUnreadNotifications(5)->map(fn($n) => ['id' => $n->id, 'title' => $n->data['title'] ?? 'Notification', 'message' => $n->data['message'] ?? '', 'time' => $n->created_at->diffForHumans(), 'is_repair' => str_contains(strtolower($n->data['title'] ?? ''), 'repair')])) }},
+        viewingRepair: null,
+        openRepairModal(repair) { this.viewingRepair = repair; },
+        closeRepairModal() { this.viewingRepair = null; },
         initEcho() {
             if (window.Echo) {
                 window.Echo.private('App.Models.User.{{ auth()->id() }}')
@@ -243,10 +246,70 @@
                         @endif
                     </div>
 
+                    <!-- Repairs Table & Maintenance Overview -->
+                    @if(isset($maintenanceStats) && $maintenanceStats['total_services'] > 0)
+                        <!-- Maintenance Summary Stats -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Total Services</p>
+                                <p class="text-2xl font-black text-gray-900 dark:text-white">{{ $maintenanceStats['total_services'] }}</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-1">In Progress</p>
+                                <p class="text-2xl font-black text-gray-900 dark:text-white">{{ $maintenanceStats['active_services'] }}</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-1">Completed</p>
+                                <p class="text-2xl font-black text-gray-900 dark:text-white">{{ $maintenanceStats['completed_services'] }}</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-1">Motorcycles</p>
+                                <p class="text-2xl font-black text-gray-900 dark:text-white">{{ $maintenanceStats['unique_motorcycles'] }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Motorcycle Maintenance Cards by Bike Model -->
+                        @if(isset($maintenanceByBike) && count($maintenanceByBike) > 0)
+                            <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 p-8 shadow-sm">
+                                <h4 class="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight mb-4">Motorcycle Service History</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    @foreach($maintenanceByBike as $bike)
+                                        <div class="p-5 rounded-2xl bg-gray-50/70 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/60 flex flex-col justify-between">
+                                            <div>
+                                                <div class="flex items-center justify-between gap-2 mb-2">
+                                                    <span class="font-black text-gray-900 dark:text-white text-base">{{ $bike['model'] }}</span>
+                                                    @if($bike['active_job'])
+                                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-200">
+                                                            Active: {{ $bike['active_job']->status }}
+                                                        </span>
+                                                    @else
+                                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                                            Up to Date
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    <p><span class="font-bold text-gray-700 dark:text-gray-300">Total Visits:</span> {{ $bike['total_visits'] }} service{{ $bike['total_visits'] === 1 ? '' : 's' }}</p>
+                                                    <p><span class="font-bold text-gray-700 dark:text-gray-300">Last Service:</span> {{ $bike['last_service_date'] ? \Carbon\Carbon::parse($bike['last_service_date'])->setTimezone(config('app.timezone', 'Asia/Manila'))->format('M d, Y') : 'N/A' }}</p>
+                                                    @if($bike['last_service_issue'])
+                                                        <p class="truncate"><span class="font-bold text-gray-700 dark:text-gray-300">Recent:</span> {{ $bike['last_service_issue'] }}</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    @endif
+
                     <!-- Repairs Table -->
                     <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
-                        <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                            <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Track My Repairs</h3>
+                        <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
+                            <div>
+                                <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Track My Repairs</h3>
+                                <p class="text-xs text-gray-400 font-medium mt-1">Real-time status and service milestones for all in-shop repairs.</p>
+                            </div>
                         </div>
                         @if(isset($repairs) && $repairs->count() > 0)
                             <div class="overflow-x-auto">
@@ -255,21 +318,67 @@
                                         <tr>
                                             <th class="p-6">Bike Model</th>
                                             <th class="p-6">Service / Issue</th>
+                                            <th class="p-6">Date</th>
                                             <th class="p-6">Status</th>
                                             <th class="p-6 text-right">Cost</th>
+                                            <th class="p-6 text-right">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                                         @foreach($repairs as $repair)
                                             <tr id="repair-{{ $repair->id }}" class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
                                                 <td class="p-6 font-bold text-gray-900 dark:text-white">{{ $repair->bike_model }}</td>
-                                                <td class="p-6 text-sm text-gray-500">{{ Str::limit($repair->issue ?? '', 30) }}</td>
+                                                <td class="p-6 text-sm text-gray-500">
+                                                    <div class="font-semibold text-gray-900 dark:text-white">{{ Str::limit($repair->issue ?? 'General Service', 36) }}</div>
+                                                    @if($repair->completed_at)
+                                                        <div class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">Completed {{ $repair->completedAtManila('M d, Y') }}</div>
+                                                    @elseif($repair->started_at)
+                                                        <div class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">Started {{ $repair->startedAtManila('M d, Y') }}</div>
+                                                    @endif
+                                                </td>
+                                                <td class="p-6 text-xs text-gray-500 font-medium">
+                                                    {{ $repair->createdAtManila('M d, Y') }}
+                                                </td>
                                                 <td class="p-6">
-                                                    <span class="px-3 py-1 rounded-lg {{ strtolower($repair->status ?? 'pending') === 'pending' ? 'bg-yellow-50 text-yellow-600' : (in_array(strtolower($repair->status ?? 'pending'), ['completed','done','ready']) ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600') }} font-black text-[10px] uppercase tracking-widest">
+                                                    @php
+                                                        $st = strtolower($repair->status ?? 'pending');
+                                                        $badgeClass = match($st) {
+                                                            'pending' => 'bg-yellow-50 text-yellow-600 border border-yellow-200',
+                                                            'ongoing' => 'bg-indigo-50 text-indigo-600 border border-indigo-200',
+                                                            'done', 'completed' => 'bg-emerald-50 text-emerald-600 border border-emerald-200',
+                                                            default => 'bg-gray-100 text-gray-600',
+                                                        };
+                                                    @endphp
+                                                    <span class="px-3 py-1 rounded-lg {{ $badgeClass }} font-black text-[10px] uppercase tracking-widest inline-flex items-center gap-1">
                                                         {{ $repair->status ?? 'pending' }}
                                                     </span>
                                                 </td>
-                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">{{ ($repair->cost ?? 0) > 0 ? '₱'.number_format((float)($repair->cost), 2) : 'TBD' }}</td>
+                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">
+                                                    <div>{{ ($repair->cost ?? 0) > 0 ? '₱'.number_format((float)($repair->cost), 2) : 'TBD' }}</div>
+                                                    <div class="text-[10px] font-bold uppercase tracking-wider mt-0.5 {{ $repair->is_paid ? 'text-emerald-600' : 'text-gray-400' }}">
+                                                        {{ $repair->is_paid ? 'Paid' : 'Unpaid' }}
+                                                    </div>
+                                                </td>
+                                                <td class="p-6 text-right">
+                                                    <button type="button"
+                                                            @click="openRepairModal({{ json_encode([
+                                                                'id' => $repair->id,
+                                                                'bike_model' => $repair->bike_model,
+                                                                'issue' => $repair->issue,
+                                                                'status' => $repair->status,
+                                                                'cost' => $repair->cost !== null ? (float) $repair->cost : null,
+                                                                'is_paid' => (bool) $repair->is_paid,
+                                                                'created_at_fmt' => $repair->createdAtManila('M d, Y g:i A'),
+                                                                'started_at_fmt' => $repair->startedAtManila('M d, Y g:i A'),
+                                                                'completed_at_fmt' => $repair->completedAtManila('M d, Y g:i A'),
+                                                                'paid_at_fmt' => $repair->paidAtManila('M d, Y g:i A'),
+                                                                'is_ongoing' => $repair->isOngoing(),
+                                                                'is_finished' => $repair->isFinished(),
+                                                            ]) }})"
+                                                            class="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold transition-colors">
+                                                        Details
+                                                    </button>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -499,6 +608,118 @@
                     </div>
                 </div>
 
+        </div>
+    </div>
+
+    <!-- Customer Read-Only Repair Details Modal (F10) -->
+    <div x-show="viewingRepair !== null"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         role="dialog"
+         aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <!-- Backdrop -->
+            <div x-show="viewingRepair !== null"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @click="closeRepairModal()"
+                 class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"></div>
+
+            <!-- Modal Card (Strictly Read-Only, No Administrative Editing Controls) -->
+            <div x-show="viewingRepair !== null"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="relative inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-900 shadow-2xl rounded-3xl border border-gray-100 dark:border-gray-800">
+
+                <!-- Header -->
+                <div class="flex items-start justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
+                    <div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Service Ticket #<span x-text="viewingRepair?.id"></span></span>
+                        <h3 class="text-xl font-black text-gray-900 dark:text-white" x-text="viewingRepair?.bike_model"></h3>
+                    </div>
+                    <button type="button" @click="closeRepairModal()" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <!-- Body -->
+                <div class="py-5 space-y-4 text-sm" x-show="viewingRepair">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1">Issue / Service Requested</label>
+                        <p class="font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700/50" x-text="viewingRepair?.issue || 'General Maintenance'"></p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1">Status</label>
+                            <span class="inline-block px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider"
+                                  :class="{
+                                      'bg-yellow-50 text-yellow-700 border border-yellow-200': viewingRepair?.status === 'pending',
+                                      'bg-indigo-50 text-indigo-700 border border-indigo-200': viewingRepair?.status === 'ongoing',
+                                      'bg-emerald-50 text-emerald-700 border border-emerald-200': viewingRepair?.status === 'done' || viewingRepair?.status === 'completed'
+                                  }"
+                                  x-text="viewingRepair?.status"></span>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1">Payment Status</label>
+                            <span class="inline-block px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider"
+                                  :class="viewingRepair?.is_paid ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'"
+                                  x-text="viewingRepair?.is_paid ? 'Paid' : 'Unpaid'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Service Milestones (Asia/Manila) -->
+                    <div class="pt-2 border-t border-gray-100 dark:border-gray-800 space-y-2">
+                        <label class="block text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1">Service Milestones (Asia/Manila)</label>
+                        <div class="space-y-1.5 text-xs">
+                            <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                                <span>Intake / Registered:</span>
+                                <span class="font-semibold text-gray-900 dark:text-white" x-text="viewingRepair?.created_at_fmt || '—'"></span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                                <span>Bay Work Started:</span>
+                                <span class="font-semibold text-gray-900 dark:text-white" x-text="viewingRepair?.started_at_fmt || (viewingRepair?.is_ongoing ? 'In progress' : 'Awaiting bay')"></span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                                <span>Service Completed:</span>
+                                <span class="font-semibold text-gray-900 dark:text-white" x-text="viewingRepair?.completed_at_fmt || (viewingRepair?.is_finished ? 'Completed' : 'Pending completion')"></span>
+                            </div>
+                            <template x-if="viewingRepair?.is_paid && viewingRepair?.paid_at_fmt">
+                                <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                                    <span>Payment Recorded:</span>
+                                    <span class="font-semibold text-emerald-600 dark:text-emerald-400" x-text="viewingRepair?.paid_at_fmt"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Invoiced Service Charges -->
+                    <div class="pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                        <span class="text-xs font-bold text-gray-500">Service Charges</span>
+                        <span class="text-lg font-black text-gray-900 dark:text-white"
+                              x-text="viewingRepair?.cost ? '₱' + Number(viewingRepair.cost).toFixed(2) : 'TBD'"></span>
+                    </div>
+
+                    <div class="text-[11px] text-gray-400 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl">
+                        <span>ℹ For questions regarding parts or work updates, please speak with your service technician or front desk upon pickup.</span>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="pt-4 border-t border-gray-100 dark:border-gray-800 text-right">
+                    <button type="button" @click="closeRepairModal()" class="px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-black transition-opacity hover:opacity-90">
+                        Close
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>

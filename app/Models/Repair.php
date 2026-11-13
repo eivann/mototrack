@@ -6,23 +6,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class Repair extends Model
 {
-   protected $fillable = [
-    'customer_name',
-    'customer_id',
-    'bike_model',
-    'issue',
-    'status',
-    'cost',
-    'is_paid',
-    'started_at',
-    'estimated_minutes',
-    'completed_at',
-    'reservation_id',
-];
+    protected $fillable = [
+        'customer_name',
+        'customer_id',
+        'bike_model',
+        'issue',
+        'status',
+        'cost',
+        'is_paid',
+        'started_at',
+        'estimated_minutes',
+        'completed_at',
+        'reservation_id',
+    ];
 
 protected $casts = [
+    'is_paid' => 'boolean',
     'started_at' => 'datetime',
     'completed_at' => 'datetime',
+    'paid_at' => 'datetime',
 ];
 
 public function customer()
@@ -34,6 +36,32 @@ public function customer()
 public function reservation()
 {
     return $this->belongsTo(RepairReservation::class, 'reservation_id');
+}
+
+/** F08: Asia/Manila presentation helpers */
+public function createdAtManila(string $format = 'M d, Y g:i A'): string
+{
+    return $this->created_at->timezone(config('app.timezone', 'Asia/Manila'))->format($format);
+}
+
+public function startedAtManila(string $format = 'M d, Y g:i A'): ?string
+{
+    return $this->started_at?->timezone(config('app.timezone', 'Asia/Manila'))->format($format);
+}
+
+public function completedAtManila(string $format = 'M d, Y g:i A'): ?string
+{
+    return $this->completed_at?->timezone(config('app.timezone', 'Asia/Manila'))->format($format);
+}
+
+public function paidAtManila(string $format = 'M d, Y g:i A'): ?string
+{
+    return $this->paid_at?->timezone(config('app.timezone', 'Asia/Manila'))->format($format);
+}
+
+public function scheduledAtManila(string $format = 'M d, Y g:i A'): ?string
+{
+    return $this->reservation?->scheduled_at?->timezone(config('app.timezone', 'Asia/Manila'))->format($format);
 }
 
 /** Derived, never stored: started_at + estimate (Phase 2 default when the estimate is missing). */

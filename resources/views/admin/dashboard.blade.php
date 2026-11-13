@@ -269,21 +269,28 @@
                         </div>
                     </div>
 
-                    <!-- Service Jobs Tab -->
+                    <!-- Service Jobs Tab (F06: Service Tracking & Management) -->
                     <div x-show="activeTab === 'repairs'" x-cloak class="space-y-6">
                         <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                             <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                                <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Active Repairs Tracker</h3>
-                                <a href="{{ route('repairs.index') }}" class="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline">Manage All</a>
+                                <div>
+                                    <h3 class="text-xl font-black text-gray-900 dark:text-white italic">Active Repairs Tracker</h3>
+                                    <p class="text-xs text-gray-400 mt-0.5">Live service monitoring, bay occupancy, and job tracking.</p>
+                                </div>
+                                <a href="{{ route('repairs.index') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                                    <span>Manage All Jobs</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </a>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left">
                                     <thead class="bg-gray-50/50 dark:bg-gray-800/30 text-[10px] font-black uppercase tracking-widest text-gray-400">
                                         <tr>
                                             <th class="p-6">Motorcycle & Requested Issue</th>
-                                            <th class="p-6">Customer</th>
-                                            <th class="p-6">Status</th>
+                                            <th class="p-6">Customer & Intake Date</th>
+                                            <th class="p-6 text-center">Status & Bay Progress</th>
                                             <th class="p-6 text-right">Cost</th>
+                                            <th class="p-6 text-right">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
@@ -297,17 +304,34 @@
                                                 </td>
                                                 <td class="p-6">
                                                     <div class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ $job->customer_name ?? $job->customer?->name ?? 'Walk-in Customer' }}</div>
+                                                    <div class="text-[11px] text-gray-400 mt-0.5">
+                                                        Intake: {{ $job->created_at->timezone('Asia/Manila')->format('M d, Y g:i A') }}
+                                                    </div>
                                                 </td>
-                                                <td class="p-6">
+                                                <td class="p-6 text-center">
                                                     <span class="px-3 py-1 rounded-full {{ $job->status === 'pending' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300' }} font-black text-[10px] uppercase tracking-widest">
                                                         {{ $job->status === 'ongoing' ? 'Ongoing' : $job->status }}
                                                     </span>
+                                                    @if($job->isOngoing())
+                                                        @if($job->isOverdue())
+                                                            <div class="text-[10px] font-black text-red-600 dark:text-red-400 mt-1">⚠️ Overdue Bay</div>
+                                                        @elseif($job->started_at)
+                                                            <div class="text-[10px] text-gray-400 mt-1">Ends {{ $job->expectedEndAt()->timezone('Asia/Manila')->format('g:i A') }}</div>
+                                                        @endif
+                                                    @endif
                                                 </td>
-                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">₱{{ number_format($job->cost, 2) }}</td>
+                                                <td class="p-6 font-black text-gray-900 dark:text-white text-right">
+                                                    {{ $job->cost !== null ? '₱' . number_format($job->cost, 2) : 'TBD' }}
+                                                </td>
+                                                <td class="p-6 text-right">
+                                                    <a href="{{ route('repairs.index') }}#repair-{{ $job->id }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                                                        Track / Edit &rarr;
+                                                    </a>
+                                                </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4" class="p-8 text-center text-gray-400 font-bold italic">No active repairs in progress.</td>
+                                                <td colspan="5" class="p-8 text-center text-gray-400 font-bold italic">No active repairs in progress.</td>
                                             </tr>
                                         @endforelse
                                     </tbody>

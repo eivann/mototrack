@@ -11,5 +11,8 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::post('/repairs/{repair}/extend', [RepairController::class, 'extend'])->name('repairs.extend');
     Route::delete('/repairs/{repair}', [RepairController::class, 'destroy'])->name('repairs.destroy');
     Route::put('/repairs/{repair}/pay', [RepairController::class, 'markPaid'])->name('repairs.pay');
+    Route::get('/repairs/reports', [\App\Http\Controllers\Repair\RepairReportController::class, 'index'])->name('repairs.reports');
+    Route::get('/repairs/reports/export/pdf', [\App\Http\Controllers\Repair\RepairReportController::class, 'exportPdf'])->name('repairs.reports.export.pdf');
+    Route::get('/repairs/reports/export/csv', [\App\Http\Controllers\Repair\RepairReportController::class, 'exportCsv'])->name('repairs.reports.export.csv');
     Route::get('/repairs/{repair}/receipt', [RepairController::class, 'receipt'])->name('repairs.receipt');
 });
